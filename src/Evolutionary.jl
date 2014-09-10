@@ -1,11 +1,7 @@
 module Evolutionary
 
-    include("types.jl")
+    export es
 
-    # Self-Adaptation Evolution Strategy
-    include("saes.jl")
-
-    # End-User Facing Wrapper Functions
-    include("optimize.jl")
-
+    # Evolution Strategy
+    include("es.jl")
 end
