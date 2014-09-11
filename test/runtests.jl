@@ -3,10 +3,8 @@ quiet = length(ARGS) > 0 && ARGS[1] == "-q"
 anyerrors = false
 
 my_tests = [
-            "saes1.jl",
-            "saes2.jl",
-            "saes3.jl",
-            "saes4.jl"
+            "saes.jl",
+            "cmaes.jl"
            ]
 
 println("Running tests:")

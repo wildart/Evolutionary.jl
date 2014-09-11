@@ -1,7 +1,7 @@
 # Evolution Strategy
 # ==================
 #
-# Implementation: (μ/ρ(+/,)λ)-ES
+# Implementation: (μ/ρ(+/,)λ)-CMA-ES
 #
 # μ is the number of parents
 # ρ ≤ μ the mixing number (i.e., the number of parents involved in the procreation of an offspring)
@@ -10,18 +10,18 @@
 # Comma-selection (μ<λ must hold): parents are deterministically selected from the set of the offspring
 # Plus-selection: parents are deterministically selected from the set of both the parents and offspring
 #
-function es{T}(objfun::Function, initval::T, initstg::Strategy;
-              recombination::Function = (x->x[1]),
-              srecombination::Function = (x->x[1]),
-              mutation::Function = (x->x),
-              smutation::Function = (x->x),
-              termination::Function = (x->false),
-              μ::Integer = 1,
-              ρ::Integer = 1,
-              λ::Integer = 1,
-              selection::Symbol = :plus,
-              iterations::Integer = 1_000,
-              verbose = false)
+function cmaes{T}(objfun::Function, initval::T, initstg::Strategy;
+                  recombination::Function = (x->x[1]),
+                  srecombination::Function = (x->x[1]),
+                  mutation::Function = (x->x),
+                  smutation::Function = (x->x),
+                  termination::Function = (x->false),
+                  μ::Integer = 1,
+                  ρ::Integer = 1,
+                  λ::Integer = 1,
+                  selection::Symbol = :plus,
+                  iterations::Integer = 1_000,
+                  verbose = false)
 
     @assert ρ <= μ "Number of parents involved in the procreation of an offspring should be no more then total number of parents"
     if selection == :comma
@@ -91,4 +91,5 @@ function es{T}(objfun::Function, initval::T, initstg::Strategy;
     end
 
     return population[1], fitpop[1], count
+
 end
