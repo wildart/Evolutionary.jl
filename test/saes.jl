@@ -25,7 +25,7 @@ module TestSAES
 	result, fitness, cnt = es(rosenbrock, initial, strategy(σ = 1.0, τ = 1/sqrt(2*N));
 		recombination = average, srecombination = averageSigma1, 
 		mutation = isotropic, smutation = isotropicSigma,
-		μ = 15, ρ = 15, λ = 100, iterations = 1000)
+		μ = 15, λ = 100, iterations = 1000)
 	println("(15/15+100)-σ-SA-ES-IS => F: $(fitness), C: $(cnt), OBJ: $(result)")
 
 	@test_approx_eq_eps result solution 1e-3
@@ -36,7 +36,7 @@ module TestSAES
 	result, fitness, cnt = es(rosenbrock, initial, strategy(σ = .5ones(N), τ = 1/sqrt(2*N), τ0 = 1/sqrt(N));
 		recombination = average, srecombination = averageSigmaN, 
 		mutation = anisotropic, smutation = anisotropicSigma,
-		μ = 15, ρ = 15, λ = 100, iterations = 1000)
+		μ = 15, λ = 100, iterations = 1000)
 	println("(15/15+100)-σ-SA-ES-AS => F: $(fitness), C: $(cnt), OBJ: $(result)")
 
 	@test_approx_eq_eps result solution 1e-1
@@ -52,8 +52,8 @@ module TestSAES
 		recombination = average, srecombination = averageSigma1, 
 		mutation = isotropic, smutation = isotropicSigma,
        	termination = terminate, selection=:comma,
-       	μ = 3, ρ = 3, λ = 12, iterations = 1000)
-	println("(μ/μ_I,λ)-σ-SA-ES => F: $(fitness), C: $(cnt)")
+       	μ = 3, λ = 12, iterations = 1000)
+	println("(3/3,12)-σ-SA-ES => F: $(fitness), C: $(cnt)")
 
 	@test length(result) == N
 	@test cnt < 1000

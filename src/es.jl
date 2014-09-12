@@ -10,14 +10,14 @@
 # Comma-selection (μ<λ must hold): parents are deterministically selected from the set of the offspring
 # Plus-selection: parents are deterministically selected from the set of both the parents and offspring
 #
-function es{T}(objfun::Function, initval::T, initstg::Strategy;
+function es{T}(objfun::Function, initValue::T, initStrategy::Strategy;
               recombination::Function = (x->x[1]),
               srecombination::Function = (x->x[1]),
               mutation::Function = (x->x),
               smutation::Function = (x->x),
               termination::Function = (x->false),
               μ::Integer = 1,
-              ρ::Integer = 1,
+              ρ::Integer = μ,
               λ::Integer = 1,
               selection::Symbol = :plus,
               iterations::Integer = 1_000,
@@ -29,31 +29,31 @@ function es{T}(objfun::Function, initval::T, initstg::Strategy;
     end
 
     # Initialize parent population
-    population = fill(initval, μ)
+    population = fill(initValue, μ)
     offspring = Array(T, λ)
-    fitpop = fill(objfun(initval), μ)
+    fitpop = fill(objfun(initValue), μ)
     fitoff = fill(Inf, λ)
-    stgpop = fill(initstg, μ)
-    stgoff = fill(initstg, λ)
+    stgpop = fill(initStrategy, μ)
+    stgoff = fill(initStrategy, λ)
 
     count = 0
     while true
 
-        for i in 1:λ            
-            # Recombine the ρ selected parents to form a recombinant individual            
+        for i in 1:λ
+            # Recombine the ρ selected parents to form a recombinant individual
             if ρ == 1
                 j = rand(1:μ)
                 recombinantStrategy = stgpop[j]
-                recombinant = population[j] 
-            else                
+                recombinant = population[j]
+            else
                 idx = randperm(μ)[1:ρ]
                 recombinantStrategy = srecombination(stgpop[idx])
                 recombinant = recombination(population[idx])
             end
-            
+
             # Mutate the strategy parameter set of the recombinant
             stgoff[i] = smutation(recombinantStrategy)
-            
+
             # Mutate the objective parameter set of the recombinant using the mutated strategy parameter set
             # to control the statistical properties of the object parameter mutation
             offspring[i] = mutation(recombinant, stgoff[i])
@@ -86,7 +86,6 @@ function es{T}(objfun::Function, initval::T, initstg::Strategy;
         if count == iterations || termination(stgpop[1])
             break
         end
-        #verbose && println("BEST: $(fitpop[1]): $(population[1]): $(stgpop[1])")
         verbose && println("BEST: $(fitpop[1]): $(stgpop[1])")
     end
 
