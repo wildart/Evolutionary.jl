@@ -34,3 +34,94 @@ function anisotropicSigma{S <: Strategy}(s::S)
     σ = exp(s[:τ]*randn(length(s[:σ])))
     return strategy(σ = σ, τ = s[:τ], τ0 = s[:τ0])
 end
+
+
+# Genetic mutations
+# =================
+
+# Binary mutations
+# ----------------
+function flip{T <: BitArray}(recombinant::T)
+    s = length(recombinant)
+    pos = rand(1:s)
+    recombinant[pos] = !recombinant[pos]
+    return recombinant
+end
+
+# Combinatorial mutations (applicable to binary vectors)
+# ------------------------------------------------------
+
+function inversion{T <: Vector}(recombinant::T)
+    l = length(recombinant)
+    from, to = rand(1:l, 2)
+    from, to = from > to ? (to, from)  : (from, to) 
+    l = int((to - from)/2)  
+    for i in 0:(l-1)
+        swap!(recombinant, from+i, to-i)
+    end
+    return recombinant
+end
+
+function insertion{T <: Vector}(recombinant::T)
+    l = length(recombinant)
+    from, to = rand(1:l, 2)
+    val = recombinant[from]
+    deleteat!(recombinant, from)
+    return insert!(recombinant, to, val)
+end
+
+function swap2{T <: Vector}(recombinant::T)
+    l = length(recombinant)
+    from, to = rand(1:l, 2)
+    swap!(recombinant, from, to)
+    return recombinant
+end
+
+function scramble{T <: Vector}(recombinant::T)
+    l = length(recombinant)
+    from, to = rand(1:l, 2)
+    from, to = from > to ? (to, from)  : (from, to)
+    diff = to - from + 1
+    if diff > 1
+        patch = recombinant[from:to]
+        idx = randperm(diff)
+        # println("$(from)-$(to), P: $(patch), I: $(idx)")
+        for i in 1:(diff)
+            recombinant[from+i-1] = patch[idx[i]]
+        end
+    end
+    return recombinant
+end
+
+function shifting{T <: Vector}(recombinant::T)
+    l = length(recombinant)
+    from, to, where = sort(rand(1:l, 3))    
+    patch = recombinant[from:to]
+    diff = where - to
+    if diff > 0
+        # move values after tail of patch to the patch head position
+        println([from, to, where, diff])
+        for i in 1:diff
+            recombinant[from+i-1] = recombinant[to+i]
+        end
+        # place patch values in order
+        start = from + diff
+        for i in 1:length(patch)
+            recombinant[start+i-1] = patch[i]
+        end
+    end
+    return recombinant
+end
+
+# Utils
+# =====
+function swap!{T <: Vector}(v::T, from::Int, to::Int)
+    val = v[from]
+    v[from] = v[to]
+    v[to] = val
+end
+
+function mutationwrapper(gamutation::Function)
+    wrapper{T <: Vector, S <: Strategy}(recombinant::T, s::S) = gamutation(recombinant)
+    return wrapper
+end
