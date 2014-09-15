@@ -11,8 +11,7 @@ module TestCMAES
     N = 2
     initialValue = zeros(N)
     CMAstrategy = strategy(τ = sqrt(N), τ_c = N^2, τ_σ = sqrt(N))
-    result, fitness, cnt = cmaes(rosenbrock, initialValue, CMAstrategy;
-        termination = terminate, μ = 3, λ = 12, iterations = 100_000)
+    result, fitness, cnt = cmaes(rosenbrock, initialValue, CMAstrategy; μ = 3, λ = 12, iterations = 100_000, tol = 1e-8)
     println("(3/3,12)-CMA-ES (Rosenbrock) => F: $(fitness), C: $(cnt), OBJ: $(result)")
 
     @test_approx_eq_eps result [1.0, 1.0] 1e-2
@@ -29,8 +28,7 @@ module TestCMAES
     N = 30
     initialValue = ones(N)
     CMAstrategy = strategy(τ = sqrt(N), τ_c = N^2, τ_σ = sqrt(N))
-    result, fitness, cnt = cmaes(schwefel, initialValue, CMAstrategy;
-        termination = terminate, μ = 3, λ = 12, iterations = 1000, verbose=false)
+    result, fitness, cnt = cmaes(schwefel, initialValue, CMAstrategy; μ = 3, λ = 12, iterations = 1000)
     println("(3/3,12)-CMA-ES (Schwefel) => F: $(fitness), C: $(cnt)")
 
     @test_approx_eq_eps result zeros(N) 1e-5

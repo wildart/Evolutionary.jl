@@ -7,10 +7,10 @@
 # λ is the number of offspring.
 #
 function cmaes{T}(objfun::Function, val::T, stg::Strategy;
-              termination::Function = (x->false),
               μ::Integer = 1,
               λ::Integer = 1,
               iterations::Integer = 1_000,
+              tol::Float64 = 1e-10,
               verbose = false)
 
     @assert μ < λ "Offspring population must be larger then parent population"
@@ -64,7 +64,7 @@ function cmaes{T}(objfun::Function, val::T, stg::Strategy;
 
         # termination condition
         count += 1
-        if count == iterations || termination(σ)
+        if count == iterations || σ < tol
             break
         end
         verbose && println("BEST: $(fitpop[1]): $(σ)")
