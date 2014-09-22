@@ -37,21 +37,19 @@ end
 
 # Stochastic universal sampling (SUS)
 function sus(fitness::Vector{Float64}, N::Int)
-    λ = length(fitness)
     F = sum(fitness)
-    fit = fitness./F
-    P = F/λ
+    P = F/N
     start = P*rand()
     pointers = [start+P*i for i = 0:(N-1)]
-    println("F:$(fit), P:$(pointers)")
-    selected = Array(Int,0)
+    selected = Array(Int,N)
     i = 1
+    c = 1
     for P in pointers
-        println("$(i): $(sum(fit[1:i]))")
-        while i < λ && sum(fit[1:i]) < P
+        while sum(fitness[1:i]) < P
             i += 1
         end
-        push!(selected, i)
+        selected[c] = i
+        c += 1
     end
     return selected
 end
