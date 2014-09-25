@@ -5,7 +5,7 @@
 # sp - selective linear presure in [1.0, 2.0]
 function ranklinear(sp::Float64)
     @assert 1.0 <= sp <= 2.0 "Selective pressure has to be in range [1.0, 2.0]."
-    function selection(fitness::Vector{Float64}, N::Int)
+    function rank(fitness::Vector{Float64}, N::Int)
         λ = float(length(fitness))
         idx = sortperm(fitness)
         ranks = similar(fitness)
@@ -14,19 +14,19 @@ function ranklinear(sp::Float64)
         end
         return pselection(ranks[idx], N)
     end
-    return selection
+    return rank
 end
 
 # (μ, λ)-uniform ranking sellection
 function uniformranking(μ::Int)
-    function selection(fitness::Vector{Float64}, N::Int)
+    function uniformrank(fitness::Vector{Float64}, N::Int)
         λ = length(fitness)
         @assert μ < λ "μ should be less then $(λ)"
         ranks = zeros(fitness)
         ranks[1:μ] = 1/μ
         return pselection(ranks, N)
     end
-    return selection
+    return uniformrank
 end
 
 # Roulette wheel (proportionate selection) selection
@@ -42,8 +42,7 @@ function sus(fitness::Vector{Float64}, N::Int)
     start = P*rand()
     pointers = [start+P*i for i = 0:(N-1)]
     selected = Array(Int,N)
-    i = 1
-    c = 1
+    i = c = 1
     for P in pointers
         while sum(fitness[1:i]) < P
             i += 1
@@ -61,11 +60,22 @@ end
 
 # Tournament selection
 function tournament{T <: Vector}(population::Vector{T}, N::Int)
+    #TODO
 end
 
 
 # Utils: selection
 function pselection(prob::Vector{Float64}, N::Int)
-
+    cp = cumsum(prob)
+    selected = Array(Int,N)
+    for i in 1:N
+        j = 1
+        r = rand()
+        while cp[j] < r
+            j += 1
+        end
+        selected[i] = j
+    end
+    return selected
 end
 

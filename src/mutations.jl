@@ -48,14 +48,38 @@ function flip{T <: BitArray}(recombinant::T)
     return recombinant
 end
 
+# Real valued mutation
+# Mühlenbein, H. and Schlierkamp-Voosen, D.: Predictive Models for the Breeder Genetic Algorithm: I. Continuous Parameter Optimization. Evolutionary Computation, 1 (1), pp. 25-49, 1993.
+# --------------------
+function domainrange(valrange::Vector, m::Int = 20)
+    prob = 1.0 / m
+    function mutation{T <: Vector}(recombinant::T)
+        d = length(recombinant)
+        @assert length(valrange) == d "Range matrix must have $(d) columns"
+        δ = zeros(m)
+        for i in 1:length(recombinant)
+            for j in 1:m
+                δ[j] = (rand() < prob) ? δ[j] = 2.0^(-j) : 0.0
+            end
+            if randbool()
+                recombinant[i] += sum(δ)*valrange[i]
+            else
+                recombinant[i] -= sum(δ)*valrange[i]
+            end
+        end
+        return recombinant
+    end
+    return mutation
+end
+
+
 # Combinatorial mutations (applicable to binary vectors)
 # ------------------------------------------------------
-
 function inversion{T <: Vector}(recombinant::T)
     l = length(recombinant)
     from, to = rand(1:l, 2)
-    from, to = from > to ? (to, from)  : (from, to) 
-    l = int((to - from)/2)  
+    from, to = from > to ? (to, from)  : (from, to)
+    l = int((to - from)/2)
     for i in 0:(l-1)
         swap!(recombinant, from+i, to-i)
     end
@@ -95,7 +119,7 @@ end
 
 function shifting{T <: Vector}(recombinant::T)
     l = length(recombinant)
-    from, to, where = sort(rand(1:l, 3))    
+    from, to, where = sort(rand(1:l, 3))
     patch = recombinant[from:to]
     diff = where - to
     if diff > 0

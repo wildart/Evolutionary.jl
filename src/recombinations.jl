@@ -14,7 +14,7 @@ function marriage{T <: Vector}(population::Vector{T})
     l = length(population[1])
     obj = zeros(eltype(T), l)
     for i in 1:l
-        obj[i] = population[rand(1:s)][i] 
+        obj[i] = population[rand(1:s)][i]
     end
     return obj
 end
@@ -68,7 +68,7 @@ function twopoint{T <: Vector}(v1::T, v2::T)
     c1 = copy(v1)
     c2 = copy(v2)
     from, to = rand(1:l, 2)
-    from, to = from > to ? (to, from)  : (from, to) 
+    from, to = from > to ? (to, from)  : (from, to)
     for i in from:to
         vswap!(c1, c2, i)
     end
@@ -106,36 +106,36 @@ function discrete{T <: Vector}(v1::T, v2::T)
 end
 
 # Weighted arithmetic mean
-function weightedavg(w::Vector{Float64})
-    function crossover{T <: Vector}(v1::T, v2::T)
+function waverage(w::Vector{Float64})
+    function wavexvr{T <: Vector}(v1::T, v2::T)
         c1 = (v1+v2)./w
         return c1, copy(c1)
     end
-    return crossover
+    return wavexvr
 end
 
 # Intermediate recombination
 function intermediate(d::Float64 = 0.0)
-    function crossover{T <: Vector}(v1::T, v2::T)
+    function intermxvr{T <: Vector}(v1::T, v2::T)
         l = length(v1)
         α = (1.0+2d)*rand(l)-d
-        c1 = v1 .+ α .* (v2 - v1)
+        c1 = v2 .+ α .* (v1 - v2)
         α = (1.0+2d)*rand(l)-d
-        c2 = v2 .+ α .* (v1 - v2) 
+        c2 = v1 .+ α .* (v2 - v1)
         return c1, c2
     end
-    return crossover
+    return intermxvr
 end
 
 # Line recombination
 function line(d::Float64 = 0.0)
-    function crossover{T <: Vector}(v1::T, v2::T)
+    function linexvr{T <: Vector}(v1::T, v2::T)
         α1, α2 = (1.0+2d)*rand(2)-d
-        c1 = v1 .+ α1 * (v2 - v1)
-        c2 = v2 .+ α2 * (v1 - v2) 
+        c1 = v2 .+ α2 * (v1 - v2)
+        c2 = v1 .+ α1 * (v2 - v1)
         return c1, c2
     end
-    return crossover
+    return linexvr
 end
 
 
@@ -149,12 +149,12 @@ function pmx{T <: Vector}(v1::T, v2::T)
     from, to = from > to ? (to, from)  : (from, to)
     c1 = similar(v1)
     c2 = similar(v2)
-    
+
     # Swap
     c1[from:to] = v2[from:to]
     c2[from:to] = v1[from:to]
 
-    # Fill in from parents    
+    # Fill in from parents
     for i in [1:from-1,to+1:s]
         # Check conflicting offspring
         in1 = inmap(v1[i], c1, from, to)
@@ -184,10 +184,6 @@ function pmx{T <: Vector}(v1::T, v2::T)
     return c1, c2
 end
 
-# Cycle crossover 
-function cx{T <: Vector}(v1::T, v2::T)
-end
-
 # Order crossover
 function ox1{T <: Vector}(v1::T, v2::T)
     s = length(v1)
@@ -198,22 +194,24 @@ function ox1{T <: Vector}(v1::T, v2::T)
     # Swap
     c1[from:to] = v2[from:to]
     c2[from:to] = v1[from:to]
-    # Fill in from parents    
+    # Fill in from parents
     return c1, c2
 end
 
-v1 = collect(1:10)
-v2 = randperm(10)
-
+# Cycle crossover
+function cx{T <: Vector}(v1::T, v2::T)
+    # TODO
+end
 
 # Order-based crossover
 function ox2{T <: Vector}(v1::T, v2::T)
+    # TODO
 end
 
 # Position-based crossover
 function pos{T <: Vector}(v1::T, v2::T)
+    # TODO
 end
-
 
 
 # Utils
