@@ -10,7 +10,9 @@
 # Comma-selection (μ<λ must hold): parents are deterministically selected from the set of the offspring
 # Plus-selection: parents are deterministically selected from the set of both the parents and offspring
 #
-function es{T}(objfun::Function, initValue::T, initStrategy::Strategy;
+function es(  objfun::Function, N::Int;
+              initPopulation::Individual = ones(N),
+              initStrategy::Strategy = strategy(),
               recombination::Function = (x->x[1]),
               srecombination::Function = (x->x[1]),
               mutation::Function = (x->x),
@@ -21,7 +23,7 @@ function es{T}(objfun::Function, initValue::T, initStrategy::Strategy;
               λ::Integer = 1,
               selection::Symbol = :plus,
               iterations::Integer = 1_000,
-              verbose = false)
+              verbose = false, debug = false)
 
     @assert ρ <= μ "Number of parents involved in the procreation of an offspring should be no more then total number of parents"
     if selection == :comma
@@ -29,13 +31,26 @@ function es{T}(objfun::Function, initValue::T, initStrategy::Strategy;
     end
 
     # Initialize parent population
-    population = fill(initValue, μ)
-    offspring = Array(T, λ)
-    fitpop = fill(objfun(initValue), μ)
+    individual = getIndividual(initPopulation, N)
+    population = fill(individual, μ)
+    fitness = zeros(μ)
+    for i in 1:μ
+        if isa(initPopulation, Vector)
+            population[i] = initPopulation.*rand(N)
+        elseif isa(initPopulation, Matrix)
+            population[i] = initPopulation[:, i]
+        else # Creation function
+            population[i] = initPopulation(N)
+        end
+        fitness[i] = objfun(population[i])
+        debug && println("INIT $(i): $(population[i]) : $(fitness[i])")
+    end
+    offspring = Array(typeof(individual), λ)
     fitoff = fill(Inf, λ)
     stgpop = fill(initStrategy, μ)
     stgoff = fill(initStrategy, λ)
 
+    # Generation cycle
     count = 0
     while true
 
@@ -64,21 +79,21 @@ function es{T}(objfun::Function, initValue::T, initStrategy::Strategy;
 
         # Select new parent population
         if selection == :plus
-            idx = sortperm([fitpop, fitoff])[1:μ]
+            idx = sortperm([fitness, fitoff])[1:μ]
             skip = idx[idx.<=μ]
             for i = 1:μ
                 if idx[i] ∉ skip
                     ii = idx[i] - μ
                     population[i] = offspring[ii]
                     stgpop[i] = stgoff[ii]
-                    fitpop[i] = fitoff[ii]
+                    fitness[i] = fitoff[ii]
                 end
             end
         else
             idx = sortperm(fitoff)[1:μ]
             population = offspring[idx]
             stgpop = stgoff[idx]
-            fitpop = fitoff[idx]
+            fitness = fitoff[idx]
         end
 
         # termination condition
@@ -86,8 +101,8 @@ function es{T}(objfun::Function, initValue::T, initStrategy::Strategy;
         if count == iterations || termination(stgpop[1])
             break
         end
-        verbose && println("BEST: $(fitpop[1]): $(stgpop[1])")
+        verbose && println("BEST: $(fitness[1]): $(stgpop[1])")
     end
 
-    return population[1], fitpop[1], count
+    return population[1], fitness[1], count
 end

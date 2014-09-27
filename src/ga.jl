@@ -13,7 +13,7 @@
 #                 Floating number specifies fraction of population.
 #
 function ga(objfun::Function, N::Int;
-            initPopulation::Union(Vector, Matrix, Function, Nothing) = ones(N),
+            initPopulation::Individual = ones(N),
             lowerBounds::Union(Nothing, Vector) = nothing,
             upperBounds::Union(Nothing, Vector) = nothing,
             populationSize::Int = 50,
@@ -34,19 +34,8 @@ function ga(objfun::Function, N::Int;
     fitFunc = inverseFunc(objfun)
 
     # Initialize population
+    individual = getIndividual(initPopulation, N)
     fitness = zeros(populationSize)
-    if isa(initPopulation, Vector)
-        @assert length(initPopulation) == N "Dimensionality of initial population must be $(N)"
-        individual = initPopulation
-    elseif isa(initPopulation, Matrix)
-        @assert size(initPopulation, 1) == N "Dimensionality of initial population must be $(N)"
-        populationSize = size(initPopulation, 2)
-        individual = initPopulation[:, 1]
-    elseif isa(initPopulation, Function) # Creation function
-        individual = initPopulation(N)
-    else
-        individual = ones(N)
-    end
     population = Array(typeof(individual), populationSize)
     offspring = similar(population)
 

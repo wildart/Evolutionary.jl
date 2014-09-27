@@ -17,6 +17,7 @@ module Evolutionary
            es, cmaes, ga
 
     typealias Strategy Dict{Symbol,Any}
+    typealias Individual Union(Vector, Matrix, Function, Nothing)
 
     # Wrapping function for strategy
     function strategy(; kwargs...)
@@ -29,10 +30,27 @@ module Evolutionary
 
     # Inverse function for reversing optimization direction
     function inverseFunc(f::Function)
-      function fitnessFunc{T <: Vector}(x::T)
-        return 1.0/(f(x)+eps())
-      end
-      return fitnessFunc
+        function fitnessFunc{T <: Vector}(x::T)
+            return 1.0/(f(x)+eps())
+        end
+        return fitnessFunc
+    end
+
+    # Obtain individual
+    function getIndividual(init::Individual, N::Int)
+        if isa(init, Vector)
+            @assert length(init) == N "Dimensionality of initial population must be $(N)"
+            individual = init
+        elseif isa(init, Matrix)
+            @assert size(init, 1) == N "Dimensionality of initial population must be $(N)"
+            populationSize = size(init, 2)
+            individual = init[:, 1]
+        elseif isa(init, Function) # Creation function
+            individual = init(N)
+        else
+            individual = ones(N)
+        end
+        return  individual
     end
 
     # ES & GA recombination functions
