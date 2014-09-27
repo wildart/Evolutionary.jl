@@ -6,18 +6,25 @@
 # μ is the number of parents
 # λ is the number of offspring.
 #
-function cmaes{T}(objfun::Function, val::T, stg::Strategy;
-              μ::Integer = 1,
-              λ::Integer = 1,
-              iterations::Integer = 1_000,
-              tol::Float64 = 1e-10,
-              verbose = false)
+function cmaes( objfun::Function, N::Int;
+                initPopulation::Individual = ones(N),
+                initStrategy::Strategy = strategy(τ = sqrt(N), τ_c = N^2, τ_σ = sqrt(N)),
+                μ::Integer = 1,
+                λ::Integer = 1,
+                iterations::Integer = 1_000,
+                tol::Float64 = 1e-10,
+                verbose = false)
 
     @assert μ < λ "Offspring population must be larger then parent population"
 
     # Initialize parent population
-    N = length(val)
-    parent = copy(val)
+    individual = getIndividual(initPopulation, N)
+    population = fill(individual, μ)
+    offspring = Array(typeof(individual), λ)
+    fitpop = fill(Inf, μ)
+    fitoff = fill(Inf, λ)
+
+    parent = copy(individual)
     C = eye(N)
     s = zeros(N)
     s_σ = zeros(N)
@@ -25,11 +32,7 @@ function cmaes{T}(objfun::Function, val::T, stg::Strategy;
     E = zeros(N, λ)
     W = zeros(N, λ)
 
-    population = fill(val, μ)
-    offspring = Array(T, λ)
-    fitpop = fill(Inf, μ)
-    fitoff = fill(Inf, λ)
-
+    # Generation cycle
     count = 0
     while true
         SqrtC = (C + C')/2.0
@@ -56,11 +59,13 @@ function cmaes{T}(objfun::Function, val::T, stg::Strategy;
 
         w = vec(mean(W[:,idx], 2))
         ɛ = vec(mean(E[:,idx], 2))
-        parent += w # (L2) forming recombinant perent for next generation
-        s = (1.0 - 1.0/stg[:τ])*s + (sqrt(μ/stg[:τ] * (2.0 - 1.0/stg[:τ]))/σ)*w      # (L3)
-        C = (1.0 - 1.0/stg[:τ_c]).*C + (s./stg[:τ_c])*s'                             # (L4)
-        s_σ = (1.0 - 1.0/stg[:τ_σ])*s_σ + sqrt(μ/stg[:τ_σ]*(2.0 - 1.0/stg[:τ_σ]))*ɛ  # (L5)
-        σ = σ*exp(((s_σ'*s_σ)[1] - N)/(2*N*sqrt(N)))                                  # (L6)
+        parent += w            #  forming recombinant perent for next generation (L2)
+        s = (1.0 - 1.0/initStrategy[:τ])*s +
+            (sqrt(μ/initStrategy[:τ] * (2.0 - 1.0/initStrategy[:τ]))/σ)*w      # (L3)
+        C = (1.0 - 1.0/initStrategy[:τ_c]).*C + (s./initStrategy[:τ_c])*s'     # (L4)
+        s_σ = (1.0 - 1.0/initStrategy[:τ_σ])*s_σ +
+            sqrt(μ/initStrategy[:τ_σ]*(2.0 - 1.0/initStrategy[:τ_σ]))*ɛ        # (L5)
+        σ = σ*exp(((s_σ'*s_σ)[1] - N)/(2*N*sqrt(N)))                           # (L6)
 
         # termination condition
         count += 1

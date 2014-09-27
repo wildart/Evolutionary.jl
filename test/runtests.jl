@@ -4,8 +4,9 @@ anyerrors = false
 
 my_tests = [
             "sphere.jl",
-            #"rosenbrock.jl",
-            #"schwefel.jl",
+            "rosenbrock.jl",
+            "schwefel.jl",
+            "rastrigin.jl",
             #"n-queens.jl"
            ]
 
