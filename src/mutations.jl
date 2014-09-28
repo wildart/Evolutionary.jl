@@ -124,7 +124,7 @@ function shifting{T <: Vector}(recombinant::T)
     diff = where - to
     if diff > 0
         # move values after tail of patch to the patch head position
-        println([from, to, where, diff])
+        #println([from, to, where, diff])
         for i in 1:diff
             recombinant[from+i-1] = recombinant[to+i]
         end

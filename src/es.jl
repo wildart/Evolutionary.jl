@@ -13,16 +13,16 @@
 function es(  objfun::Function, N::Int;
               initPopulation::Individual = ones(N),
               initStrategy::Strategy = strategy(),
-              recombination::Function = (x->x[1]),
-              srecombination::Function = (x->x[1]),
-              mutation::Function = (x->x),
-              smutation::Function = (x->x),
+              recombination::Function = (rs->rs[1]),
+              srecombination::Function = (ss->ss[1]),
+              mutation::Function = ((r,m)->r),
+              smutation::Function = (s->s),
               termination::Function = (x->false),
               μ::Integer = 1,
               ρ::Integer = μ,
               λ::Integer = 1,
               selection::Symbol = :plus,
-              iterations::Integer = 1_000,
+              iterations::Integer = N*100,
               verbose = false, debug = false)
 
     @assert ρ <= μ "Number of parents involved in the procreation of an offspring should be no more then total number of parents"
@@ -59,7 +59,7 @@ function es(  objfun::Function, N::Int;
             if ρ == 1
                 j = rand(1:μ)
                 recombinantStrategy = stgpop[j]
-                recombinant = population[j]
+                recombinant = copy(population[j])
             else
                 idx = randperm(μ)[1:ρ]
                 recombinantStrategy = srecombination(stgpop[idx])

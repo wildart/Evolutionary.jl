@@ -7,7 +7,7 @@ my_tests = [
             "rosenbrock.jl",
             "schwefel.jl",
             "rastrigin.jl",
-            #"n-queens.jl"
+            "n-queens.jl"
            ]
 
 println("Running tests:")

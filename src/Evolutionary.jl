@@ -1,6 +1,6 @@
 module Evolutionary
 
-    export Strategy, strategy, inverse,
+    export Strategy, strategy, inverse, mutationwrapper,
            # ES mutations
            isotropic, anisotropic, isotropicSigma, anisotropicSigma,
            # GA mutations
