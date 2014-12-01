@@ -59,8 +59,34 @@ function truncation{T <: Vector}(population::Vector{T}, N::Int)
 end
 
 # Tournament selection
-function tournament{T <: Vector}(population::Vector{T}, N::Int)
-    #TODO
+function tournament(groupSize :: Int)
+    groupSize <= 0 && error("Group size needs to be positive")
+    function tournamentN(fitness::Vector{Float64}, N::Int)
+        selection = Array(Int, N)
+
+        nFitness = length(fitness)
+
+        for i in 1:N
+            contender = unique(rand(1:nFitness, groupSize))
+            while length(contender) < groupSize
+                contender = unique([contender, rand(1:nFitness, groupSize - length(contender))])
+            end
+
+            winner = first(contender)
+            winnerFitness = fitness[winner]
+            for idx = 2:groupSize
+                c = contender[idx]
+                if winnerFitness < fitness[c]
+                    winner = c
+                    winnerFitness = fitness[c]
+                end
+            end
+
+            selection[i] = winner
+        end
+        return selection
+    end
+    return tournamentN
 end
 
 

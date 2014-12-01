@@ -53,6 +53,7 @@ Pkg.clone("https://github.com/wildart/Evolutionary.jl.git")
 	- (μ, λ)-uniform ranking
 	- roulette
 	- stochastic universal sampling (SUS)
+	- tournament
 
 
 ## TODO
