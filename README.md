@@ -1,6 +1,6 @@
 # Evolutionary
 
-A Julia package for evolutionary & genetic algorithms.
+A Julia package for [evolutionary](http://www.scholarpedia.org/article/Evolution_strategies) & [genetic](http://en.wikipedia.org/wiki/Genetic_algorithm) algorithms.
 
 [![Build Status](https://travis-ci.org/wildart/Evolutionary.jl.svg?branch=master)](https://travis-ci.org/wildart/Evolutionary.jl)
 [![Coverage Status](https://img.shields.io/coveralls/wildart/Evolutionary.jl.svg)](https://coveralls.io/r/wildart/Evolutionary.jl?branch=master)
@@ -8,7 +8,7 @@ A Julia package for evolutionary & genetic algorithms.
 ## Installation
 
 ```julia
-Pkg.clone("https://github.com/wildart/Evolutionary.jl.git")
+Pkg.add("Evolutionary")
 ```
 
 ## Functionalities

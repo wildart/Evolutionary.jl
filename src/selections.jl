@@ -8,22 +8,25 @@ function ranklinear(sp::Float64)
     function rank(fitness::Vector{Float64}, N::Int)
         λ = float(length(fitness))
         idx = sortperm(fitness)
-        ranks = similar(fitness)
-        for i in 1:λ
-            ranks[i] = (sp - 2.0*(sp - 1.0)*(i - 1.0) / (λ - 1.0)) / λ
+        ranks = zeros(int(λ))
+        for i in 1:int(λ)
+            ranks[i] = ( 2.0- sp + 2.0*(sp - 1.0)*(idx[i] - 1.0) / (λ - 1.0) ) /λ
         end
-        return pselection(ranks[idx], N)
+        return pselection(ranks, N)
     end
     return rank
 end
 
-# (μ, λ)-uniform ranking sellection
+# (μ, λ)-uniform ranking selection
 function uniformranking(μ::Int)
     function uniformrank(fitness::Vector{Float64}, N::Int)
         λ = length(fitness)
+        idx = sortperm(fitness, rev=true)
         @assert μ < λ "μ should be less then $(λ)"
         ranks = zeros(fitness)
-        ranks[1:μ] = 1/μ
+        for i in 1:μ
+            ranks[idx[i]] = 1/μ
+        end
         return pselection(ranks, N)
     end
     return uniformrank
