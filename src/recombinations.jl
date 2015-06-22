@@ -155,7 +155,7 @@ function pmx{T <: Vector}(v1::T, v2::T)
     c2[from:to] = v1[from:to]
 
     # Fill in from parents
-    for i in [1:from-1,to+1:s]
+    for i in vcat(1:from-1, to+1:s)
         # Check conflicting offspring
         in1 = inmap(v1[i], c1, from, to)
         if in1 == 0

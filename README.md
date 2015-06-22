@@ -4,6 +4,7 @@ A Julia package for [evolutionary](http://www.scholarpedia.org/article/Evolution
 
 [![Build Status](https://travis-ci.org/wildart/Evolutionary.jl.svg?branch=master)](https://travis-ci.org/wildart/Evolutionary.jl)
 [![Coverage Status](https://img.shields.io/coveralls/wildart/Evolutionary.jl.svg)](https://coveralls.io/r/wildart/Evolutionary.jl?branch=master)
+[![Documentation Status](https://readthedocs.org/projects/evolutionaryjl/badge/?version=latest)](https://readthedocs.org/projects/evolutionaryjl/?badge=latest)
 
 ## Installation
 

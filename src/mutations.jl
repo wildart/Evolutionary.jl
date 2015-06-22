@@ -61,7 +61,7 @@ function domainrange(valrange::Vector, m::Int = 20)
             for j in 1:m
                 δ[j] = (rand() < prob) ? δ[j] = 2.0^(-j) : 0.0
             end
-            if randbool()
+            if rand() > 0.5
                 recombinant[i] += sum(δ)*valrange[i]
             else
                 recombinant[i] -= sum(δ)*valrange[i]
@@ -79,7 +79,7 @@ function inversion{T <: Vector}(recombinant::T)
     l = length(recombinant)
     from, to = rand(1:l, 2)
     from, to = from > to ? (to, from)  : (from, to)
-    l = int((to - from)/2)
+    l = @compat round(Int,(to - from)/2)
     for i in 0:(l-1)
         swap!(recombinant, from+i, to-i)
     end

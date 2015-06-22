@@ -1,5 +1,7 @@
 module Evolutionary
 
+    using Compat
+
     export Strategy, strategy, inverse, mutationwrapper,
            # ES mutations
            isotropic, anisotropic, isotropicSigma, anisotropicSigma,

@@ -30,7 +30,7 @@ function ga(objfun::Function, N::Int;
             debug = false)
 
     # Setup parameters
-    elite = isa(ɛ, Int) ? ɛ : ɛ * populationSize
+    elite = isa(ɛ, Int) ? ɛ : @compat round(Int, ɛ * populationSize)
     fitFunc = inverseFunc(objfun)
 
     # Initialize population

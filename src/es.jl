@@ -79,7 +79,7 @@ function es(  objfun::Function, N::Int;
 
         # Select new parent population
         if selection == :plus
-            idx = sortperm([fitness, fitoff])[1:μ]
+            idx = sortperm(vcat(fitness, fitoff))[1:μ]
             skip = idx[idx.<=μ]
             for i = 1:μ
                 if idx[i] ∉ skip
