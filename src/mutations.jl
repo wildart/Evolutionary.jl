@@ -41,7 +41,7 @@ end
 
 # Binary mutations
 # ----------------
-function flip{T <: BitArray}(recombinant::T)
+function flip(recombinant::Vector{Bool})
     s = length(recombinant)
     pos = rand(1:s)
     recombinant[pos] = !recombinant[pos]

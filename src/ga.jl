@@ -20,7 +20,7 @@ function ga(objfun::Function, N::Int;
             crossoverRate::Float64 = 0.8,
             mutationRate::Float64 = 0.1,
             ɛ::Real = 0,
-            selection::Function = (x->x[1]),
+            selection::Function = ((x,n)->1:n),
             crossover::Function = ((x,y)->(y,x)),
             mutation::Function = (x->x),
             iterations::Integer = 100*N,
@@ -45,8 +45,10 @@ function ga(objfun::Function, N::Int;
             population[i] = initPopulation.*rand(N)
         elseif isa(initPopulation, Matrix)
             population[i] = initPopulation[:, i]
-        else # Creation function
-            population[i] = initPopulation(N)
+        elseif isa(initPopulation, Function)
+            population[i] = initPopulation(N) # Creation function
+        else
+            error("Cannot generate population")
         end
         fitness[i] = fitFunc(population[i])
         debug && println("INIT $(i): $(population[i]) : $(fitness[i])")
