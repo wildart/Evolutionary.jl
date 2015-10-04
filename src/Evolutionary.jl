@@ -55,6 +55,17 @@ module Evolutionary
         return  individual
     end
 
+    # Collecting interim values
+    function keep(interim, v, vv, col)
+        if interim
+            if !haskey(col, v)
+                col[v] = typeof(vv)[]
+            end
+            push!(col[v], vv)
+        end
+    end
+
+
     # ES & GA recombination functions
     include("recombinations.jl")
 
@@ -67,6 +78,8 @@ module Evolutionary
     # Evolution Strategy
     include("es.jl")
     include("cmaes.jl")
+
     # Genetic Algorithms
     include("ga.jl")
+
 end

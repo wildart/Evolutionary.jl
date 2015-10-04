@@ -27,7 +27,10 @@ function ga(objfun::Function, N::Int;
             tol = 0.0,
             tolIter = 10,
             verbose = false,
-            debug = false)
+            debug = false,
+            interim = false)
+
+    store = Dict{Symbol,Any}()
 
     # Setup parameters
     elite = isa(ɛ, Int) ? ɛ : @compat round(Int, ɛ * populationSize)
@@ -54,6 +57,7 @@ function ga(objfun::Function, N::Int;
         debug && println("INIT $(i): $(population[i]) : $(fitness[i])")
     end
     fitidx = sortperm(fitness, rev = true)
+    keep(interim, :fitness, fitness, store)
 
     # Generate and evaluate offspring
     itr = 1
@@ -66,7 +70,6 @@ function ga(objfun::Function, N::Int;
 
         # Select offspring
         selected = selection(fitness, populationSize)
-        #copy!(offspring, 1, population[selected], 1, populationSize)
 
         # Perform mating
         offidx = randperm(populationSize)
@@ -107,9 +110,13 @@ function ga(objfun::Function, N::Int;
         end
         fitidx = sortperm(fitness, rev = true)
         bestIndividual = fitidx[1]
-        cgenfit = objfun(population[bestIndividual])
-        fittol = abs(bestFitness - cgenfit)
-        bestFitness = cgenfit
+        curGenFitness = @compat Float64(objfun(population[bestIndividual]))
+        fittol = abs(bestFitness - curGenFitness)
+        bestFitness = curGenFitness
+
+        keep(interim, :fitness, fitness, store)
+        keep(interim, :curGenFitness, curGenFitness, store)
+        keep(interim, :bestFitness, bestFitness, store)
 
         # Verbose step
         verbose &&  println("BEST: $(bestFitness): $(population[bestIndividual]), G: $(itr)")
@@ -132,5 +139,5 @@ function ga(objfun::Function, N::Int;
         itr += 1
     end
 
-    return population[bestIndividual], bestFitness, itr, fittol
+    return population[bestIndividual], bestFitness, itr, fittol, store
 end

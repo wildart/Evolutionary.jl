@@ -23,12 +23,15 @@ function es(  objfun::Function, N::Int;
               λ::Integer = 1,
               selection::Symbol = :plus,
               iterations::Integer = N*100,
-              verbose = false, debug = false)
+              verbose = false, debug = false,
+              interim = false)
 
     @assert ρ <= μ "Number of parents involved in the procreation of an offspring should be no more then total number of parents"
     if selection == :comma
         @assert μ < λ "Offspring population must be larger then parent population"
     end
+
+    store = Dict{Symbol,Any}()
 
     # Initialize parent population
     individual = getIndividual(initPopulation, N)
@@ -49,6 +52,8 @@ function es(  objfun::Function, N::Int;
     fitoff = fill(Inf, λ)
     stgpop = fill(initStrategy, μ)
     stgoff = fill(initStrategy, λ)
+
+    keep(interim, :fitness, fitness, store)
 
     # Generation cycle
     count = 0
@@ -95,6 +100,8 @@ function es(  objfun::Function, N::Int;
             stgpop = stgoff[idx]
             fitness = fitoff[idx]
         end
+        keep(interim, :fitness, fitness, store)
+        keep(interim, :fitoff, fitoff, store)
 
         # termination condition
         count += 1
@@ -104,5 +111,5 @@ function es(  objfun::Function, N::Int;
         verbose && println("BEST: $(fitness[1]): $(stgpop[1])")
     end
 
-    return population[1], fitness[1], count
+    return population[1], fitness[1], count, store
 end
