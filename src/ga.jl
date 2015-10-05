@@ -115,7 +115,6 @@ function ga(objfun::Function, N::Int;
         bestFitness = curGenFitness
 
         keep(interim, :fitness, fitness, store)
-        keep(interim, :curGenFitness, curGenFitness, store)
         keep(interim, :bestFitness, bestFitness, store)
 
         # Verbose step
