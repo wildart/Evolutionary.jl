@@ -53,7 +53,7 @@ function es(  objfun::Function, N::Int;
     stgpop = fill(initStrategy, μ)
     stgoff = fill(initStrategy, λ)
 
-    keep(interim, :fitness, fitness, store)
+    keep(interim, :fitness, copy(fitness), store)
 
     # Generation cycle
     count = 0
@@ -100,8 +100,8 @@ function es(  objfun::Function, N::Int;
             stgpop = stgoff[idx]
             fitness = fitoff[idx]
         end
-        keep(interim, :fitness, fitness, store)
-        keep(interim, :fitoff, fitoff, store)
+        keep(interim, :fitness, copy(fitness), store)
+        keep(interim, :fitoff, copy(fitoff), store)
 
         # termination condition
         count += 1

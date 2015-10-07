@@ -57,7 +57,7 @@ function ga(objfun::Function, N::Int;
         debug && println("INIT $(i): $(population[i]) : $(fitness[i])")
     end
     fitidx = sortperm(fitness, rev = true)
-    keep(interim, :fitness, fitness, store)
+    keep(interim, :fitness, copy(fitness), store)
 
     # Generate and evaluate offspring
     itr = 1
@@ -114,7 +114,7 @@ function ga(objfun::Function, N::Int;
         fittol = abs(bestFitness - curGenFitness)
         bestFitness = curGenFitness
 
-        keep(interim, :fitness, fitness, store)
+        keep(interim, :fitness, copy(fitness), store)
         keep(interim, :bestFitness, bestFitness, store)
 
         # Verbose step
