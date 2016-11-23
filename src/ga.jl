@@ -14,8 +14,8 @@
 #
 function ga(objfun::Function, N::Int;
             initPopulation::Individual = ones(N),
-            lowerBounds::Union(Nothing, Vector) = nothing,
-            upperBounds::Union(Nothing, Vector) = nothing,
+            lowerBounds::Union{Void, Vector} = nothing,
+            upperBounds::Union{Void, Vector} = nothing,
             populationSize::Int = 50,
             crossoverRate::Float64 = 0.8,
             mutationRate::Float64 = 0.1,
