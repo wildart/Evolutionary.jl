@@ -195,8 +195,6 @@ function ox1{T <: Vector}(v1::T, v2::T)
     c1[from:to] = v2[from:to]
     c2[from:to] = v1[from:to]
     # Fill in from parents
-    for i in vcat()
-
     return c1, c2
 end
 
