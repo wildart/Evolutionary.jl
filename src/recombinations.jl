@@ -195,45 +195,36 @@ function ox1{T <: Vector}(v1::T, v2::T)
     c1[from:to] = v2[from:to]
     c2[from:to] = v1[from:to]
     # Fill in from parents
+    for i in vcat()
+
     return c1, c2
 end
 
 # Cycle crossover
-function cx{T <: Vector}(v1::T, v2::T)
+function cx{T <: Integer}(v1::Vector{T}, v2::Vector{T})
   s = length(v1)
-  c1 = similar(v1)
-  c2 = similar(v2)
-  f1 = true
+  c1 = zeros(v1)
+  c2 = zeros(v2)
 
-  for i in 1:s
-    #Establish priority of parents
-    d1,d2 = f1 ? (v1,v2) : (v2,v1)
-    #Check existence in child1
-    in1 = inmap(d1[i],c1,1,s)
-    if in1 == 0
-      #fill
-      c1[i] = d1[i]
-      tmpin = inmap(c1[i],d2,1,s)
-      #cycle
-      while !in(d1[tmpin],c1)
-        c1[tmpin] = d1[tmpin]
-        tmpin = inmap(c1[tmpin],d2,1,s)
+  f1 = true
+  k = 1
+  while k > 0
+    idx = k
+    if f1
+      while c1[idx] == zero(T)
+        c1[idx] = v1[idx]
+        c2[idx] = v2[idx]
+        idx = inmap(v2[idx],v1,1,s)
       end
-      #reverse priority
-      f1 = false
-    end
-    #Check existence in child2
-    in2 = inmap(d2[i],c2,1,s)
-    if in2 == 0
-      #fill
-      c2[i] = d2[i]
-      tmpin = inmap(c2[i],d1,1,s)
-      #cycle
-      while !in(d2[tmpin],c2)
-        c2[tmpin] = d2[tmpin]
-        tmpin = inmap(c2[tmpin],d1,1,s)
+    else
+      while c2[idx] == zero(T)
+        c1[idx] = v2[idx]
+        c2[idx] = v1[idx]
+        idx = inmap(v1[idx],v2,1,s)
       end
     end
+    f1 $= true
+    k = inmap(zero(T),c2,1,s)
   end
   return c1,c2
 end
