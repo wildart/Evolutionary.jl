@@ -206,17 +206,19 @@ function cx{T <: Integer}(v1::Vector{T}, v2::Vector{T})
   c1 = zeros(v1)
   c2 = zeros(v2)
 
-  f1 = true
+  f1 = true #switch
   k = 1
   while k > 0
     idx = k
     if f1
+      #cycle from v1
       while c1[idx] == zero(T)
         c1[idx] = v1[idx]
         c2[idx] = v2[idx]
         idx = inmap(v2[idx],v1,1,s)
       end
     else
+      #cycle from v2
       while c2[idx] == zero(T)
         c1[idx] = v2[idx]
         c2[idx] = v1[idx]
