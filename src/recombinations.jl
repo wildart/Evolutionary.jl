@@ -200,7 +200,42 @@ end
 
 # Cycle crossover
 function cx{T <: Vector}(v1::T, v2::T)
-    # TODO
+  s = length(v1)
+  c1 = similar(v1)
+  c2 = similar(v2)
+  f1 = true
+
+  for i in 1:s
+    #Establish priority of parents
+    d1,d2 = f1 ? (v1,v2) : (v2,v1)
+    #Check existence in child1
+    in1 = inmap(d1[i],c1,1,s)
+    if in1 == 0
+      #fill
+      c1[i] = d1[i]
+      tmpin = inmap(c1[i],d2,1,s)
+      #cycle
+      while !in(d1[tmpin],c1)
+        c1[tmpin] = d1[tmpin]
+        tmpin = inmap(c1[tmpin],d2,1,s)
+      end
+      #reverse priority
+      f1 = false
+    end
+    #Check existence in child2
+    in2 = inmap(d2[i],c2,1,s)
+    if in2 == 0
+      #fill
+      c2[i] = d2[i]
+      tmpin = inmap(c2[i],d1,1,s)
+      #cycle
+      while !in(d2[tmpin],c2)
+        c2[tmpin] = d2[tmpin]
+        tmpin = inmap(c2[tmpin],d1,1,s)
+      end
+    end
+  end
+  return c1,c2
 end
 
 # Order-based crossover
