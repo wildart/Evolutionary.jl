@@ -12,7 +12,7 @@ module Evolutionary
            # GA recombinations
            singlepoint, twopoint, uniform,
            discrete, waverage, intermediate, line,
-           pmx, #ox1, cx, ox2, pos
+           pmx, ox1, cx, ox2, pos,
            # GA selections
            ranklinear, uniformranking, roulette, sus, tournament, #truncation
            # Optimization methods
