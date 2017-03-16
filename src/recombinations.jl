@@ -185,17 +185,29 @@ function pmx{T <: Vector}(v1::T, v2::T)
 end
 
 # Order crossover
-function ox1{T <: Vector}(v1::T, v2::T)
-    s = length(v1)
-    from, to = rand(1:s, 2)
-    from, to = from > to ? (to, from)  : (from, to)
-    c1 = similar(v1)
-    c2 = similar(v2)
-    # Swap
-    c1[from:to] = v2[from:to]
-    c2[from:to] = v1[from:to]
-    # Fill in from parents
-    return c1, c2
+function ox1{T <: Integer}(v1::Vector{T}, v2::Vector{T})
+  s = length(v1)
+  from, to = rand(1:s, 2)
+  from, to = from > to ? (to, from)  : (from, to)
+  c1 = zeros(v1)
+  c2 = zeros(v2)
+  # Swap
+  c1[from:to] = v2[from:to]
+  c2[from:to] = v1[from:to]
+  # Fill in from parents
+  k = to+1 > s ? 1 : to+1 #child1 index
+  j = to+1 > s ? 1 : to+1 #child2 index
+  for i in vcat(to+1:s,1:from-1)
+    while in(v1[k],c1)
+      k = k+1 > s? 1 : k+1
+    end
+    c1[i] = v1[k]
+    while in(v2[j],c2)
+      j = j+1 > s? 1 : j+1
+    end
+    c2[i] = v2[j]
+  end
+  return c1, c2
 end
 
 # Cycle crossover
