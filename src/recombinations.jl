@@ -248,8 +248,7 @@ function ox2{T <: Integer}(v1::Vector{T}, v2::Vector{T})
   c2 = copy(v2)
 
   for i in 1:s
-    # if rand(Bool)
-    if in(i,[2,3,6])
+    if rand(Bool)
       idx1 = inmap(v2[i],v1,1,s)
       idx2 = inmap(v1[i],v2,1,s)
       c1[idx1] = zero(T)
@@ -314,10 +313,3 @@ function inmap{T}(v::T, c::Vector{T}, from::Int, to::Int)
     end
     return exists
 end
-
-
-a = collect(1:8)
-b = [2,4,6,8,7,5,3,1]
-
-x = pos(a,b)
-
