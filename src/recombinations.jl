@@ -268,8 +268,29 @@ function ox2{T <: Integer}(v1::Vector{T}, v2::Vector{T})
 end
 
 # Position-based crossover
-function pos{T <: Vector}(v1::T, v2::T)
-    # TODO
+function pos{T <: Integer}(v1::Vector{T}, v2::Vector{T})
+  s = length(v1)
+  c1 = zeros(v1)
+  c2 = zeros(v2)
+
+  for i in 1:s
+    if rand(Bool)
+      c1[i] = v2[i]
+      c2[i] = v1[i]
+    end
+  end
+
+  for i in 1:s
+    if !in(v1[i],c1)
+      tmpin = inmap(zero(T),c1,1,s)
+      c1[tmpin] = v1[i]
+    end
+    if !in(v2[i],c2)
+      tmpin = inmap(zero(T),c2,1,s)
+      c2[tmpin] = v2[i]
+    end
+  end
+  return c1,c2
 end
 
 
