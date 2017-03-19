@@ -244,13 +244,16 @@ end
 # Order-based crossover
 function ox2{T <: Integer}(v1::Vector{T}, v2::Vector{T})
   s = length(v1)
-  c1 = zeros(v1)
-  c2 = zeros(v2)
+  c1 = copy(v1)
+  c2 = copy(v2)
 
   for i in 1:s
-    if rand(Bool)
-      c1[i] = v2[i]
-      c2[i] = v1[i]
+    # if rand(Bool)
+    if in(i,[2,3,6])
+      idx1 = inmap(v2[i],v1,1,s)
+      idx2 = inmap(v1[i],v2,1,s)
+      c1[idx1] = zero(T)
+      c2[idx2] = zero(T)
     end
   end
 
@@ -311,3 +314,10 @@ function inmap{T}(v::T, c::Vector{T}, from::Int, to::Int)
     end
     return exists
 end
+
+
+a = collect(1:8)
+b = [2,4,6,8,7,5,3,1]
+
+x = pos(a,b)
+
