@@ -20,7 +20,7 @@ function cmaes( objfun::Function, N::Int;
     # Initialize parent population
     individual = getIndividual(initPopulation, N)
     population = fill(individual, μ)
-    offspring = Array(typeof(individual), λ)
+    offspring = Array{typeof(individual)}(λ)
     fitpop = fill(Inf, μ)
     fitoff = fill(Inf, λ)
 

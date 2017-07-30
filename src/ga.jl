@@ -39,7 +39,7 @@ function ga(objfun::Function, N::Int;
     # Initialize population
     individual = getIndividual(initPopulation, N)
     fitness = zeros(populationSize)
-    population = Array(typeof(individual), populationSize)
+    population = Array{typeof(individual)}(populationSize)
     offspring = similar(population)
 
     # Generate population

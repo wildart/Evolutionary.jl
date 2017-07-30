@@ -18,8 +18,8 @@ module Evolutionary
            # Optimization methods
            es, cmaes, ga
 
-    typealias Strategy Dict{Symbol,Any}
-    typealias Individual Union{Vector, Matrix, Function, Void}
+    const Strategy = Dict{Symbol,Any}
+    const Individual = Union{Vector, Matrix, Function, Void}
 
     # Wrapping function for strategy
     function strategy(; kwargs...)

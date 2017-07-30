@@ -44,7 +44,7 @@ function sus(fitness::Vector{Float64}, N::Int)
     P = F/N
     start = P*rand()
     pointers = [start+P*i for i = 0:(N-1)]
-    selected = Array(Int,N)
+    selected = Array{Int}(N)
     i = c = 1
     for P in pointers
         while sum(fitness[1:i]) < P

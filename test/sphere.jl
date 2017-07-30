@@ -4,7 +4,7 @@ module TestSphere
 
     function test_result(result::Vector, fitness::Float64, N::Int, tol::Float64)
         @test length(result) == N
-        @test_approx_eq_eps fitness 0.0 tol
+        @test fitness ≈ 0.0 atol=tol
     end
 
     # Objective function
@@ -39,5 +39,4 @@ module TestSphere
             tol = 1e-5, tolIter = 15)
     println("GA(pop=$(P),xover=0.8,μ=0.1) => F: $(fitness), C: $(cnt)")
     test_result(result, fitness, N, 1e-2)
-
 end

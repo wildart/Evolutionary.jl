@@ -31,7 +31,7 @@ function anisotropicSigma{S <: Strategy}(s::S)
     @assert :σ ∈ keys(s) && :τ ∈ keys(s) && :τ0 ∈ keys(s) "Strategy must have parameters: σ, τ0, τ"
     @assert isa(s[:σ], Vector) "Sigma must be a vector of parameters"
     #σ = exp(s[:τ0]*randn())*exp(s[:τ]*randn(length(s[:σ])))
-    σ = exp(s[:τ]*randn(length(s[:σ])))
+    σ = exp.(s[:τ]*randn(length(s[:σ])))
     return strategy(σ = σ, τ = s[:τ], τ0 = s[:τ0])
 end
 

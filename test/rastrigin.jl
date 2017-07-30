@@ -4,11 +4,11 @@ module TestRastrigin
 
     function test_result(result::Vector, fitness::Float64, N::Int, tol::Float64)
         if round(fitness) == 0
-            @test_approx_eq_eps result zeros(N) tol
-            @test_approx_eq_eps fitness 0.0 tol
+            @test result ≈ zeros(N) atol=tol
+            @test fitness ≈ 0.0 atol=tol
         else
             warn("Found local minimum!!!")
-            @test sum(round(abs(result))) < N
+            @test sum(round.(abs.(result))) < N
         end
     end
 

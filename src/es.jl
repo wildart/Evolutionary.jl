@@ -48,7 +48,7 @@ function es(  objfun::Function, N::Int;
         fitness[i] = objfun(population[i])
         debug && println("INIT $(i): $(population[i]) : $(fitness[i])")
     end
-    offspring = Array(typeof(individual), λ)
+    offspring = Array{typeof(individual)}(λ)
     fitoff = fill(Inf, λ)
     stgpop = fill(initStrategy, μ)
     stgoff = fill(initStrategy, λ)
