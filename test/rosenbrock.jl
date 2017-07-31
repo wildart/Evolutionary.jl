@@ -4,9 +4,9 @@ using Base.Test
 @testset "Rosenbrock" begin
 
     function test_result(result::Vector, fitness::Float64, N::Int, tol::Float64)
-    	@test result ≈ ones(N) atol=tol
         @test length(result) == N
-        @test fitness ≈ 0.0 atol=tol
+    	@test ≈(result, ones(N), atol=tol)
+        @test ≈(fitness, 0.0, atol=tol)
     end
 
 	# Objective function

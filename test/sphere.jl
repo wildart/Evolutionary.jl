@@ -5,7 +5,7 @@ using Base.Test
 
     function test_result(result::Vector, fitness::Float64, N::Int, tol::Float64)
         @test length(result) == N
-        @test fitness ≈ 0.0 atol=tol
+        @test ≈(fitness, 0.0, atol=tol)
     end
 
     # Objective function

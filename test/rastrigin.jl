@@ -5,8 +5,8 @@ using Base.Test
 
     function test_result(result::Vector, fitness::Float64, N::Int, tol::Float64)
         if round(fitness) == 0
-            @test result ≈ zeros(N) atol=tol
-            @test fitness ≈ 0.0 atol=tol
+            @test ≈(result, zeros(N), atol=tol)
+            @test ≈(fitness,0.0, atol=tol)
         else
             warn("Found local minimum!!!")
             @test sum(round.(abs.(result))) < N
