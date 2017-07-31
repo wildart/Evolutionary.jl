@@ -65,7 +65,7 @@ end
 function tournament(groupSize :: Int)
     groupSize <= 0 && error("Group size needs to be positive")
     function tournamentN(fitness::Vector{Float64}, N::Int)
-        selection = Array(Int, N)
+        selection = Array{Int}(N)
 
         nFitness = length(fitness)
 
@@ -96,7 +96,7 @@ end
 # Utils: selection
 function pselection(prob::Vector{Float64}, N::Int)
     cp = cumsum(prob)
-    selected = Array(Int,N)
+    selected = Array{Int}(N)
     for i in 1:N
         j = 1
         r = rand()

@@ -8,7 +8,8 @@ srand(9874984737484)
             "rosenbrock.jl",
             "schwefel.jl",
             "rastrigin.jl",
-            "n-queens.jl"
+            "n-queens.jl",
+            "knapsack.jl"
 ]
     include(tests)
 end
