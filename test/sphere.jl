@@ -1,6 +1,7 @@
-module TestSphere
-    using Evolutionary
-    using Base.Test
+using Evolutionary
+using Base.Test
+
+@testset "Sphere" begin
 
     function test_result(result::Vector, fitness::Float64, N::Int, tol::Float64)
         @test length(result) == N
@@ -39,4 +40,5 @@ module TestSphere
             tol = 1e-5, tolIter = 15)
     println("GA(pop=$(P),xover=0.8,μ=0.1) => F: $(fitness), C: $(cnt)")
     test_result(result, fitness, N, 1e-2)
+
 end

@@ -79,7 +79,7 @@ function inversion{T <: Vector}(recombinant::T)
     l = length(recombinant)
     from, to = rand(1:l, 2)
     from, to = from > to ? (to, from)  : (from, to)
-    l = @compat round(Int,(to - from)/2)
+    l = round(Int,(to - from)/2)
     for i in 0:(l-1)
         swap!(recombinant, from+i, to-i)
     end

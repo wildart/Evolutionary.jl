@@ -1,6 +1,7 @@
-module TestRastrigin
-    using Evolutionary
-    using Base.Test
+using Evolutionary
+using Base.Test
+
+@testset "Rastrigin" begin
 
     function test_result(result::Vector, fitness::Float64, N::Int, tol::Float64)
         if round(fitness) == 0
@@ -13,9 +14,9 @@ module TestRastrigin
     end
 
     # Objective function
-    function rastrigin(x::Vector{Float64})
+    function rastrigin{T <: AbstractFloat}(x::AbstractVector{T})
         n = length(x)
-        return 10n + sum([ x[i]^2 - 10cos(2π*x[i]) for i in 1:n ])
+        return 10n + sum([ x[i]^2 - 10cos(convert(T,2π*x[i])) for i in 1:n ])
     end
 
     # Parameters
@@ -49,5 +50,4 @@ module TestRastrigin
             tol = 1e-5)
     println("GA(p=$(P),x=.8,μ=.1,ɛ=0.1) => F: $(fitness), C: $(cnt), OBJ: $(result)")
     test_result(result, fitness, N, 1e-1)
-
 end

@@ -1,6 +1,7 @@
-module TestRosenbrock
-	using Evolutionary
-	using Base.Test
+using Evolutionary
+using Base.Test
+
+@testset "Rosenbrock" begin
 
     function test_result(result::Vector, fitness::Float64, N::Int, tol::Float64)
     	@test result ≈ ones(N) atol=tol
@@ -61,6 +62,6 @@ module TestRosenbrock
         crossover = intermediate(0.25),
         mutation = domainrange(fill(0.5,N)))
     println("GA(p=50,x=0.8,μ=0.1) => F: $(fitness), C: $(cnt), OBJ: $(result)")
-    test_result(result, fitness, N, 1e-1)
+    test_result(result, fitness, N, 3e-1)
 
 end

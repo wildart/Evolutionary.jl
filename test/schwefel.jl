@@ -1,11 +1,12 @@
-module TestCMAES
-    using Evolutionary
-    using Base.Test
+using Evolutionary
+using Base.Test
+
+@testset "Schwefel CMA-ES" begin
 
     # Schwefel's ellipsoid test function:
     # a moderately conditioned ellipsoid with a dominating isolated eigenvalue
-    function schwefel{T <: Vector}(x::T)
-        out = 0
+    function schwefel{T<:AbstractFloat}(x::AbstractVector{T})
+        out = zero(T)
         for i = 1:length(x)
             out += sum(abs2, x[1:i])
         end

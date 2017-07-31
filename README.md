@@ -48,6 +48,10 @@ Pkg.add("Evolutionary")
 		- line
 	- permutation
 		- PMX
+		- OX1
+		- OX2
+		- CX
+		- POS
 
 - Selections
 	- rank-based fitness assignment
@@ -60,8 +64,6 @@ Pkg.add("Evolutionary")
 ## TODO
 * Documentation
 * Concurrent implementation
-* Permutation crossovers
-* Selections
 
 ## Resources
 - **Documentation:** <http://evolutionaryjl.readthedocs.org/en/latest/index.html>

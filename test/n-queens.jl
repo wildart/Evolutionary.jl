@@ -1,6 +1,7 @@
-module TestNQueens
-    using Evolutionary
-    using Base.Test
+using Evolutionary
+using Base.Test
+
+@testset "n-Queens" begin
 
     N = 8
     P = 50

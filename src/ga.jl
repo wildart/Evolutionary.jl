@@ -33,7 +33,7 @@ function ga(objfun::Function, N::Int;
     store = Dict{Symbol,Any}()
 
     # Setup parameters
-    elite = isa(ɛ, Int) ? ɛ : @compat round(Int, ɛ * populationSize)
+    elite = isa(ɛ, Int) ? ɛ : round(Int, ɛ * populationSize)
     fitFunc = inverseFunc(objfun)
 
     # Initialize population
@@ -45,7 +45,7 @@ function ga(objfun::Function, N::Int;
     # Generate population
     for i in 1:populationSize
         if isa(initPopulation, Vector)
-            population[i] = initPopulation.*rand(N)
+            population[i] = initPopulation.*rand(eltype(initPopulation), N)
         elseif isa(initPopulation, Matrix)
             population[i] = initPopulation[:, i]
         elseif isa(initPopulation, Function)
@@ -110,7 +110,7 @@ function ga(objfun::Function, N::Int;
         end
         fitidx = sortperm(fitness, rev = true)
         bestIndividual = fitidx[1]
-        curGenFitness = @compat Float64(objfun(population[bestIndividual]))
+        curGenFitness = Float64(objfun(population[bestIndividual]))
         fittol = abs(bestFitness - curGenFitness)
         bestFitness = curGenFitness
 
