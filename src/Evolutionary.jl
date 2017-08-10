@@ -10,7 +10,7 @@ using Random
            average, marriage, averageSigma1, averageSigmaN,
            # GA recombinations
            singlepoint, twopoint, uniform,
-           discrete, waverage, intermediate, line,
+           discrete, waverage, intermediate, line, lx, milx,
            pmx, ox1, cx, ox2, pos,
            # GA selections
            ranklinear, uniformranking, roulette, sus, tournament, #truncation
