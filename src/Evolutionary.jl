@@ -30,8 +30,8 @@ using Random
 
     # Inverse function for reversing optimization direction
     function inverseFunc(f::Function)
-        function fitnessFunc(x::T) where {T <: Vector}
-            return 1.0/(f(x)+eps())
+        function fitnessFunc(x::T, V...) where {T <: Vector}
+            return 1.0/(f(x, V...)+eps())
         end
         return fitnessFunc
     end
