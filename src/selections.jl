@@ -72,7 +72,7 @@ function tournament(groupSize :: Int)
         for i in 1:N
             contender = unique(rand(1:nFitness, groupSize))
             while length(contender) < groupSize
-                contender = unique([contender, rand(1:nFitness, groupSize - length(contender))])
+                contender = unique(vcat(contender, rand(1:nFitness, groupSize - length(contender))))
             end
 
             winner = first(contender)
