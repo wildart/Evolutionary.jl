@@ -15,6 +15,7 @@
 #                  Floating number specifies fraction of population.
 #
 function ga(objfun::Function, N::Int;
+            penaltyfun::Union{Void, Function} = nothing,
             initPopulation::Individual = ones(N),
             typeRestriction::Union{Nothing, Vector} = nothing,
             lowerBounds::Union{Nothing, Vector} = nothing,
@@ -39,7 +40,10 @@ function ga(objfun::Function, N::Int;
 
     # Setup parameters
     elite = isa(ɛ, Int) ? ɛ : round(Int, ɛ * populationSize)
-    fitFunc = inverseFunc(objfun)
+
+    # penalty function needs population as second argument
+    use_penalty = penaltyfun != nothing
+    fitFunc = use_penalty ? inverseFunc(objfun) : inverseFunc(penaltyfun)
 
     # Initialize population
     individual = getIndividual(initPopulation, N)
@@ -58,7 +62,8 @@ function ga(objfun::Function, N::Int;
         else
             error("Cannot generate population")
         end
-        fitness[i] = fitFunc(population[i])
+        pf = population[[isassigned(population, p) for p in eachindex(population)]]
+        fitness[i] = use_penalty ? fitFunc(population[i], pf) : fitFunc(population[i])
         debug && println("INIT $(i): $(population[i]) : $(fitness[i])")
     end
     fitidx = sortperm(fitness, rev = true)
@@ -119,12 +124,16 @@ function ga(objfun::Function, N::Int;
         # New generation
         for i in 1:populationSize
             population[i] = offspring[i]
-            fitness[i] = fitFunc(offspring[i])
+            fitness[i] = use_penalty ? fitFunc(offspring[i], population) : fitFunc(offspring[i])
             debug && println("FIT $(i): $(fitness[i])")
         end
         fitidx = sortperm(fitness, rev = true)
         bestIndividual = fitidx[1]
-        curGenFitness = Float64(objfun(population[bestIndividual]))
+        if use_penalty
+            curGenFitness = Float64(penaltyfun(population[bestIndividual], population))
+        else
+            curGenFitness = Float64(objfun(population[bestIndividual]))
+        end
         fittol = abs(bestFitness - curGenFitness)
         bestFitness = curGenFitness
 
