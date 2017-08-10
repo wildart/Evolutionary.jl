@@ -45,7 +45,12 @@ function ga(objfun::Function, N::Int;
     # Generate population
     for i in 1:populationSize
         if isa(initPopulation, Vector)
-            population[i] = initPopulation.*rand(eltype(initPopulation), N)
+            if lowerBounds != nothing && upperBounds != nothing
+                population[i] = rand.(map(range, lowerBounds, upperBounds .- lowerBounds .+ 1))
+            else
+                # FIXME: why multiply?
+                population[i] = initPopulation.*rand(eltype(initPopulation), N)
+            end
         elseif isa(initPopulation, Matrix)
             population[i] = initPopulation[:, i]
         elseif isa(initPopulation, Function)
