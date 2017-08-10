@@ -64,6 +64,20 @@ using Random
         end
     end
 
+    # Truncate integer values
+    # Rules for truncation are taken from:
+    # Kusum Deep, Krishna Pratap Singh, M. L. Kansal, and C. Mohan, A real coded
+    # genetic algorithm for solving integer and mixed integer optimization
+    # problems. Appl. Math. Comput. 212 (2009) 505-518
+    function truncfunc(t::Type, o::Real)
+        if t <: Integer
+            # truncate only if o is not already an integer
+            return isa(o, Integer) ? o : (rand() > 0.5 ? trunc(t, o) : trunc(t, o) + 1)
+        else
+            # no integer -> don't truncate
+            return o
+        end
+    end
 
     # ES & GA recombination functions
     include("recombinations.jl")

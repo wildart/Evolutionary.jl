@@ -1,19 +1,22 @@
 # Genetic Algorithms
 # ==================
-#         objfun: Objective fitness function
-#              N: Search space dimensionality
-# initPopulation: Search space dimension ranges as a vector, or initial population values as matrix,
-#                 or generation function which produce individual population entities.
-# populationSize: Size of the population
-#  crossoverRate: The fraction of the population at the next generation, not including elite children,
-#                 that is created by the crossover function.
-#   mutationRate: Probability of chromosome to be mutated
-#              ɛ: Positive integer specifies how many individuals in the current generation
-#                 are guaranteed to survive to the next generation.
-#                 Floating number specifies fraction of population.
+#          objfun: Objective fitness function
+#               N: Search space dimensionality
+#  initPopulation: Search space dimension ranges as a vector, or initial population values as matrix,
+#                  or generation function which produce individual population entities.
+# typeRestriction: Array of types to restrict variables for mixed integer problems,
+#                  e.g. [Float64, Int64, Float64].
+#  populationSize: Size of the population
+#   crossoverRate: The fraction of the population at the next generation, not including elite children,
+#                  that is created by the crossover function.
+#    mutationRate: Probability of chromosome to be mutated
+#               ɛ: Positive integer specifies how many individuals in the current generation
+#                  are guaranteed to survive to the next generation.
+#                  Floating number specifies fraction of population.
 #
 function ga(objfun::Function, N::Int;
             initPopulation::Individual = ones(N),
+            typeRestriction::Union{Nothing, Vector} = nothing,
             lowerBounds::Union{Nothing, Vector} = nothing,
             upperBounds::Union{Nothing, Vector} = nothing,
             populationSize::Int = 50,
@@ -29,6 +32,8 @@ function ga(objfun::Function, N::Int;
             verbose = false,
             debug = false,
             interim = false)
+
+    @assert typeRestriction == nothing || length(typeRestriction) == N "typeRestriction must have dimension N = $(N)"
 
     store = Dict{Symbol,Any}()
 
@@ -90,6 +95,15 @@ function ga(objfun::Function, N::Int;
                 debug && println("MUTATED $(i)>: $(offspring[i])")
                 mutation(offspring[i])
                 debug && println("MUTATED >$(i): $(offspring[i])")
+            end
+        end
+
+        # Truncation procedure for integer restrictions
+        if typeRestriction != nothing
+            for i in 1:populationSize
+                debug && println("TRUNCATE $(i)>: $(offspring[i])")
+                offspring[i] = broadcast(truncfunc, typeRestriction, offspring[i])
+                debug && println("TRUNCATE >$(i): $(offspring[i])")
             end
         end
 
