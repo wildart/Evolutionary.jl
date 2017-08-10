@@ -72,6 +72,37 @@ function domainrange(valrange::Vector, m::Int = 20)
     return mutation
 end
 
+function mipmmutation(lowerBounds::Vector, upperBounds::Vector, p_real::Float64, p_int::Union{Void, Float64} = nothing)
+    function mutation{T <: Vector}(recombinant::T)
+        d = length(recombinant)
+        @assert length(lowerBounds) == d "Bounds vector must have $(d) columns"
+        @assert length(upperBounds) == d "Bounds vector must have $(d) columns"
+        @assert p_int != nothing || all(!isa(x, Integer) for x in recombinant) "Need to set p_int for integer variables"
+        u = rand()
+        P = [isa(x, Integer) ? p_int : p_real for x in recombinant]
+        S = u .^ (1 ./ P) # random var following power distribution
+        D = (recombinant - lowerBounds) ./ (upperBounds - lowerBounds)
+        recombinant = broadcast((x, l, u, s, d) -> d < rand() ? x - s * (x - l) : x + s * (u - x), recombinant, lowerBounds, upperBounds, S, D)
+        return recombinant
+    end
+    return mutation
+end
+
+# Power Mutation (PM) operator
+# K. Deep, M. Thakur, A new mutation operator for real coded genetic algorithms,
+# Applied Mathematics and Computation 193 (2007) 211–230
+# Note: The implementation is a degenerate case of Mixed Integer Power Mutation
+function pm(lowerBounds::Vector, upperBounds::Vector, p::Float64 = 0.25) # index of distribution p
+    return mipmmutation(lowerBounds, upperBounds, p)
+end
+
+# Mixed Integer Power Mutation (MI-PM) operator
+# Kusum Deep, Krishna Pratap Singh, M. L. Kansal, and C. Mohan, A real coded
+# genetic algorithm for solving integer and mixed integer optimization problems.
+# Appl. Math. Comput. 212 (2009) 505-518
+function mipm(lowerBounds::Vector, upperBounds::Vector, p_real::Float64 = 10.0, p_int::Float64 = 4.0) # index of distribution p
+    return mipmmutation(lowerBounds, upperBounds, p_real, p_int)
+end
 
 # Combinatorial mutations (applicable to binary vectors)
 # ------------------------------------------------------

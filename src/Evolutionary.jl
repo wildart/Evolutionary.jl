@@ -5,6 +5,7 @@ using Random
            isotropic, anisotropic, isotropicSigma, anisotropicSigma,
            # GA mutations
            flip, domainrange, inversion, insertion, swap2, scramble, shifting,
+           pm, mipm,
            # ES recombinations
            average, marriage, averageSigma1, averageSigmaN,
            # GA recombinations
