@@ -116,6 +116,7 @@ function ga(objfun::Function, N::Int;
 
         keep(interim, :fitness, copy(fitness), store)
         keep(interim, :bestFitness, bestFitness, store)
+        keep(interim, :individual, population[bestIndividual], store)
 
         # Verbose step
         verbose &&  println("BEST: $(bestFitness): $(population[bestIndividual]), G: $(itr)")
