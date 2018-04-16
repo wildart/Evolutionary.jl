@@ -13,24 +13,27 @@
 #                 Floating number specifies fraction of population.
 #
 function ga(objfun::Function, N::Int;
-            initPopulation::Individual = ones(N),
-            lowerBounds::Union{Void, Vector} = nothing,
-            upperBounds::Union{Void, Vector} = nothing,
-            populationSize::Int = 50,
-            crossoverRate::Float64 = 0.8,
-            mutationRate::Float64 = 0.1,
-            ɛ::Real = 0,
-            selection::Function = ((x,n)->1:n),
-            crossover::Function = ((x,y)->(y,x)),
-            mutation::Function = (x->x),
-            iterations::Integer = 100*N,
-            tol = 0.0,
-            tolIter = 10,
-            verbose = false,
-            debug = false,
-            interim = false)
+    initPopulation::Individual = ones(N),
+    lowerBounds::Union{Void, Vector} = nothing,
+    upperBounds::Union{Void, Vector} = nothing,
+    populationSize::Int = 50,
+    crossoverRate::Float64 = 0.8,
+    mutationRate::Float64 = 0.1,
+    ɛ::Real = 0,
+    selection::Function = ((x,n)->1:n),
+    crossover::Function = ((x,y)->(y,x)),
+    mutation::Function = (x->x),
+    iterations::Integer = 100*N,
+    tol = 0.0,
+    tolIter = 10,
+    verbose = false,
+    debug = false,
+    interim = false)
 
     store = Dict{Symbol,Any}()
+
+    # Create progress bar
+    progress = Progress(iterations, 1)
 
     # Setup parameters
     elite = isa(ɛ, Int) ? ɛ : round(Int, ɛ * populationSize)
@@ -116,6 +119,7 @@ function ga(objfun::Function, N::Int;
 
         keep(interim, :fitness, copy(fitness), store)
         keep(interim, :bestFitness, bestFitness, store)
+        keep(interim, :individual, population[bestIndividual], store)
 
         # Verbose step
         verbose &&  println("BEST: $(bestFitness): $(population[bestIndividual]), G: $(itr)")
@@ -133,8 +137,10 @@ function ga(objfun::Function, N::Int;
         end
         # if number of iterations more then specified
         if itr >= iterations
+            update!(progress, iterations)
             break
         end
+        next!(progress)
         itr += 1
     end
 

@@ -1,5 +1,7 @@
 module Evolutionary
 
+    using ProgressMeter
+
     export Strategy, strategy, inverse, mutationwrapper,
            # ES mutations
            isotropic, anisotropic, isotropicSigma, anisotropicSigma,

@@ -101,7 +101,10 @@ function es(  objfun::Function, N::Int;
             fitness = fitoff[idx]
         end
         keep(interim, :fitness, copy(fitness), store)
+        keep(interim, :bestFitness, copy(fitness[1]), store)
         keep(interim, :fitoff, copy(fitoff), store)
+        keep(interim, :bestFitoff, copy(fitoff[1]), store)
+        keep(interim, :individual, copy(population[1]), store)
 
         # termination condition
         count += 1
