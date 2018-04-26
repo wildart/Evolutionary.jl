@@ -3,11 +3,13 @@ os:
   - linux
 #  - osx
 julia:
-  - 0.5
   - 0.6
   - nightly
 notifications:
-  email: false
+    email: false
+matrix:
+  allow_failures:
+    - julia: nightly
 script:
   - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
   - julia --check-bounds=yes -e 'Pkg.clone(pwd()); Pkg.test("Evolutionary"; coverage=true)'
