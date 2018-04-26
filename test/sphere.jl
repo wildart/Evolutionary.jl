@@ -1,6 +1,3 @@
-using Evolutionary
-using Base.Test
-
 @testset "Sphere" begin
 
     function test_result(result::Vector, fitness::Float64, N::Int, tol::Float64)

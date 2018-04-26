@@ -80,7 +80,7 @@ function uniform{T <: Vector}(v1::T, v2::T)
     l = length(v1)
     c1 = copy(v1)
     c2 = copy(v2)
-    xch = randbool(l)
+    xch = rand(Bool, l)
     for i in 1:l
         if xch[i]
             vswap!(c1, c2, i)
@@ -97,7 +97,7 @@ function discrete{T <: Vector}(v1::T, v2::T)
     l = length(v1)
     c1 = similar(v1)
     c2 = similar(v2)
-    sltc = randbool(2,l)
+    sltc = rand(Bool, 2, l)
     for i in 1:l
         c1[i] = sltc[1,i] ? v1[i] : v2[i]
         c2[i] = sltc[2,i] ? v2[i] : v1[i]

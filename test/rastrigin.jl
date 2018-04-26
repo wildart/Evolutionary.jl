@@ -1,6 +1,3 @@
-using Evolutionary
-using Base.Test
-
 @testset "Rastrigin" begin
 
     function test_result(result::Vector, fitness::Float64, N::Int, tol::Float64)
@@ -41,13 +38,19 @@ using Base.Test
     test_result(result, fitness, N, 1e-1)
 
     # Testing: GA
-    result, fitness, cnt = ga( rastrigin, N;
-            populationSize = P,
-            ɛ = 0.1,
-            selection = sus,
-            crossover = intermediate(0.25),
-            mutation = domainrange(fill(1.0,N)),
-            tol = 1e-5)
-    println("GA(p=$(P),x=.8,μ=.1,ɛ=0.1) => F: $(fitness), C: $(cnt), OBJ: $(result)")
-    test_result(result, fitness, N, 1e-1)
+    selections = [roulette, sus, ranklinear(1.5)]
+    crossovers = [discrete, intermediate(0.), intermediate(0.25), line(0.2)]
+    mutations = [domainrange(fill(0.5,N)), domainrange(fill(1.0,N))]
+
+    @testset "GA settings" for ss in selections, xovr in crossovers, ms in mutations
+        result, fitness, cnt = ga( rastrigin, N;
+                populationSize = P,
+                ɛ = 0.1,
+                selection = ss,
+                crossover = xovr,
+                mutation = ms,
+                tol = 1e-5)
+        # println("GA(p=$(P),x=.8,μ=.1,ɛ=0.1) => F: $(fitness), C: $(cnt), OBJ: $(result)")
+        test_result(result, fitness, N, 1e-1)
+    end
 end

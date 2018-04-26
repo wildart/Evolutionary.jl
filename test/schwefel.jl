@@ -1,6 +1,3 @@
-using Evolutionary
-using Base.Test
-
 @testset "Schwefel CMA-ES" begin
 
     # Schwefel's ellipsoid test function:

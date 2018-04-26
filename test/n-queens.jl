@@ -1,6 +1,3 @@
-using Evolutionary
-using Base.Test
-
 @testset "n-Queens" begin
 
     N = 8

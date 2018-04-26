@@ -3,7 +3,7 @@ using Base.Test
 
 srand(9874984737484)
 
-@testset "Evolutionary" for tests in [
+for tests in [
             "sphere.jl",
             "rosenbrock.jl",
             "schwefel.jl",

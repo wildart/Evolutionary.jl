@@ -6,11 +6,11 @@
 function ranklinear(sp::Float64)
     @assert 1.0 <= sp <= 2.0 "Selective pressure has to be in range [1.0, 2.0]."
     function rank(fitness::Vector{Float64}, N::Int)
-        λ = float(length(fitness))
+        λ = length(fitness)
         idx = sortperm(fitness)
-        ranks = zeros(int(λ))
-        for i in 1:int(λ)
-            ranks[i] = ( 2.0- sp + 2.0*(sp - 1.0)*(idx[i] - 1.0) / (λ - 1.0) ) /λ
+        ranks = zeros(λ)
+        for i in 1:λ
+            ranks[i] = ( 2.0- sp + 2.0*(sp - 1.0)*(idx[i] - 1.0) / (λ - 1.0) ) / λ
         end
         return pselection(ranks, N)
     end
