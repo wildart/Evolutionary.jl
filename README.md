@@ -16,7 +16,7 @@ Pkg.add("Evolutionary")
 
 For julia 0.7 and higher, run in the package manager mode
 ```
-pkg> add https://github.com/wildart/Evolutionary.jl.git#0.2.0
+pkg> add https://github.com/wildart/Evolutionary.jl.git#v0.2.0
 ```
 
 ## Functionalities
