@@ -1,5 +1,5 @@
 module Evolutionary
-
+using Random
     export Strategy, strategy, inverse, mutationwrapper,
            # ES mutations
            isotropic, anisotropic, isotropicSigma, anisotropicSigma,
@@ -17,7 +17,7 @@ module Evolutionary
            es, cmaes, ga
 
     const Strategy = Dict{Symbol,Any}
-    const Individual = Union{Vector, Matrix, Function, Void}
+    const Individual = Union{Vector, Matrix, Function, Nothing}
 
     # Wrapping function for strategy
     function strategy(; kwargs...)
@@ -30,7 +30,7 @@ module Evolutionary
 
     # Inverse function for reversing optimization direction
     function inverseFunc(f::Function)
-        function fitnessFunc{T <: Vector}(x::T)
+        function fitnessFunc(x::T) where {T <: Vector}
             return 1.0/(f(x)+eps())
         end
         return fitnessFunc

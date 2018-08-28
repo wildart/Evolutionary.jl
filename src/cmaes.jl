@@ -6,6 +6,8 @@
 # μ is the number of parents
 # λ is the number of offspring.
 #
+using LinearAlgebra
+using Statistics
 function cmaes( objfun::Function, N::Int;
                 initPopulation::Individual = ones(N),
                 initStrategy::Strategy = strategy(τ = sqrt(N), τ_c = N^2, τ_σ = sqrt(N)),
@@ -20,12 +22,12 @@ function cmaes( objfun::Function, N::Int;
     # Initialize parent population
     individual = getIndividual(initPopulation, N)
     population = fill(individual, μ)
-    offspring = Array{typeof(individual)}(λ)
+    offspring = Array{typeof(individual)}(undef, λ)
     fitpop = fill(Inf, μ)
     fitoff = fill(Inf, λ)
 
     parent = copy(individual)
-    C = eye(N)
+    C = Diagonal{Float64}(I, N)
     s = zeros(N)
     s_σ = zeros(N)
     σ = 1.0
@@ -35,10 +37,11 @@ function cmaes( objfun::Function, N::Int;
     # Generation cycle
     count = 0
     while true
-        SqrtC = (C + C')/2.0
+        SqrtC = (C + C') / 2.0
         try
-            SqrtC = chol(SqrtC)
+            SqrtC = cholesky(SqrtC).U
         catch
+            println("Break on Cholesky")
             break
         end
 
@@ -57,8 +60,8 @@ function cmaes( objfun::Function, N::Int;
             fitpop[i] = fitoff[idx[i]]
         end
 
-        w = vec(mean(W[:,idx], 2))
-        ɛ = vec(mean(E[:,idx], 2))
+        w = vec(mean(W[:,idx], dims=2))
+        ɛ = vec(mean(E[:,idx], dims=2))
         parent += w            #  forming recombinant perent for next generation (L2)
         s = (1.0 - 1.0/initStrategy[:τ])*s +
             (sqrt(μ/initStrategy[:τ] * (2.0 - 1.0/initStrategy[:τ]))/σ)*w      # (L3)
