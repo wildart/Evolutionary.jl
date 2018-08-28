@@ -8,8 +8,15 @@ A Julia package for [evolutionary](http://www.scholarpedia.org/article/Evolution
 
 ## Installation
 
+For julia 0.6 and lower, run following command
+
 ```julia
 Pkg.add("Evolutionary")
+```
+
+For julia 0.7 and higher, run in the package manager mode
+```
+pkg> add https://github.com/wildart/Evolutionary.jl.git#0.2.0
 ```
 
 ## Functionalities
