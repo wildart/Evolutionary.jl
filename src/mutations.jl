@@ -2,14 +2,14 @@
 # ==================
 
 # Isotropic mutation operator y' := y + σ(N_1(0, 1), ..., N_N(0, 1))
-function isotropic{T <: Vector, S <: Strategy}(recombinant::T, s::S)
+function isotropic(recombinant::T, s::S) where {T <: Vector, S <: Strategy}
     vals = randn(length(recombinant)) * s[:σ]
     recombinant += vals
     return recombinant
 end
 
 # Anisotropic mutation operator y' := y + σ(N_1(0, 1), ..., N_N(0, 1))
-function anisotropic{T <: Vector, S <: Strategy}(recombinant::T, s::S)
+function anisotropic(recombinant::T, s::S) where {T <: Vector, S <: Strategy}
     @assert length(s[:σ]) == length(recombinant) "Sigma parameters must be defined for every dimension of objective parameter"
     vals = randn(length(recombinant)) .* s[:σ]
     recombinant += vals
@@ -21,13 +21,13 @@ end
 # ===========================
 
 # Isotropic strategy mutation σ' := σ exp(τ N(0, 1))
-function isotropicSigma{S <: Strategy}(s::S)
+function isotropicSigma(s::S) where {S <: Strategy}
     @assert :σ ∈ keys(s) && :τ ∈ keys(s) "Strategy must have parameters: σ, τ"
     return strategy(σ = s[:σ] * exp(s[:τ]*randn()), τ = s[:τ])
 end
 
 # Anisotropic strategy mutation σ' := exp(τ0 N_0(0, 1))(σ_1 exp(τ N_1(0, 1)), ..., σ_N exp(τ N_N(0, 1)))
-function anisotropicSigma{S <: Strategy}(s::S)
+function anisotropicSigma(s::S) where {S <: Strategy}
     @assert :σ ∈ keys(s) && :τ ∈ keys(s) && :τ0 ∈ keys(s) "Strategy must have parameters: σ, τ0, τ"
     @assert isa(s[:σ], Vector) "Sigma must be a vector of parameters"
     #σ = exp(s[:τ0]*randn())*exp(s[:τ]*randn(length(s[:σ])))
@@ -53,7 +53,7 @@ end
 # --------------------
 function domainrange(valrange::Vector, m::Int = 20)
     prob = 1.0 / m
-    function mutation{T <: Vector}(recombinant::T)
+    function mutation(recombinant::T) where {T <: Vector}
         d = length(recombinant)
         @assert length(valrange) == d "Range matrix must have $(d) columns"
         δ = zeros(m)
@@ -75,7 +75,7 @@ end
 
 # Combinatorial mutations (applicable to binary vectors)
 # ------------------------------------------------------
-function inversion{T <: Vector}(recombinant::T)
+function inversion(recombinant::T) where {T <: Vector}
     l = length(recombinant)
     from, to = rand(1:l, 2)
     from, to = from > to ? (to, from)  : (from, to)
@@ -86,7 +86,7 @@ function inversion{T <: Vector}(recombinant::T)
     return recombinant
 end
 
-function insertion{T <: Vector}(recombinant::T)
+function insertion(recombinant::T) where {T <: Vector}
     l = length(recombinant)
     from, to = rand(1:l, 2)
     val = recombinant[from]
@@ -94,14 +94,14 @@ function insertion{T <: Vector}(recombinant::T)
     return insert!(recombinant, to, val)
 end
 
-function swap2{T <: Vector}(recombinant::T)
+function swap2(recombinant::T) where {T <: Vector}
     l = length(recombinant)
     from, to = rand(1:l, 2)
     swap!(recombinant, from, to)
     return recombinant
 end
 
-function scramble{T <: Vector}(recombinant::T)
+function scramble(recombinant::T) where {T <: Vector}
     l = length(recombinant)
     from, to = rand(1:l, 2)
     from, to = from > to ? (to, from)  : (from, to)
@@ -117,7 +117,7 @@ function scramble{T <: Vector}(recombinant::T)
     return recombinant
 end
 
-function shifting{T <: Vector}(recombinant::T)
+function shifting(recombinant::T) where {T <: Vector}
     l = length(recombinant)
     from, to, where = sort(rand(1:l, 3))
     patch = recombinant[from:to]
@@ -139,13 +139,13 @@ end
 
 # Utils
 # =====
-function swap!{T <: Vector}(v::T, from::Int, to::Int)
+function swap!(v::T, from::Int, to::Int) where {T <: Vector}
     val = v[from]
     v[from] = v[to]
     v[to] = val
 end
 
 function mutationwrapper(gamutation::Function)
-    wrapper{T <: Vector, S <: Strategy}(recombinant::T, s::S) = gamutation(recombinant)
+    wrapper(recombinant::T, s::S) where {T <: Vector, S <: Strategy} =  gamutation(recombinant) 
     return wrapper
 end

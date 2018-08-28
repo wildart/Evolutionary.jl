@@ -1,6 +1,6 @@
 @testset "Knapsack" begin
-    const mass    = [1, 5, 3, 7, 2, 10, 5]
-    const utility = [1, 3, 5, 2, 5,  8, 3]
+    mass    = [1, 5, 3, 7, 2, 10, 5]
+    utility = [1, 3, 5, 2, 5,  8, 3]
 
     function fitness(n::AbstractVector)
         total_mass = sum(mass .* n)
@@ -24,6 +24,6 @@
         interim = true);
 
     @test fitness(best) == 21.
-    @test 1./invbestfit == 21.
+    @test 1. /invbestfit == 21.
     @test sum(mass .* best) <= 20
 end

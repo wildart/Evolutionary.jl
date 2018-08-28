@@ -5,13 +5,13 @@
             @test ≈(result, zeros(N), atol=tol)
             @test ≈(fitness,0.0, atol=tol)
         else
-            warn("Found local minimum!!!")
+            @warn("Found local minimum!!!")
             @test sum(round.(abs.(result))) < N
         end
     end
 
     # Objective function
-    function rastrigin{T <: AbstractFloat}(x::AbstractVector{T})
+    function rastrigin(x::AbstractVector{T}) where {T <: AbstractFloat}
         n = length(x)
         return 10n + sum([ x[i]^2 - 10cos(convert(T,2π*x[i])) for i in 1:n ])
     end

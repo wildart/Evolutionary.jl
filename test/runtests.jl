@@ -1,7 +1,8 @@
 using Evolutionary
-using Base.Test
-
-srand(9874984737484)
+using Test
+using Random
+using LinearAlgebra
+Random.seed!(9874984737484)
 
 for tests in [
             "sphere.jl",
