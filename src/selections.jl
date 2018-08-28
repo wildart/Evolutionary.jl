@@ -44,7 +44,7 @@ function sus(fitness::Vector{Float64}, N::Int)
     P = F/N
     start = P*rand()
     pointers = [start+P*i for i = 0:(N-1)]
-    selected = Array{Int}(N)
+    selected = Array{Int}(undef, N)
     i = c = 1
     for P in pointers
         while sum(fitness[1:i]) < P
@@ -57,7 +57,7 @@ function sus(fitness::Vector{Float64}, N::Int)
 end
 
 # Truncation selection
-function truncation{T <: Vector}(population::Vector{T}, N::Int)
+function truncation(population::Vector{T}, N::Int) where {T <: Vector}
     #TODO
 end
 
@@ -96,7 +96,7 @@ end
 # Utils: selection
 function pselection(prob::Vector{Float64}, N::Int)
     cp = cumsum(prob)
-    selected = Array{Int}(N)
+    selected = Array{Int}(undef, N)
     for i in 1:N
         j = 1
         r = rand()
@@ -107,4 +107,3 @@ function pselection(prob::Vector{Float64}, N::Int)
     end
     return selected
 end
-

@@ -2,7 +2,7 @@
 
     # Schwefel's ellipsoid test function:
     # a moderately conditioned ellipsoid with a dominating isolated eigenvalue
-    function schwefel{T<:AbstractFloat}(x::AbstractVector{T})
+    function schwefel(x::AbstractVector{T}) where {T<:AbstractFloat}
         out = zero(T)
         for i = 1:length(x)
             out += sum(abs2, x[1:i])

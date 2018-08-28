@@ -6,7 +6,7 @@
     end
 
     # Objective function
-    sphere{T <: Vector}(x::T) = sum(x.*x)
+    sphere(x::T) where {T <: Vector} = sum(x.*x)
 
     # Parameters
     N = 30

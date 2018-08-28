@@ -14,8 +14,8 @@
 #
 function ga(objfun::Function, N::Int;
             initPopulation::Individual = ones(N),
-            lowerBounds::Union{Void, Vector} = nothing,
-            upperBounds::Union{Void, Vector} = nothing,
+            lowerBounds::Union{Nothing, Vector} = nothing,
+            upperBounds::Union{Nothing, Vector} = nothing,
             populationSize::Int = 50,
             crossoverRate::Float64 = 0.8,
             mutationRate::Float64 = 0.1,
@@ -39,7 +39,7 @@ function ga(objfun::Function, N::Int;
     # Initialize population
     individual = getIndividual(initPopulation, N)
     fitness = zeros(populationSize)
-    population = Array{typeof(individual)}(populationSize)
+    population = Array{typeof(individual)}(undef, populationSize)
     offspring = similar(population)
 
     # Generate population
