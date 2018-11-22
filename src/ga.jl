@@ -15,7 +15,7 @@
 #                  Floating number specifies fraction of population.
 #
 function ga(objfun::Function, N::Int;
-            penaltyfun::Union{Void, Function} = nothing,
+            penaltyFunc::Union{Nothing, Function} = nothing,
             initPopulation::Individual = ones(N),
             typeRestriction::Union{Nothing, Vector} = nothing,
             lowerBounds::Union{Nothing, Vector} = nothing,
@@ -42,8 +42,8 @@ function ga(objfun::Function, N::Int;
     elite = isa(ɛ, Int) ? ɛ : round(Int, ɛ * populationSize)
 
     # penalty function needs population as second argument
-    use_penalty = penaltyfun != nothing
-    fitFunc = use_penalty ? inverseFunc(objfun) : inverseFunc(penaltyfun)
+    use_penalty = penaltyFunc != nothing
+    fitFunc = use_penalty ? inverseFunc(objfun) : inverseFunc(penaltyFunc)
 
     # Initialize population
     individual = getIndividual(initPopulation, N)
@@ -111,7 +111,7 @@ function ga(objfun::Function, N::Int;
         if typeRestriction != nothing
             for i in 1:populationSize
                 debug && println("TRUNCATE $(i)>: $(offspring[i])")
-                offspring[i] = broadcast(truncfunc, typeRestriction, offspring[i])
+                offspring[i] = broadcast(truncFunc, typeRestriction, offspring[i])
                 debug && println("TRUNCATE >$(i): $(offspring[i])")
             end
         end
@@ -134,7 +134,7 @@ function ga(objfun::Function, N::Int;
         fitidx = sortperm(fitness, rev = true)
         bestIndividual = fitidx[1]
         if use_penalty
-            curGenFitness = Float64(penaltyfun(population[bestIndividual], population))
+            curGenFitness = Float64(penaltyFunc(population[bestIndividual], population))
         else
             curGenFitness = Float64(objfun(population[bestIndividual]))
         end

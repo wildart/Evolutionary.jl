@@ -72,8 +72,8 @@ function domainrange(valrange::Vector, m::Int = 20)
     return mutation
 end
 
-function mipmmutation(lowerBounds::Vector, upperBounds::Vector, p_real::Float64, p_int::Union{Void, Float64} = nothing)
-    function mutation{T <: Vector}(recombinant::T)
+function mipmmutation(lowerBounds::Vector, upperBounds::Vector, p_real::Float64, p_int::Union{Nothing, Float64} = nothing)
+    function mutation(recombinant::T) where {T <: Vector}
         d = length(recombinant)
         @assert length(lowerBounds) == d "Bounds vector must have $(d) columns"
         @assert length(upperBounds) == d "Bounds vector must have $(d) columns"

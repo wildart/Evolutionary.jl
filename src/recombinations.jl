@@ -142,7 +142,7 @@ end
 # K. Deep, M. Thakur, A new crossover operator for real coded genetic
 # algorithms, Applied Mathematics and Computation 188 (2007) 895–912
 function lx(μ::Float64 = 0.0, b::Float64 = 0.2) # location μ, scale b > 0
-    function lxxvr{T <: Vector}(v1::T, v2::T)
+    function lxxvr(v1::T, v2::T) where {T <: Vector}
         u = rand()
         β = u > 0.5 ? μ + b * log(u) : μ - b * log(u)
         S = β * abs.(v1 - v2)
@@ -158,7 +158,7 @@ end
 # genetic algorithm for solving integer and mixed integer optimization problems.
 # Appl. Math. Comput. 212 (2009) 505-518
 function milx(μ::Float64 = 0.0, b_real::Float64 = 0.15, b_int::Float64 = 0.35) # location μ, scale b > 0
-    function lxxvr{T <: Vector}(v1::T, v2::T)
+    function lxxvr(v1::T, v2::T) where {T <: Vector}
         @assert all([typeof(a) == typeof(b) for (a, b) in zip(v1, v2)]) "Types of variables in vectors do not match"
         l = length(v1)
         U, R = rand(l), rand(l)

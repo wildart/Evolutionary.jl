@@ -65,7 +65,7 @@ end
 function tournament(groupSize :: Int)
     groupSize <= 0 && error("Group size needs to be positive")
     function tournamentN(fitness::Vector{Float64}, N::Int)
-        selection = Array{Int}(N)
+        selection = Array{Int}(undef, N)
 
         nFitness = length(fitness)
 
