@@ -1,21 +1,22 @@
 # Genetic Algorithms
 # ==================
-#          objfun: Objective fitness function
-#               N: Search space dimensionality
-#  initPopulation: Search space dimension ranges as a vector, or initial population values as matrix,
-#                  or generation function which produce individual population entities.
-# typeRestriction: Array of types to restrict variables for mixed integer problems,
-#                  e.g. [Float64, Int64, Float64].
-#  populationSize: Size of the population
-#   crossoverRate: The fraction of the population at the next generation, not including elite children,
-#                  that is created by the crossover function.
-#    mutationRate: Probability of chromosome to be mutated
-#               ɛ: Positive integer specifies how many individuals in the current generation
-#                  are guaranteed to survive to the next generation.
-#                  Floating number specifies fraction of population.
+#             objfun: Objective fitness function
+#                  N: Search space dimensionality
+# objfunIsPenaltyfun: If objfun is a penalty function that requires the population as its second argument.
+#     initPopulation: Search space dimension ranges as a vector, or initial population values as matrix,
+#                     or generation function which produce individual population entities.
+#    typeRestriction: Array of types to restrict variables for mixed integer problems,
+#                     e.g. [Float64, Int64, Float64].
+#     populationSize: Size of the population
+#      crossoverRate: The fraction of the population at the next generation, not including elite children,
+#                     that is created by the crossover function.
+#       mutationRate: Probability of chromosome to be mutated
+#                  ɛ: Positive integer specifies how many individuals in the current generation
+#                     are guaranteed to survive to the next generation.
+#                     Floating number specifies fraction of population.
 #
 function ga(objfun::Function, N::Int;
-            penaltyFunc::Union{Nothing, Function} = nothing,
+            objfunIsPenaltyfun::Bool = false,
             initPopulation::Individual = ones(N),
             typeRestriction::Union{Nothing, Vector} = nothing,
             lowerBounds::Union{Nothing, Vector} = nothing,
@@ -41,9 +42,7 @@ function ga(objfun::Function, N::Int;
     # Setup parameters
     elite = isa(ɛ, Int) ? ɛ : round(Int, ɛ * populationSize)
 
-    # penalty function needs population as second argument
-    use_penalty = penaltyFunc != nothing
-    fitFunc = use_penalty ? inverseFunc(objfun) : inverseFunc(penaltyFunc)
+    fitFunc = inverseFunc(objfun)
 
     # Initialize population
     individual = getIndividual(initPopulation, N)
@@ -67,7 +66,7 @@ function ga(objfun::Function, N::Int;
             error("Cannot generate population")
         end
         pf = population[[isassigned(population, p) for p in eachindex(population)]]
-        fitness[i] = use_penalty ? fitFunc(population[i], pf) : fitFunc(population[i])
+        fitness[i] = objfunIsPenaltyfun ? fitFunc(population[i], pf) : fitFunc(population[i])
         debug && println("INIT $(i): $(population[i]) : $(fitness[i])")
     end
     fitidx = sortperm(fitness, rev = true)
@@ -128,13 +127,13 @@ function ga(objfun::Function, N::Int;
         # New generation
         for i in 1:populationSize
             population[i] = offspring[i]
-            fitness[i] = use_penalty ? fitFunc(offspring[i], population) : fitFunc(offspring[i])
+            fitness[i] = objfunIsPenaltyfun ? fitFunc(offspring[i], population) : fitFunc(offspring[i])
             debug && println("FIT $(i): $(fitness[i])")
         end
         fitidx = sortperm(fitness, rev = true)
         bestIndividual = fitidx[1]
-        if use_penalty
-            curGenFitness = Float64(penaltyFunc(population[bestIndividual], population))
+        if objfunIsPenaltyfun
+            curGenFitness = Float64(objfun(population[bestIndividual], population))
         else
             curGenFitness = Float64(objfun(population[bestIndividual]))
         end
