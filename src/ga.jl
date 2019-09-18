@@ -2,8 +2,7 @@
 # ==================
 #         objfun: Objective fitness function
 #              N: Search space dimensionality
-# initPopulation: Search space dimension ranges as a vector, or initial population values as matrix,
-#                 or generation function which produce individual population entities.
+# initPopulation: Initial population values as matrix
 # populationSize: Size of the population
 #  crossoverRate: The fraction of the population at the next generation, not including elite children,
 #                 that is created by the crossover function.
@@ -13,16 +12,17 @@
 #                 Floating number specifies fraction of population.
 #
 function ga(objfun::Function, N::Int;
-            initPopulation::Individual = ones(N),
+            initPopulation::Union{Nothing, Vector} = nothing,
             lowerBounds::Union{Nothing, Vector} = nothing,
             upperBounds::Union{Nothing, Vector} = nothing,
             populationSize::Int = 50,
             crossoverRate::Float64 = 0.8,
             mutationRate::Float64 = 0.1,
             ɛ::Real = 0,
-            selection::Function = ((x,n)->1:n),
-            crossover::Function = ((x,y)->(y,x)),
-            mutation::Function = (x->x),
+            creation::Function = (n -> rand(n)),
+            selection::Function = ((x, n) -> 1:n),
+            crossover::Function = ((x, y) -> (y, x)),
+            mutation::Function = (x -> x),
             iterations::Integer = 100*N,
             tol = 0.0,
             tolIter = 10,
@@ -37,21 +37,17 @@ function ga(objfun::Function, N::Int;
     fitFunc = inverseFunc(objfun)
 
     # Initialize population
-    individual = getIndividual(initPopulation, N)
+    individual = getIndividual(initPopulation, creation, N)
     fitness = zeros(populationSize)
     population = Array{typeof(individual)}(undef, populationSize)
     offspring = similar(population)
 
     # Generate population
     for i in 1:populationSize
-        if isa(initPopulation, Vector)
-            population[i] = initPopulation.*rand(eltype(initPopulation), N)
-        elseif isa(initPopulation, Matrix)
-            population[i] = initPopulation[:, i]
-        elseif isa(initPopulation, Function)
-            population[i] = initPopulation(N) # Creation function
+        if !isnothing(initPopulation) 
+            population[i] = initPopulation[i]
         else
-            error("Cannot generate population")
+            population[i] = creation(N)
         end
         fitness[i] = fitFunc(population[i])
         debug && println("INIT $(i): $(population[i]) : $(fitness[i])")

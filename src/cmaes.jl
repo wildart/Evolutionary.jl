@@ -9,8 +9,9 @@
 using LinearAlgebra
 using Statistics
 function cmaes( objfun::Function, N::Int;
-                initPopulation::Individual = ones(N),
+                initPopulation::Union{Nothing, Vector} = nothing,
                 initStrategy::Strategy = strategy(τ = sqrt(N), τ_c = N^2, τ_σ = sqrt(N)),
+                creation::Function = (n -> rand(n)),
                 μ::Integer = 1,
                 λ::Integer = 1,
                 iterations::Integer = 1_000,
@@ -20,7 +21,7 @@ function cmaes( objfun::Function, N::Int;
     @assert μ < λ "Offspring population must be larger then parent population"
 
     # Initialize parent population
-    individual = getIndividual(initPopulation, N)
+    individual = getIndividual(initPopulation, creation, N)
     population = fill(individual, μ)
     offspring = Array{typeof(individual)}(undef, λ)
     fitpop = fill(Inf, μ)
