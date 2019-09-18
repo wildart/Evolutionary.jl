@@ -17,7 +17,6 @@ using Random
            es, cmaes, ga
 
     const Strategy = Dict{Symbol,Any}
-    const Individual = Union{Vector, Matrix, Function, Nothing}
 
     # Wrapping function for strategy
     function strategy(; kwargs...)
@@ -37,20 +36,14 @@ using Random
     end
 
     # Obtain individual
-    function getIndividual(init::Individual, N::Int)
-        if isa(init, Vector)
-            @assert length(init) == N "Dimensionality of initial population must be $(N)"
-            individual = init
-        elseif isa(init, Matrix)
-            @assert size(init, 1) == N "Dimensionality of initial population must be $(N)"
-            populationSize = size(init, 2)
-            individual = init[:, 1]
-        elseif isa(init, Function) # Creation function
-            individual = init(N)
+    function getIndividual(init::Union{Nothing, Vector}, creation::Function, N::Int)
+        if !isnothing(init)
+            individual = init[1]
+            @assert length(individual) == N "Dimensionality of initial population must be $(N)"
         else
-            individual = ones(N)
+            individual = creation(N)
         end
-        return  individual
+        return individual
     end
 
     # Collecting interim values

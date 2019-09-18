@@ -1,62 +1,39 @@
 # Genetic Algorithms
 # ==================
-#         objfun: Objective fitness function
-#              N: Search space dimensionality
-# initPopulation: Search space dimension ranges as a vector, or initial population values as matrix,
-#                 or generation function which produce individual population entities.
-# populationSize: Size of the population
-#  crossoverRate: The fraction of the population at the next generation, not including elite children,
-#                 that is created by the crossover function.
-#   mutationRate: Probability of chromosome to be mutated
-#              ɛ: Positive integer specifies how many individuals in the current generation
-#                 are guaranteed to survive to the next generation.
-#                 Floating number specifies fraction of population.
+#        objfun: Objective fitness function
+#             N: Search space dimensionality
+#    population: Initial population values as vector
+# crossoverRate: The fraction of the population at the next generation, not including elite children,
+#                that is created by the crossover function.
+#  mutationRate: Probability of chromosome to be mutated
+#             ɛ: Positive integer specifies how many individuals in the current generation
+#                are guaranteed to survive to the next generation.
+#                Floating number specifies fraction of population.
 #
-function ga(objfun::Function, N::Int;
-            initPopulation::Individual = ones(N),
-            lowerBounds::Union{Nothing, Vector} = nothing,
-            upperBounds::Union{Nothing, Vector} = nothing,
-            populationSize::Int = 50,
+function ga(objfun::Function, N::Int, population::Vector{T};
             crossoverRate::Float64 = 0.8,
             mutationRate::Float64 = 0.1,
             ɛ::Real = 0,
-            selection::Function = ((x,n)->1:n),
-            crossover::Function = ((x,y)->(y,x)),
-            mutation::Function = (x->x),
+            selection::Function = ((x, n) -> 1:n),
+            crossover::Function = ((x, y) -> (y, x)),
+            mutation::Function = (x -> x),
             iterations::Integer = 100*N,
             tol = 0.0,
             tolIter = 10,
             verbose = false,
             debug = false,
-            interim = false)
+            interim = false) where {T}
 
     store = Dict{Symbol,Any}()
 
     # Setup parameters
+    populationSize = length(population)
     elite = isa(ɛ, Int) ? ɛ : round(Int, ɛ * populationSize)
     fitFunc = inverseFunc(objfun)
-
-    # Initialize population
-    individual = getIndividual(initPopulation, N)
-    fitness = zeros(populationSize)
-    population = Array{typeof(individual)}(undef, populationSize)
+    fitness = fitFunc.(population)
     offspring = similar(population)
-
-    # Generate population
-    for i in 1:populationSize
-        if isa(initPopulation, Vector)
-            population[i] = initPopulation.*rand(eltype(initPopulation), N)
-        elseif isa(initPopulation, Matrix)
-            population[i] = initPopulation[:, i]
-        elseif isa(initPopulation, Function)
-            population[i] = initPopulation(N) # Creation function
-        else
-            error("Cannot generate population")
-        end
-        fitness[i] = fitFunc(population[i])
-        debug && println("INIT $(i): $(population[i]) : $(fitness[i])")
-    end
     fitidx = sortperm(fitness, rev = true)
+
     keep(interim, :fitness, copy(fitness), store)
 
     # Generate and evaluate offspring
@@ -139,4 +116,23 @@ function ga(objfun::Function, N::Int;
     end
 
     return population[bestIndividual], bestFitness, itr, fittol, store
+end
+
+# Create population from creation function, with an option to partially initialise with specific individuals (default)
+function ga(objfun::Function, N::Int; creation::Function = (n -> rand(n)), population::Vector{T}=[], populationSize::Integer=50, kwargs...) where {T}
+    remaining = populationSize - length(population)
+    population = vcat(population, [creation(N) for _ in 1:remaining])
+    return ga(objfun, N, population; kwargs...)
+end
+
+# Spawn population from one individual
+function ga(objfun::Function, N::Int, individual::Vector{E}; populationSize::Integer=50, kwargs...) where {E<:Real}
+    N = length(individual)
+    population = [individual .* rand(E, N) for _ in 1:populationSize]
+    return ga(objfun, N, population; kwargs...)
+end
+
+# Spawn population from matrix of individuals
+function ga(objfun::Function, N::Int, population::Matrix{E}; kwargs...) where {E<:Real}
+    return ga(objfun, N, [population[:,i] for i in axes(population, 2)]; kwargs...)
 end

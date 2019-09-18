@@ -11,13 +11,14 @@
 # Plus-selection: parents are deterministically selected from the set of both the parents and offspring
 #
 function es(  objfun::Function, N::Int;
-              initPopulation::Individual = ones(N),
+              initPopulation::Union{Nothing, Vector} = nothing,
               initStrategy::Strategy = strategy(),
-              recombination::Function = (rs->rs[1]),
-              srecombination::Function = (ss->ss[1]),
-              mutation::Function = ((r,m)->r),
-              smutation::Function = (s->s),
-              termination::Function = (x->false),
+              creation::Function = (n -> rand(n)),
+              recombination::Function = (rs -> rs[1]),
+              srecombination::Function = (ss -> ss[1]),
+              mutation::Function = ((r, m) -> r),
+              smutation::Function = (s -> s),
+              termination::Function = (x -> false),
               μ::Integer = 1,
               ρ::Integer = μ,
               λ::Integer = 1,
@@ -34,16 +35,14 @@ function es(  objfun::Function, N::Int;
     store = Dict{Symbol,Any}()
 
     # Initialize parent population
-    individual = getIndividual(initPopulation, N)
+    individual = getIndividual(initPopulation, creation, N)
     population = fill(individual, μ)
     fitness = zeros(μ)
     for i in 1:μ
-        if isa(initPopulation, Vector)
-            population[i] = initPopulation.*rand(N)
-        elseif isa(initPopulation, Matrix)
-            population[i] = initPopulation[:, i]
-        else # Creation function
-            population[i] = initPopulation(N)
+        if !isnothing(initPopulation)
+            population[i] = initPopulation[i]
+        else
+            population[i] = creation(N)
         end
         fitness[i] = objfun(population[i])
         debug && println("INIT $(i): $(population[i]) : $(fitness[i])")

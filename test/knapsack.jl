@@ -7,12 +7,12 @@
         return (total_mass <= 20) ? sum(utility .* n) : 0
     end
 
-    initpop = collect(rand(Bool,length(mass)))
+    creation = n -> rand(Bool, n)
 
     best, invbestfit, generations, tolerance, history = ga(
         x -> 1 / fitness(x),                    # Function to MINIMISE
-        length(initpop),                        # Length of chromosome
-        initPopulation = initpop,
+        length(mass),                           # Length of chromosome
+        creation = creation,
         selection = roulette,                   # Options: sus
         mutation = inversion,                   # Options:
         crossover = singlepoint,                # Options:

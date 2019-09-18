@@ -25,8 +25,8 @@
 	# Testing: (15/15+100)-σ-Self-Adaptation-ES
 	# with isotropic mutation operator y' := y + σ(N_1(0, 1), ..., N_N(0, 1))
 	result, fitness, cnt = es(rosenbrock, N;
-		initPopulation = [.5, .5],
-        initStrategy = strategy(σ = 1.0, τ = 1/sqrt(2*N)),
+		initStrategy = strategy(σ = 1.0, τ = 1/sqrt(2*N)),
+		creation = (n -> 0.5 .* rand(n)),
 		recombination = average, srecombination = averageSigma1,
 		mutation = isotropic, smutation = isotropicSigma,
 		μ = 15, λ = 100, iterations = 1000)
@@ -36,7 +36,7 @@
 	# Testing: (15/15+100)-σ-Self-Adaptation-ES
 	# with non-isotropic mutation operator y' := y + (σ_1 N_1(0, 1), ..., σ_N N_N(0, 1))
 	result, fitness, cnt = es(rosenbrock, N;
-		initPopulation = rand(N,25),
+		initPopulation = [rand(N) for _ in 1:15],
         initStrategy = strategy(σ = .5ones(N), τ = 1/sqrt(2*N), τ0 = 1/sqrt(N)),
 		recombination = average, srecombination = averageSigmaN,
 		mutation = anisotropic, smutation = anisotropicSigma,
@@ -51,14 +51,13 @@
     test_result(result, fitness, N, 1e-1)
 
     # Testing: GA
-    result, fitness, cnt = ga(rosenbrock, N;
-    	initPopulation = (n -> rand(n)),
-    	populationSize = 100,
-    	ɛ = 0.1,
+	result, fitness, cnt = ga(rosenbrock, N;
+		populationSize = 100,
+		ɛ = 0.1,
         selection = sus,
         crossover = intermediate(0.25),
         mutation = domainrange(fill(0.5,N)))
     println("GA(p=50,x=0.8,μ=0.1) => F: $(fitness), C: $(cnt), OBJ: $(result)")
-    test_result(result, fitness, N, 3e-1)
+    test_result(result, fitness, N, 1e-1)
 
 end

@@ -25,7 +25,7 @@
     # Testing: GA solution with various mutations
     for muts in [inversion, insertion, swap2, scramble, shifting]
         result, fitness, cnt = ga(nqueens, N;
-            initPopulation = generatePositions,
+            creation = generatePositions,
             populationSize = P,
             selection = sus,
             crossover = pmx,
@@ -38,7 +38,7 @@
     # Testing: ES
     for muts in [inversion, insertion, swap2, scramble, shifting]
         result, fitness, cnt = es(nqueens, N;
-            initPopulation = generatePositions,
+            creation = generatePositions,
             mutation = mutationwrapper(muts),
             μ = 15, ρ = 1, λ = P)
         println("(15+$(P))-ES:$(string(muts)) => F: $(fitness), C: $(cnt), OBJ: $(result)")
