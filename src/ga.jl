@@ -1,7 +1,7 @@
 # Genetic Algorithms
 # ==================
 #         objfun: Objective fitness function
-#              N: Search space dimensionality
+#     individual: Sample data structure representing an individual
 # initPopulation: Initial population values as matrix
 # populationSize: Size of the population
 #  crossoverRate: The fraction of the population at the next generation, not including elite children,
@@ -11,41 +11,41 @@
 #                 are guaranteed to survive to the next generation.
 #                 Floating number specifies fraction of population.
 #
-function ga(objfun::Function, N::Int;
-            initPopulation::Union{Nothing, Vector} = nothing,
-            lowerBounds::Union{Nothing, Vector} = nothing,
-            upperBounds::Union{Nothing, Vector} = nothing,
+function ga(objfun::Function, individual::T;
+            initPopulation::Union{Nothing, Vector{T}} = nothing,
+            lowerBounds::Union{Nothing, Vector{T}} = nothing,
+            upperBounds::Union{Nothing, Vector{T}} = nothing,
             populationSize::Int = 50,
             crossoverRate::Float64 = 0.8,
             mutationRate::Float64 = 0.1,
             ɛ::Real = 0,
-            creation::Function = (n -> rand(n)),
+            creation::Function = (dims -> rand(eltype(T), dims)),
             selection::Function = ((x, n) -> 1:n),
             crossover::Function = ((x, y) -> (y, x)),
             mutation::Function = (x -> x),
-            iterations::Integer = 100*N,
+            iterations::Integer = 100*prod(size(individual)),
             tol = 0.0,
             tolIter = 10,
             verbose = false,
             debug = false,
-            interim = false)
+            interim = false) where {T}
 
-    store = Dict{Symbol,Any}()
+    store = Dict{Symbol, Any}()
 
     # Setup parameters
+    dims = size(individual)
     elite = isa(ɛ, Int) ? ɛ : round(Int, ɛ * populationSize)
     fitFunc = inverseFunc(objfun)
 
     # Initialize population
-    individual = getIndividual(initPopulation, creation, N)
     fitness = zeros(populationSize)
-    population = Array{typeof(individual)}(undef, populationSize)
+    population = Array{T}(undef, populationSize)
     offspring = similar(population)
 
     # Generate population
     for i in 1:populationSize
         if isnothing(initPopulation) 
-            population[i] = creation(N)
+            population[i] = creation(dims)
         else
             population[i] = initPopulation[i]
         end

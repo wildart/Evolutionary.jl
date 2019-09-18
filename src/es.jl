@@ -10,10 +10,10 @@
 # Comma-selection (μ<λ must hold): parents are deterministically selected from the set of the offspring
 # Plus-selection: parents are deterministically selected from the set of both the parents and offspring
 #
-function es(  objfun::Function, N::Int;
-              initPopulation::Union{Nothing, Vector} = nothing,
+function es(  objfun::Function, individual::T;
+              initPopulation::Union{Nothing, Vector{T}} = nothing,
               initStrategy::Strategy = strategy(),
-              creation::Function = (n -> rand(n)),
+              creation::Function = (dims -> rand(eltype(T), dims)),
               recombination::Function = (rs -> rs[1]),
               srecombination::Function = (ss -> ss[1]),
               mutation::Function = ((r, m) -> r),
@@ -23,9 +23,9 @@ function es(  objfun::Function, N::Int;
               ρ::Integer = μ,
               λ::Integer = 1,
               selection::Symbol = :plus,
-              iterations::Integer = N*100,
+              iterations::Integer = 100*prod(size(individual)),
               verbose = false, debug = false,
-              interim = false)
+              interim = false) where {T}
 
     @assert ρ <= μ "Number of parents involved in the procreation of an offspring should be no more then total number of parents"
     if selection == :comma
@@ -33,21 +33,21 @@ function es(  objfun::Function, N::Int;
     end
 
     store = Dict{Symbol,Any}()
+    dims = size(individual)
 
     # Initialize parent population
-    individual = getIndividual(initPopulation, creation, N)
-    population = fill(individual, μ)
+    population = Array{T}(undef, μ)
     fitness = zeros(μ)
     for i in 1:μ
         if isnothing(initPopulation) 
-            population[i] = creation(N)
+            population[i] = creation(dims)
         else
             population[i] = initPopulation[i]
         end
         fitness[i] = objfun(population[i])
         debug && println("INIT $(i): $(population[i]) : $(fitness[i])")
     end
-    offspring = Array{typeof(individual)}(undef, λ)
+    offspring = Array{T}(undef, λ)
     fitoff = fill(Inf, λ)
     stgpop = fill(initStrategy, μ)
     stgoff = fill(initStrategy, λ)

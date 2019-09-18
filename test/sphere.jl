@@ -16,7 +16,7 @@
 
     # Testing: (μ/μ_I, λ)-σ-Self-Adaptation-ES
     # with isotropic mutation operator y' := y + σ(N_1(0, 1), ..., N_N(0, 1))
-    result, fitness, cnt = es(sphere, N;
+    result, fitness, cnt = es(sphere, Vector{Float64}(undef, N);
         initStrategy = strategy(σ = 1.0, τ = 1/sqrt(2*N)),
         recombination = average, srecombination = averageSigma1,
         mutation = isotropic, smutation = isotropicSigma,
@@ -27,7 +27,7 @@
 
     # Testing: GA
     result, fitness, cnt =
-        ga( sphere, N;
+        ga( sphere, Vector{Float64}(undef, N);
             populationSize = 4P,
             mutationRate = 0.05,
             ɛ = 0.1,

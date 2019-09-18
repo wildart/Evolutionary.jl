@@ -8,26 +8,31 @@
 #
 using LinearAlgebra
 using Statistics
-function cmaes( objfun::Function, N::Int;
-                initPopulation::Union{Nothing, Vector} = nothing,
-                initStrategy::Strategy = strategy(τ = sqrt(N), τ_c = N^2, τ_σ = sqrt(N)),
-                creation::Function = (n -> rand(n)),
+function cmaes( objfun::Function, individual::T;
+                initParent::Union{Nothing, T} = nothing,
+                initStrategy::Strategy = strategy(τ = sqrt(length(individual)), τ_c = length(individual)^2, τ_σ = sqrt(length(individual))),
+                creation::Function = (n -> rand(eltype(T), n)),
                 μ::Integer = 1,
                 λ::Integer = 1,
                 iterations::Integer = 1_000,
                 tol::Float64 = 1e-10,
-                verbose = false)
+                verbose = false) where {T}
 
     @assert μ < λ "Offspring population must be larger then parent population"
+    @assert ndims(individual) == 1 "Individual must be 1D"
 
     # Initialize parent population
-    individual = getIndividual(initPopulation, creation, N)
-    population = fill(individual, μ)
-    offspring = Array{typeof(individual)}(undef, λ)
+    N = length(individual)
+    population = Array{T}(undef, μ)
+    offspring = Array{T}(undef, λ)
     fitpop = fill(Inf, μ)
     fitoff = fill(Inf, λ)
 
-    parent = copy(individual)
+    if !isnothing(initParent) 
+        parent = initParent
+    else
+        parent = creation(N)
+    end
     C = Diagonal{Float64}(I, N)
     s = zeros(N)
     s_σ = zeros(N)

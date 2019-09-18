@@ -11,7 +11,7 @@
 
     best, invbestfit, generations, tolerance, history = ga(
         x -> 1 / fitness(x),                    # Function to MINIMISE
-        length(mass),                           # Length of chromosome
+        Array{Bool}(undef, length(mass)),       # Solution structure
         creation = creation,
         selection = roulette,                   # Options: sus
         mutation = inversion,                   # Options:

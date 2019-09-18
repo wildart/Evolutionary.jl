@@ -15,7 +15,7 @@
 
 	# Testing: (15/5+100)-ES
 	# with isotropic mutation operator y' := y + σ(N_1(0, 1), ..., N_N(0, 1))
-	result, fitness, cnt = es(rosenbrock, N;
+	result, fitness, cnt = es(rosenbrock, Vector{Float64}(undef, N);
         initStrategy = strategy(σ = 1.0),
         recombination = average, mutation = isotropic,
         μ = 15, ρ = 5, λ = 100, iterations = 1000)
@@ -24,9 +24,9 @@
 
 	# Testing: (15/15+100)-σ-Self-Adaptation-ES
 	# with isotropic mutation operator y' := y + σ(N_1(0, 1), ..., N_N(0, 1))
-	result, fitness, cnt = es(rosenbrock, N;
+	result, fitness, cnt = es(rosenbrock, Vector{Float64}(undef, N);
 		initStrategy = strategy(σ = 1.0, τ = 1/sqrt(2*N)),
-		creation = (n -> 0.5 .* rand(n)),
+		creation = (n -> 0.5 .* rand(Float64, n)),
 		recombination = average, srecombination = averageSigma1,
 		mutation = isotropic, smutation = isotropicSigma,
 		μ = 15, λ = 100, iterations = 1000)
@@ -35,7 +35,7 @@
 
 	# Testing: (15/15+100)-σ-Self-Adaptation-ES
 	# with non-isotropic mutation operator y' := y + (σ_1 N_1(0, 1), ..., σ_N N_N(0, 1))
-	result, fitness, cnt = es(rosenbrock, N;
+	result, fitness, cnt = es(rosenbrock, Vector{Float64}(undef, N);
 		initPopulation = [rand(N) for _ in 1:15],
         initStrategy = strategy(σ = .5ones(N), τ = 1/sqrt(2*N), τ0 = 1/sqrt(N)),
 		recombination = average, srecombination = averageSigmaN,
@@ -45,13 +45,13 @@
 	test_result(result, fitness, N, 1e-1)
 
 	# Testing: CMA-ES
-	result, fitness, cnt = cmaes(rosenbrock, N;
+	result, fitness, cnt = cmaes(rosenbrock, Vector{Float64}(undef, N);
     	μ = 3, λ = 12, iterations = 100_000, tol = 1e-3)
     println("(3/3,12)-CMA-ES => F: $(fitness), C: $(cnt), OBJ: $(result)")
     test_result(result, fitness, N, 1e-1)
 
     # Testing: GA
-    result, fitness, cnt = ga(rosenbrock, N;
+    result, fitness, cnt = ga(rosenbrock, Vector{Float64}(undef, N);
     	populationSize = 100,
 		ɛ = 0.1,
         selection = sus,

@@ -29,21 +29,10 @@ using Random
 
     # Inverse function for reversing optimization direction
     function inverseFunc(f::Function)
-        function fitnessFunc(x::T) where {T <: Vector}
+        function fitnessFunc(x)
             return 1.0/(f(x)+eps())
         end
         return fitnessFunc
-    end
-
-    # Obtain individual
-    function getIndividual(init::Union{Nothing, Vector}, creation::Function, N::Int)
-        if !isnothing(init)
-            individual = init[1]
-            @assert length(individual) == N "Dimensionality of initial population must be $(N)"
-        else
-            individual = creation(N)
-        end
-        return individual
     end
 
     # Collecting interim values

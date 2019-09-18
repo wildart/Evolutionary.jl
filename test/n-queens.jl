@@ -2,10 +2,10 @@
 
     N = 8
     P = 100
-    generatePositions(N::Int, _=nothing) = collect(1:N)[randperm(N)]
+    generatePositions((N,)::Tuple{<:Integer}) = collect(1:N)[randperm(N)]
 
     # Vector of N cols filled with numbers from 1:N specifying row position
-    function nqueens(queens::Vector{Int})
+    function nqueens(queens::Vector{<:Integer})
         n = length(queens)
         fitness = 0
         for i=1:(n-1)
@@ -24,7 +24,7 @@
 
     # Testing: GA solution with various mutations
     for muts in [inversion, insertion, swap2, scramble, shifting]
-        result, fitness, cnt = ga(nqueens, N;
+        result, fitness, cnt = ga(nqueens, Vector{Int}(undef, N);
             populationSize = P,
             creation = generatePositions,
             selection = sus,
@@ -37,7 +37,7 @@
 
     # Testing: ES
     for muts in [inversion, insertion, swap2, scramble, shifting]
-        result, fitness, cnt = es(nqueens, N;
+        result, fitness, cnt = es(nqueens, Vector{Int}(undef, N);
             creation = generatePositions,
             mutation = mutationwrapper(muts),
             μ = 15, ρ = 1, λ = P)
