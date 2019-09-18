@@ -2,7 +2,7 @@
 
     N = 8
     P = 100
-    generatePositions(N::Int) = collect(1:N)[randperm(N)]
+    generatePositions(N::Int, _=nothing) = collect(1:N)[randperm(N)]
 
     # Vector of N cols filled with numbers from 1:N specifying row position
     function nqueens(queens::Vector{Int})

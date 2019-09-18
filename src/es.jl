@@ -39,10 +39,10 @@ function es(  objfun::Function, N::Int;
     population = fill(individual, μ)
     fitness = zeros(μ)
     for i in 1:μ
-        if !isnothing(initPopulation)
-            population[i] = initPopulation[i]
-        else
+        if isnothing(initPopulation) 
             population[i] = creation(N)
+        else
+            population[i] = initPopulation[i]
         end
         fitness[i] = objfun(population[i])
         debug && println("INIT $(i): $(population[i]) : $(fitness[i])")

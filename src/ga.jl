@@ -44,10 +44,10 @@ function ga(objfun::Function, N::Int;
 
     # Generate population
     for i in 1:populationSize
-        if !isnothing(initPopulation) 
-            population[i] = initPopulation[i]
-        else
+        if isnothing(initPopulation) 
             population[i] = creation(N)
+        else
+            population[i] = initPopulation[i]
         end
         fitness[i] = fitFunc(population[i])
         debug && println("INIT $(i): $(population[i]) : $(fitness[i])")
