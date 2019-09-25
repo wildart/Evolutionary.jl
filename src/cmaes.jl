@@ -84,5 +84,9 @@ function cmaes( objfun::Function, individual::T;
         verbose && println("BEST: $(fitness[1]): $(σ)")
     end
 
-    return population[1], fitness[1], itr
+    return (
+        bestIndividual=population[1],
+        bestFitness=fitness[1],
+        itr=itr
+    )
 end

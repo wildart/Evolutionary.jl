@@ -110,5 +110,10 @@ function es(  objfun::Function, individual::T;
         verbose && println("BEST: $(fitness[1]): $(stgpop[1])")
     end
 
-    return population[1], fitness[1], itr, store
+    return (
+        bestIndividual=population[1],
+        bestFitness=fitness[1],
+        itr=itr,
+        store=store
+    )
 end

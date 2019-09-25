@@ -134,5 +134,11 @@ function ga(objfun::Function, individual::T;
         end
     end
 
-    return population[bestIndividual], bestFitness, itr, fittol, store
+    return (
+        bestIndividual=population[bestIndividual],
+        bestFitness=bestFitness,
+        itr=itr,
+        fittol=fittol,
+        store=store
+    )
 end
