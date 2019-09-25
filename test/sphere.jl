@@ -34,7 +34,7 @@
             selection = sus,
             crossover = intermediate(0.25),
             mutation = domainrange(fill(0.5,N)),
-            tol = 1e-5, tolIter = 15)
+            tol = 1e-5, tolitr = 15)
     println("GA(pop=$(P),xover=0.8,μ=0.1) => F: $(fitness), C: $(cnt)")
     test_result(result, fitness, N, 1e-2)
 

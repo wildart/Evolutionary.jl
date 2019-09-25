@@ -25,7 +25,7 @@ function cmaes( objfun::Function, individual::T;
     N = length(individual)
     population = Array{T}(undef, μ)
     offspring = Array{T}(undef, λ)
-    fitpop = fill(Inf, μ)
+    fitness = fill(Inf, μ)
     fitoff = fill(Inf, λ)
 
     if !isnothing(initParent) 
@@ -41,7 +41,7 @@ function cmaes( objfun::Function, individual::T;
     W = zeros(N, λ)
 
     # Generation cycle
-    count = 0
+    itr = 0
     while true
         SqrtC = (C + C') / 2.0
         try
@@ -63,7 +63,7 @@ function cmaes( objfun::Function, individual::T;
         idx = sortperm(fitoff)[1:μ]
         for i in 1:μ
             population[i] = offspring[idx[i]]
-            fitpop[i] = fitoff[idx[i]]
+            fitness[i] = fitoff[idx[i]]
         end
 
         w = vec(mean(W[:,idx], dims=2))
@@ -77,12 +77,12 @@ function cmaes( objfun::Function, individual::T;
         σ = σ*exp(((s_σ'*s_σ)[1] - N)/(2*N*sqrt(N)))                           # (L6)
 
         # termination condition
-        count += 1
-        if count == iterations || σ <= tol
+        itr += 1
+        if itr == iterations || σ <= tol
             break
         end
-        verbose && println("BEST: $(fitpop[1]): $(σ)")
+        verbose && println("BEST: $(fitness[1]): $(σ)")
     end
 
-    return population[1], fitpop[1], count
+    return population[1], fitness[1], itr
 end

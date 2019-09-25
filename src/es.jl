@@ -55,7 +55,7 @@ function es(  objfun::Function, individual::T;
     keep(interim, :fitness, copy(fitness), store)
 
     # Generation cycle
-    count = 0
+    itr = 0
     while true
 
         for i in 1:λ
@@ -103,12 +103,12 @@ function es(  objfun::Function, individual::T;
         keep(interim, :fitoff, copy(fitoff), store)
 
         # termination condition
-        count += 1
-        if count == iterations || termination(stgpop[1])
+        itr += 1
+        if itr == iterations || termination(stgpop[1])
             break
         end
         verbose && println("BEST: $(fitness[1]): $(stgpop[1])")
     end
 
-    return population[1], fitness[1], count, store
+    return population[1], fitness[1], itr, store
 end

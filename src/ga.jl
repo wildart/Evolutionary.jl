@@ -25,7 +25,7 @@ function ga(objfun::Function, individual::T;
             mutation::Function = (x -> x),
             iterations::Integer = 100*prod(size(individual)),
             tol = 0.0,
-            tolIter = 10,
+            tolitr = 10,
             verbose = false,
             debug = false,
             interim = false) where {T}
@@ -56,7 +56,7 @@ function ga(objfun::Function, individual::T;
     keep(interim, :fitness, copy(fitness), store)
 
     # Generate and evaluate offspring
-    itr = 1
+    itr = 0
     bestFitness = 0.0
     bestIndividual = 0
     fittol = 0.0
@@ -114,12 +114,13 @@ function ga(objfun::Function, individual::T;
         keep(interim, :bestFitness, bestFitness, store)
 
         # Verbose step
-        verbose &&  println("BEST: $(bestFitness): $(population[bestIndividual]), G: $(itr)")
+        verbose && println("BEST: $(bestFitness): $(population[bestIndividual]), G: $(itr)")
 
         # Terminate:
         #  if fitness tolerance is met for specified number of steps
+        itr += 1
         if fittol <= tol
-            if (tolIter != -1) && (fittolitr > tolIter)
+            if (tolitr != -1) && (fittolitr > tolitr)
                 break
             else
                 fittolitr += 1
@@ -131,7 +132,6 @@ function ga(objfun::Function, individual::T;
         if itr >= iterations
             break
         end
-        itr += 1
     end
 
     return population[bestIndividual], bestFitness, itr, fittol, store
