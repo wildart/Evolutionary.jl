@@ -5,7 +5,7 @@
             @test ≈(result, zeros(N), atol=tol)
             @test ≈(fitness,0.0, atol=tol)
         else
-            @warn("Found local minimum!!!")
+            # @warn("Found local minimum!!!")
             @test sum(round.(abs.(result))) < N
         end
     end
@@ -50,7 +50,7 @@
                 crossover = xovr,
                 mutation = ms,
                 tol = 1e-5)
-        # println("GA(p=$(P),x=.8,μ=.1,ɛ=0.1) => F: $(fitness), C: $(cnt), OBJ: $(result)")
+        println("GA(p=$(P),x=.8,μ=.1,ɛ=0.1) => F: $(fitness), C: $(cnt), OBJ: $(result)")
         test_result(result, fitness, N, 1e-1)
     end
 end

@@ -20,6 +20,7 @@
         crossoverRate = 0.5,
         ɛ = 0.1,                                # Elitism
         iterations = 20,
+        tolIter = 20,
         populationSize = 50,
         interim = true);
 

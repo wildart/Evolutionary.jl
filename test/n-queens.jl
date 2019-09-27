@@ -1,7 +1,7 @@
 @testset "n-Queens" begin
 
     N = 8
-    P = 50
+    P = 100
     generatePositions(N::Int) = collect(1:N)[randperm(N)]
 
     # Vector of N cols filled with numbers from 1:N specifying row position
@@ -32,6 +32,7 @@
             mutation = muts)
         println("GA:PMX:$(string(muts))(N=$(N), P=$(P)) => F: $(fitness), C: $(cnt), OBJ: $(result)")
         @test nqueens(result) == 0
+        @test cnt < 800 # Test early stopping
     end
 
     # Testing: ES

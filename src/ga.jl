@@ -118,8 +118,8 @@ function ga(objfun::Function, N::Int;
 
         # Terminate:
         #  if fitness tolerance is met for specified number of steps
-        if fittol < tol
-            if fittolitr > tolIter
+        if fittol <= tol
+            if (tolIter != -1) && (fittolitr > tolIter)
                 break
             else
                 fittolitr += 1

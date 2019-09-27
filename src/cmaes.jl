@@ -73,7 +73,7 @@ function cmaes( objfun::Function, N::Int;
 
         # termination condition
         count += 1
-        if count == iterations || σ < tol
+        if count == iterations || σ <= tol
             break
         end
         verbose && println("BEST: $(fitpop[1]): $(σ)")
