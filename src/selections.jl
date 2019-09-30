@@ -7,46 +7,23 @@ function ranklinear(sp::Float64)
     @assert 1.0 <= sp <= 2.0 "Selective pressure has to be in range [1.0, 2.0]."
     function rank(fitness::Vector{Float64}, N::Int)
         λ = length(fitness)
-<<<<<<< Updated upstream
         rank = sortperm(fitness)
         
         prob = Vector{Float64}(undef, λ)
-=======
-        idx = sortperm(fitness)
-
-        ranks = Vector{Float64}(undef, λ)
->>>>>>> Stashed changes
         for i in 1:λ
             prob[i] = ( 2.0- sp + 2.0*(sp - 1.0)*(rank[i] - 1.0) / (λ - 1.0) ) / λ
         end
 
-<<<<<<< Updated upstream
         return pselection(prob, N)
-=======
-        return pselection(ranks, N)
->>>>>>> Stashed changes
     end
     return rank
 end
 
-# (μ, λ)-uniform ranking selection
-function uniformranking(μ::Int)
-    function uniformrank(fitness::Vector{Float64}, N::Int)
-        λ = length(fitness)
-<<<<<<< Updated upstream
-        @assert μ < λ "μ should be less then $(λ)"
-
-        prob = fill(1/μ, μ)
-        return pselection(prob, N)
-=======
-        @assert μ < λ "μ should equal $(λ)"
-
-        ranks = fill(1/μ, μ)
-
-        return pselection(ranks, N)
->>>>>>> Stashed changes
-    end
-    return uniformrank
+# uniform ranking selection
+function rankuniform(fitness::Vector{Float64}, N::Int)
+    μ = length(fitness)
+    prob = fill(1/μ, μ)
+    return pselection(prob, N)
 end
 
 # Roulette wheel (proportionate selection) selection
