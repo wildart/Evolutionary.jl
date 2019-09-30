@@ -44,7 +44,7 @@ function sus(fitness::Vector{Float64}, N::Int)
     P = F/N
     start = P*rand()
     pointers = [start+P*i for i = 0:(N-1)]
-    selected = Array{Int}(undef, N)
+    selected = Vector{Int}(undef, N)
     i = c = 1
     for P in pointers
         while sum(fitness[1:i]) < P
@@ -65,7 +65,7 @@ end
 function tournament(groupSize :: Int)
     groupSize <= 0 && error("Group size needs to be positive")
     function tournamentN(fitness::Vector{Float64}, N::Int)
-        selection = Array{Int}(N)
+        selection = Vector{Int}(undef, N)
 
         nFitness = length(fitness)
 
@@ -96,7 +96,7 @@ end
 # Utils: selection
 function pselection(prob::Vector{Float64}, N::Int)
     cp = cumsum(prob)
-    selected = Array{Int}(undef, N)
+    selected = Vector{Int}(undef, N)
     for i in 1:N
         j = 1
         r = rand()
