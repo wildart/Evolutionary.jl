@@ -98,16 +98,24 @@ end
 
 # Utils: selection
 function pselection(prob::Vector{<:Real}, N::Int)
-    cp = cumsum(prob)
     selected = Vector{Int}(undef, N)
+
+    cp = cumsum(prob)
+    @assert cp[end] ≈ 1 "Sum of probability vector must equal 1"
+
     for i in 1:N
-        j = 1
-        r = rand()
-        while cp[j] < r
-            j += 1
-        end
-        selected[i] = j
+        selected[i] = vlookup(cp, rand())
     end
     return selected
 end
 
+# Utils: vlookup
+function vlookup(range::Vector{<:Number}, value::Number)
+    for i in eachindex(range)
+        if range[i] >= value
+            return i
+        end
+    end
+
+    return -1
+end
