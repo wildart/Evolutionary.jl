@@ -44,7 +44,7 @@ function sus(fitness::Vector{<:Real}, N::Int)
     P = F/N
     start = P*rand()
     pointers = [start+P*i for i = 0:(N-1)]
-    selected = Array{Int}(undef, N)
+    selected = Vector{Int}(undef, N)
     i = c = 1
     for P in pointers
         while sum(fitness[1:i]) < P
@@ -65,10 +65,10 @@ function truncation(fitness::Vector{<:Real}, N::Int)
 end
 
 # Tournament selection
-function tournament(groupSize :: Int)
+function tournament(groupSize::Int)
     @assert groupSize > 0 "Group size must be positive"
     function tournamentN(fitness::Vector{<:Real}, N::Int)
-        selection = fill(0,N)
+        selection = Vector{Int}(undef, N)
 
         nFitness = length(fitness)
 
@@ -99,7 +99,7 @@ end
 # Utils: selection
 function pselection(prob::Vector{<:Real}, N::Int)
     cp = cumsum(prob)
-    selected = Array{Int}(undef, N)
+    selected = Vector{Int}(undef, N)
     for i in 1:N
         j = 1
         r = rand()
