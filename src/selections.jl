@@ -8,7 +8,7 @@ function ranklinear(sp::Float64)
     function rank(fitness::Vector{<:Real}, N::Int)
         λ = length(fitness)
         rank = sortperm(fitness)
-
+        
         prob = Vector{Float64}(undef, λ)
         for i in 1:λ
             prob[i] = ( 2.0- sp + 2.0*(sp - 1.0)*(rank[i] - 1.0) / (λ - 1.0) ) / λ
@@ -20,15 +20,16 @@ function ranklinear(sp::Float64)
 end
 
 # (μ, λ)-uniform ranking selection
-function uniformranking(μ::Int)
-    function uniformrank(fitness::Vector{<:Real}, N::Int)
-        λ = length(fitness)
-        @assert μ < λ "μ should equal $(λ)"
+function rankuniform(fitness::Vector{<:Real}, N::Int)
+    μ = N
+    λ = length(fitness)
+    @assert μ <= λ "μ must be ≤ λ = $(λ)"
+    
+    prob = zeros(λ)
+    rank = sortperm(fitness, rev=true)
+    prob[rank[1:μ]] .= 1/μ
 
-        prob = fill(1/μ, μ)
-        return pselection(prob, N)
-    end
-    return uniformrank
+    return pselection(prob, N)
 end
 
 # Roulette wheel (proportionate selection) selection

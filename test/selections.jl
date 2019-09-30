@@ -11,10 +11,9 @@
     end
 
     @testset "Uniform" begin
-        s = uniformranking(2)
-        @test sort(unique(s([1.0,2.0,3.0], 10))) == [2,3]
-        @test sort(unique(s([5,2,3], 5))) == [1,3]
-        @test_throws AssertionError s([1.,2.], 2)
+        @test sort(unique(rankuniform([1.0,2.0,3.0], 2))) == [2,3]
+        @test sort(unique(rankuniform([1,2,3], 2))) == [2,3]
+        @test_throws AssertionError rankuniform([1.,2.], 3)
     end
 
     @testset "Roulette" begin

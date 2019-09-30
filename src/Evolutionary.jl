@@ -12,7 +12,7 @@ using Random
            discrete, waverage, intermediate, line,
            pmx, ox1, cx, ox2, pos,
            # GA selections
-           ranklinear, uniformranking, roulette, sus, tournament, truncation,
+           ranklinear, rankuniform, roulette, sus, tournament, truncation,
            # Optimization methods
            es, cmaes, ga
 
