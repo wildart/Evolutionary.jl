@@ -1,4 +1,4 @@
-# GA seclections
+# GA selections
 # ==============
 
 # Rank-based fitness assignment
@@ -7,12 +7,14 @@ function ranklinear(sp::Float64)
     @assert 1.0 <= sp <= 2.0 "Selective pressure has to be in range [1.0, 2.0]."
     function rank(fitness::Vector{<:Real}, N::Int)
         λ = length(fitness)
-        idx = sortperm(fitness)
-        ranks = zeros(λ)
+        rank = sortperm(fitness)
+
+        prob = Vector{Float64}(undef, λ)
         for i in 1:λ
-            ranks[i] = ( 2 - sp + 2*(sp - 1)*(idx[i] - 1) / (λ - 1) ) / λ
+            prob[i] = ( 2.0- sp + 2.0*(sp - 1.0)*(rank[i] - 1.0) / (λ - 1.0) ) / λ
         end
-        return pselection(ranks, N)
+
+        return pselection(prob, N)
     end
     return rank
 end
@@ -21,13 +23,10 @@ end
 function uniformranking(μ::Int)
     function uniformrank(fitness::Vector{<:Real}, N::Int)
         λ = length(fitness)
-        idx = sortperm(fitness, rev=true)
-        @assert μ < λ "μ should be less then $(λ)"
-        ranks = similar(fitness, Float64)
-        for i in 1:μ
-            ranks[idx[i]] = 1/μ
-        end
-        return pselection(ranks, N)
+        @assert μ < λ "μ should equal $(λ)"
+
+        prob = fill(1/μ, μ)
+        return pselection(prob, N)
     end
     return uniformrank
 end
@@ -40,11 +39,13 @@ end
 
 # Stochastic universal sampling (SUS)
 function sus(fitness::Vector{<:Real}, N::Int)
+    selected = Vector{Int}(undef, N)
+    
     F = sum(fitness)
     P = F/N
+    
     start = P*rand()
     pointers = [start+P*i for i = 0:(N-1)]
-    selected = Vector{Int}(undef, N)
     i = c = 1
     for P in pointers
         while sum(fitness[1:i]) < P
@@ -53,6 +54,7 @@ function sus(fitness::Vector{<:Real}, N::Int)
         selected[c] = i
         c += 1
     end
+
     return selected
 end
 
