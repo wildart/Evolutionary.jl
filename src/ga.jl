@@ -118,11 +118,11 @@ function ga(objfun::Function, N::Int;
         keep(interim, :bestFitness, bestFitness, store)
 
         # Verbose step
-        verbose &&  println("BEST: $(bestFitness): $(population[bestIndividual]), G: $(itr)")
+        verbose && println("BEST: $(bestFitness): $(population[bestIndividual]), G: $(itr)")
 
         # Terminate:
         #  if fitness tolerance is met for specified number of steps
-        if fittol < tol
+        if fittol <= tol
             if fittolitr > tolIter
                 break
             else
