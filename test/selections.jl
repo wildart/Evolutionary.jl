@@ -11,10 +11,9 @@
     end
 
     @testset "Uniform" begin
-        Random.seed!(2);
         s = uniformranking(2)
-        @test s([1.0,2.0,3.0], 2) == [2,3]
-        @test s([1,2,3], 2) == [2,3]
+        @test sort(unique(s([1.0,2.0,3.0], 10))) == [2,3]
+        @test sort(unique(s([5,2,3], 5))) == [1,3]
         @test_throws AssertionError s([1.,2.], 2)
     end
 
@@ -38,8 +37,8 @@
     end
 
     @testset "SUS" begin
-        @test unique(sus([1.0,0.0,2.0], 5)) == [1,3]
-        @test unique(sus([0,1,2], 5)) == [2,3]
+        @test sort(unique(sus([1.0,0.0,2.0], 5))) == [1,3]
+        @test sort(unique(sus([0,1,2], 5))) == [2,3]
     end
 
 end
