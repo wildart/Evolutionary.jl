@@ -10,7 +10,8 @@ for tests in [
             "schwefel.jl",
             "rastrigin.jl",
             "n-queens.jl",
-            "knapsack.jl"
+            "knapsack.jl",
+            "selections.jl"
 ]
     include(tests)
 end
