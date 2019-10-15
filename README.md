@@ -66,6 +66,7 @@ pkg> add https://github.com/wildart/Evolutionary.jl.git#v0.2.0
 	- roulette
 	- stochastic universal sampling (SUS)
 	- tournament
+	- truncation
 
 
 ## TODO
