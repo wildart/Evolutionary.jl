@@ -59,7 +59,7 @@ function domainrange(valrange::Vector, m::Int = 20)
         δ = zeros(m)
         for i in 1:length(recombinant)
             for j in 1:m
-                δ[j] = (rand() < prob) ? δ[j] = 2.0^(-j) : 0.0
+                δ[j] = (rand() < prob) ? 2.0^(-j) : 0.0
             end
             if rand() > 0.5
                 recombinant[i] += sum(δ)*valrange[i]

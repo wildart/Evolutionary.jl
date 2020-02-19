@@ -1,3 +1,16 @@
+
+abstract type AbstractGene end
+
+mutable struct BinaryGene
+    mutation ::Function
+end
+
+mutable struct FloatGene
+    mutation ::Function
+end
+
+##################################################################
+
 # Genetic Algorithms
 # ==================
 #         objfun: Objective fitness function
@@ -77,10 +90,12 @@ function ga(objfun::Function, N::Int;
             j = (i == populationSize) ? i-1 : i+1
             if rand() < crossoverRate
                 debug && println("MATE $(offidx[i])+$(offidx[j])>: $(population[selected[offidx[i]]]) : $(population[selected[offidx[j]]])")
-                offspring[i], offspring[j] = crossover(population[selected[offidx[i]]], population[selected[offidx[j]]])
+                offspring[i], offspring[j] =
+                    crossover(population[selected[offidx[i]]], population[selected[offidx[j]]])
                 debug && println("MATE >$(offidx[i])+$(offidx[j]): $(offspring[i]) : $(offspring[j])")
             else
-                offspring[i], offspring[j] = population[selected[i]], population[selected[j]]
+                offspring[i], offspring[j] =
+                    population[selected[i]], population[selected[j]]
             end
         end
 
