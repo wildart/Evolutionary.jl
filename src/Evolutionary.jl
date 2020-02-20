@@ -17,7 +17,7 @@ using Random
            es, cmaes, ga
 
     const Strategy = Dict{Symbol,Any}
-    const Individual = Union{Vector, Matrix, Function, Nothing}
+    const Individual = Vector{T} where T <: AbstractGene
 
     # Wrapping function for strategy
     function strategy(; kwargs...)
@@ -50,7 +50,7 @@ using Random
         else
             individual = ones(N)
         end
-        return  individual
+        return individual
     end
 
     # Collecting interim values

@@ -41,10 +41,17 @@ end
 
 # Binary mutations
 # ----------------
-function flip(recombinant::Vector{Bool})
+function flip(recombinant::BitVector)
     s = length(recombinant)
     pos = rand(1:s)
     recombinant[pos] = !recombinant[pos]
+    return recombinant
+end
+
+function singleflip(recombinant ::Bool)
+    if rand() > 0.5
+        recombinant = !recombinant
+    end
     return recombinant
 end
 
@@ -72,10 +79,15 @@ function domainrange(valrange::Vector, m::Int = 20)
     return mutation
 end
 
+function mutate(gene ::FloatGene)
+    
+
+end
+
 
 # Combinatorial mutations (applicable to binary vectors)
 # ------------------------------------------------------
-function inversion(recombinant::T) where {T <: Vector}
+function inversion(recombinant::BitVector)
     l = length(recombinant)
     from, to = rand(1:l, 2)
     from, to = from > to ? (to, from)  : (from, to)
@@ -86,7 +98,7 @@ function inversion(recombinant::T) where {T <: Vector}
     return recombinant
 end
 
-function insertion(recombinant::T) where {T <: Vector}
+function insertion(recombinant::BitVector)
     l = length(recombinant)
     from, to = rand(1:l, 2)
     val = recombinant[from]
@@ -94,14 +106,14 @@ function insertion(recombinant::T) where {T <: Vector}
     return insert!(recombinant, to, val)
 end
 
-function swap2(recombinant::T) where {T <: Vector}
+function swap2(recombinant::BitVector)
     l = length(recombinant)
     from, to = rand(1:l, 2)
     swap!(recombinant, from, to)
     return recombinant
 end
 
-function scramble(recombinant::T) where {T <: Vector}
+function scramble(recombinant::BitVector)
     l = length(recombinant)
     from, to = rand(1:l, 2)
     from, to = from > to ? (to, from)  : (from, to)
@@ -117,7 +129,7 @@ function scramble(recombinant::T) where {T <: Vector}
     return recombinant
 end
 
-function shifting(recombinant::T) where {T <: Vector}
+function shifting(recombinant::BitVector)
     l = length(recombinant)
     from, to, where = sort(rand(1:l, 3))
     patch = recombinant[from:to]
@@ -148,4 +160,33 @@ end
 function mutationwrapper(gamutation::Function)
     wrapper(recombinant::T, s::S) where {T <: Vector, S <: Strategy} =  gamutation(recombinant) 
     return wrapper
+end
+
+###############################################
+
+function mutate(gene ::IntegerGene)
+    mut_func = nothing
+    mutatetype = gene.mutatetype
+    if mutatetype == :flip
+        mut_func = flip
+    elseif mutatetype == :inversion
+        mut_func = inversion
+    elseif mutatetype == :insertion
+        mut_func = insertion
+    elseif mutatetype == :swap2
+        mut_func = swap2
+    elseif mutatetype == :scramble
+        mut_func = scramble
+    elseif mutatetype == :shifting
+        mut_func = shifting
+    else
+        error("Unknown mutation type")
+    end
+    gene.value = mut_func(gene.value)
+    return nothing
+end
+
+function mutate(gene ::BinaryGene, mutatetype ::Symbol)
+    gene.value = singleflip(gene.value)
+    return nothing
 end

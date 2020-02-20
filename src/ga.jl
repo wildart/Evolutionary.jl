@@ -1,71 +1,97 @@
 
 abstract type AbstractGene end
 
-mutable struct BinaryGene
-    mutation ::Function
+mutable struct BinaryGene <: AbstractGene
+    value ::Bool
 end
 
-mutable struct FloatGene
-    mutation ::Function
+mutable struct IntegerGene <: AbstractGene
+    value    ::BitVector
+    mutation ::Symbol
+end
+
+mutable struct FloatGene <: AbstractGene
+    value ::Vector{Float64}
+    range ::Vector{Float64}
+    m     ::Int64 
+    function FloatGene(value ::Union{Float64, Vector{Float64}} ,
+                       range ::Union{Float64, Vector{Float64}} ,
+                       m     ::Int64                           )
+        if typeof(value) != typeof(range)
+            error("both arguments must share same type")
+        end
+        if typeof(value) == Vector{Float64}
+            if length(value) != length(range)
+                error("both arguments must have same length")
+            else
+                return new(value, range)
+            end
+        elseif typeof(value) == Float64
+            return new(Float64[value], Float64[range])
+        end
+    end
 end
 
 ##################################################################
 
 # Genetic Algorithms
 # ==================
-#         objfun: Objective fitness function
-#              N: Search space dimensionality
-# initPopulation: Search space dimension ranges as a vector, or initial population values as matrix,
-#                 or generation function which produce individual population entities.
-# populationSize: Size of the population
-#  crossoverRate: The fraction of the population at the next generation, not including elite children,
-#                 that is created by the crossover function.
-#   mutationRate: Probability of chromosome to be mutated
-#              ɛ: Positive integer specifies how many individuals in the current generation
-#                 are guaranteed to survive to the next generation.
-#                 Floating number specifies fraction of population.
+#         objfun : Objective fitness function
+#              N : Search space dimensionality
+# initPopulation : Search space dimension ranges as a vector, or initial population values as matrix,
+#                  or generation function which produce individual population entities.
+# populationSize : Size of the population
+#  crossoverRate : The fraction of the population at the next generation, not including elite
+#                  children, that is created by the crossover function.
+#   mutationRate : Probability of chromosome to be mutated
+#              ɛ : Positive integer specifies how many individuals in the current generation
+#                  are guaranteed to survive to the next generation.
+#                  Floating number specifies fraction of population.
 #
-function ga(objfun::Function, N::Int;
-            initPopulation::Individual = ones(N),
-            lowerBounds::Union{Nothing, Vector} = nothing,
-            upperBounds::Union{Nothing, Vector} = nothing,
-            populationSize::Int = 50,
-            crossoverRate::Float64 = 0.8,
-            mutationRate::Float64 = 0.1,
-            ɛ::Real = 0,
-            selection::Function = ((x,n)->1:n),
-            crossover::Function = ((x,y)->(y,x)),
-            mutation::Function = (x->x),
-            iterations::Integer = 100*N,
-            tol = 0.0,
-            tolIter = 10,
-            verbose = false,
-            debug = false,
-            interim = false)
+function ga( objfun         ::Function                         ,
+             initpopulation ::Individual                       ,
+             populationSize ::Int64                            ;
+             lowerBounds    ::Union{Nothing, Vector} = nothing ,
+             upperBounds    ::Union{Nothing, Vector} = nothing ,
+             crossoverRate  ::Float64                = 0.8     ,
+             mutationRate   ::Float64                = 0.1     ,
+             ɛ              ::Real                   = 0       ,
+             iterations     ::Integer                = 100     ,
+             tol            ::Real                   = 0.0     ,
+             tolIter        ::Int64                  = 10      ,
+             verbose        ::Bool                   = false   ,
+             debug          ::Bool                   = false   ,
+             interim        ::Bool                   = false   ,
+             parallel       ::Bool                   = false   )
 
     store = Dict{Symbol,Any}()
-
+    
     # Setup parameters
     elite = isa(ɛ, Int) ? ɛ : round(Int, ɛ * populationSize)
     fitFunc = inverseFunc(objfun)
 
     # Initialize population
-    individual = getIndividual(initPopulation, N)
+    # individual = getIndividual(initPopulation, N)
     fitness = zeros(populationSize)
-    population = Array{typeof(individual)}(undef, populationSize)
+    population = Vector{Individual}(undef, populationSize)
     offspring = similar(population)
 
     # Generate population
+    # for i in 1:populationSize
+    #     if isa(initPopulation, Vector)
+    #         population[i] = initPopulation.*rand(eltype(initPopulation), N)
+    #     elseif isa(initPopulation, Matrix)
+    #         population[i] = initPopulation[:, i]
+    #     elseif isa(initPopulation, Function)
+    #         population[i] = initPopulation(N) # Creation function
+    #     else
+    #         error("Cannot generate population")
+    #     end
+    #     fitness[i] = fitFunc(population[i])
+    #     debug && println("INIT $(i): $(population[i]) : $(fitness[i])")
+    # end
     for i in 1:populationSize
-        if isa(initPopulation, Vector)
-            population[i] = initPopulation.*rand(eltype(initPopulation), N)
-        elseif isa(initPopulation, Matrix)
-            population[i] = initPopulation[:, i]
-        elseif isa(initPopulation, Function)
-            population[i] = initPopulation(N) # Creation function
-        else
-            error("Cannot generate population")
-        end
+        population[i] = initpopulation
         fitness[i] = fitFunc(population[i])
         debug && println("INIT $(i): $(population[i]) : $(fitness[i])")
     end
