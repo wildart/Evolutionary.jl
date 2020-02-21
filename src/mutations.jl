@@ -41,7 +41,7 @@ end
 
 # Binary mutations
 # ----------------
-function flip(recombinant::BitVector)
+function flip(recombinant ::BitVector)
     s = length(recombinant)
     pos = rand(1:s)
     recombinant[pos] = !recombinant[pos]
@@ -58,9 +58,9 @@ end
 # Real valued mutation
 # Mühlenbein, H. and Schlierkamp-Voosen, D.: Predictive Models for the Breeder Genetic Algorithm: I. Continuous Parameter Optimization. Evolutionary Computation, 1 (1), pp. 25-49, 1993.
 # --------------------
-function domainrange(valrange::Vector, m::Int = 20)
+function domainrange(valrange:: Vector{Float64}, m ::Int = 20)
     prob = 1.0 / m
-    function mutation(recombinant::T) where {T <: Vector}
+    function mutation(recombinant ::Vector{Float64})
         d = length(recombinant)
         @assert length(valrange) == d "Range matrix must have $(d) columns"
         δ = zeros(m)
@@ -79,15 +79,9 @@ function domainrange(valrange::Vector, m::Int = 20)
     return mutation
 end
 
-function mutate(gene ::FloatGene)
-    
-
-end
-
-
 # Combinatorial mutations (applicable to binary vectors)
 # ------------------------------------------------------
-function inversion(recombinant::BitVector)
+function inversion(recombinant ::BitVector)
     l = length(recombinant)
     from, to = rand(1:l, 2)
     from, to = from > to ? (to, from)  : (from, to)
@@ -98,7 +92,7 @@ function inversion(recombinant::BitVector)
     return recombinant
 end
 
-function insertion(recombinant::BitVector)
+function insertion(recombinant ::BitVector)
     l = length(recombinant)
     from, to = rand(1:l, 2)
     val = recombinant[from]
@@ -106,14 +100,14 @@ function insertion(recombinant::BitVector)
     return insert!(recombinant, to, val)
 end
 
-function swap2(recombinant::BitVector)
+function swap2(recombinant ::BitVector)
     l = length(recombinant)
     from, to = rand(1:l, 2)
     swap!(recombinant, from, to)
     return recombinant
 end
 
-function scramble(recombinant::BitVector)
+function scramble(recombinant ::BitVector)
     l = length(recombinant)
     from, to = rand(1:l, 2)
     from, to = from > to ? (to, from)  : (from, to)
@@ -129,7 +123,7 @@ function scramble(recombinant::BitVector)
     return recombinant
 end
 
-function shifting(recombinant::BitVector)
+function shifting(recombinant ::BitVector)
     l = length(recombinant)
     from, to, where = sort(rand(1:l, 3))
     patch = recombinant[from:to]
@@ -151,14 +145,15 @@ end
 
 # Utils
 # =====
-function swap!(v::T, from::Int, to::Int) where {T <: Vector}
+function swap!(v ::T, from ::Int, to ::Int) where {T <: Vector}
     val = v[from]
     v[from] = v[to]
     v[to] = val
 end
 
-function mutationwrapper(gamutation::Function)
-    wrapper(recombinant::T, s::S) where {T <: Vector, S <: Strategy} =  gamutation(recombinant) 
+function mutationwrapper(gamutation ::Function)
+    wrapper(recombinant::T, s::S) where {T <: Vector, S <: Strategy} =
+        gamutation(recombinant) 
     return wrapper
 end
 
@@ -186,7 +181,30 @@ function mutate(gene ::IntegerGene)
     return nothing
 end
 
-function mutate(gene ::BinaryGene, mutatetype ::Symbol)
+function mutate(gene ::BinaryGene)
     gene.value = singleflip(gene.value)
+    return nothing
+end
+
+function mutate(gene ::FloatGene)
+    prob = 1.0 / gene.m
+    δ = zeros(gene.m)
+    for i in 1:length(gene.value)
+        for j in 1:gene.m
+            δ[j] = (rand() < prob) ? 2.0^(-j) : 0.0
+        end
+        if rand() > 0.5
+            gene.value[i] += sum(δ)*gene.range[i]
+        else
+            gene.value[i] -= sum(δ)*gene.range[i]
+        end
+    end
+    return nothing
+end
+
+function mutate(chromossome ::Chromossome)
+    for gene in chromossome
+        mutate(gene)
+    end
     return nothing
 end

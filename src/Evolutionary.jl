@@ -17,7 +17,7 @@ using Random
            es, cmaes, ga
 
     const Strategy = Dict{Symbol,Any}
-    const Individual = Vector{T} where T <: AbstractGene
+    const Chromossome = Vector{T} where T <: AbstractGene
 
     # Wrapping function for strategy
     function strategy(; kwargs...)

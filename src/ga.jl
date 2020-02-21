@@ -13,23 +13,41 @@ end
 mutable struct FloatGene <: AbstractGene
     value ::Vector{Float64}
     range ::Vector{Float64}
-    m     ::Int64 
-    function FloatGene(value ::Union{Float64, Vector{Float64}} ,
-                       range ::Union{Float64, Vector{Float64}} ,
-                       m     ::Int64                           )
-        if typeof(value) != typeof(range)
-            error("both arguments must share same type")
-        end
-        if typeof(value) == Vector{Float64}
-            if length(value) != length(range)
-                error("both arguments must have same length")
-            else
-                return new(value, range)
-            end
-        elseif typeof(value) == Float64
-            return new(Float64[value], Float64[range])
-        end
+    m     ::Int64
+    function FloatGene(value ::Vector{Float64} ,
+                       range ::Vector{Float64} ,
+                       m     ::Int64           )
+        return new(val, ran, m)
     end
+end
+
+function FloatGene(value ::Float64, range ::Float64; m ::Integer = 20)
+    return FloatGene(Float64[value], Float64[range], m)
+end
+
+function FloatGene(value ::Vector{Float64}, range ::Float64; m ::Int64 = 20)
+    vec = Float64[range for i in value]
+    return FloatGene(value, vec, m)
+end
+
+mutable struct Chromossome
+    n           ::Int64
+    chromossome ::Vector{<:AbstractGene}
+    crossover   ::Symbol
+    selection   ::Symbol
+    function Chromossome( chromossome ::Vector{<:AbstractGene} ,
+                          crossover   ::Symbol                 ,
+                          selection   ::Symbol                 )
+        n = length(chromossome)
+        return new(n, chromossome, crossover, selection)
+    end
+end
+
+function Chromossome( chromossome ::AbstractGene ,
+                      crossover   ::Symbol       ,
+                      selection   ::Symbol       )
+    chrom = AbstractGene[chromossome]
+    return Chromossome(chrom, crossover, selection)
 end
 
 ##################################################################
@@ -49,7 +67,7 @@ end
 #                  Floating number specifies fraction of population.
 #
 function ga( objfun         ::Function                         ,
-             initpopulation ::Individual                       ,
+             initpopulation ::Chromossome                      ,
              populationSize ::Int64                            ;
              lowerBounds    ::Union{Nothing, Vector} = nothing ,
              upperBounds    ::Union{Nothing, Vector} = nothing ,
@@ -115,10 +133,14 @@ function ga( objfun         ::Function                         ,
         for i in 1:2:populationSize
             j = (i == populationSize) ? i-1 : i+1
             if rand() < crossoverRate
-                debug && println("MATE $(offidx[i])+$(offidx[j])>: $(population[selected[offidx[i]]]) : $(population[selected[offidx[j]]])")
+                debug &&
+                    println("MATE $(offidx[i])+$(offidx[j])>: "     *
+                            "$(population[selected[offidx[i]]]) : " *
+                            "$(population[selected[offidx[j]]])"    )
                 offspring[i], offspring[j] =
                     crossover(population[selected[offidx[i]]], population[selected[offidx[j]]])
-                debug && println("MATE >$(offidx[i])+$(offidx[j]): $(offspring[i]) : $(offspring[j])")
+                debug &&
+                    println("MATE >$(offidx[i])+$(offidx[j]): $(offspring[i]) : $(offspring[j])")
             else
                 offspring[i], offspring[j] =
                     population[selected[i]], population[selected[j]]
@@ -129,7 +151,7 @@ function ga( objfun         ::Function                         ,
         for i in 1:populationSize
             if rand() < mutationRate
                 debug && println("MUTATED $(i)>: $(offspring[i])")
-                mutation(offspring[i])
+                mutate(offspring[i])
                 debug && println("MUTATED >$(i): $(offspring[i])")
             end
         end
@@ -138,7 +160,9 @@ function ga( objfun         ::Function                         ,
         if elite > 0
             for i in 1:elite
                 subs = rand(1:populationSize)
-                debug && println("ELITE $(fitidx[i])=>$(subs): $(population[fitidx[i]]) => $(offspring[subs])")
+                debug &&
+                    println("ELITE $(fitidx[i])=>$(subs): "                  *
+                            "$(population[fitidx[i]]) => $(offspring[subs])" )
                 offspring[subs] = population[fitidx[i]]
             end
         end
@@ -159,10 +183,11 @@ function ga( objfun         ::Function                         ,
         keep(interim, :bestFitness, bestFitness, store)
 
         # Verbose step
-        verbose && println("BEST: $(bestFitness): $(population[bestIndividual]), G: $(itr)")
+        verbose &&
+            println("BEST: $(bestFitness): $(population[bestIndividual]), G: $(itr)")
 
         # Terminate:
-        #  if fitness tolerance is met for specified number of steps
+        # if fitness tolerance is met for specified number of steps
         if fittol <= tol
             if fittolitr > tolIter
                 break
