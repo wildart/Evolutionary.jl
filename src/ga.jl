@@ -1,14 +1,43 @@
 
+export BinaryGene, IntegerGene, FloatGene, Chromossome
+export ga
+
+####################################################################
+
 abstract type AbstractGene end
+
+####################################################################
 
 mutable struct BinaryGene <: AbstractGene
     value ::Bool
+    BinaryGene(value ::Bool) = new(value)
 end
+
+function BinaryGene()
+    return BinaryGene(rand(Bool))
+end
+
+####################################################################
 
 mutable struct IntegerGene <: AbstractGene
     value    ::BitVector
     mutation ::Symbol
+    function IntegerGene(value ::BitVector, mutation ::Symbol)
+        @eval mutate(gene ::IntegerGene) = int_mutate($mutation)(gene.value)
+        return new(value, mutation)
+    end
 end
+
+function IntegerGene(value ::BitVector) 
+    return IntegerGene(value, :FM)
+end
+
+function IntegerGene(n ::Int64)
+    value = BitVector(undef, rand(1:n))
+    return IntegerGene(value, :FM)
+end
+
+####################################################################
 
 mutable struct FloatGene <: AbstractGene
     value ::Vector{Float64}
@@ -17,11 +46,14 @@ mutable struct FloatGene <: AbstractGene
     function FloatGene(value ::Vector{Float64} ,
                        range ::Vector{Float64} ,
                        m     ::Int64           )
-        return new(val, ran, m)
+        if length(value) != length(range)
+            error("vectors mush have the same length")
+        end
+        return new(value, range, m)
     end
 end
 
-function FloatGene(value ::Float64, range ::Float64; m ::Integer = 20)
+function FloatGene(value ::Float64, range ::Float64; m ::Int64 = 20)
     return FloatGene(Float64[value], Float64[range], m)
 end
 
@@ -29,6 +61,19 @@ function FloatGene(value ::Vector{Float64}, range ::Float64; m ::Int64 = 20)
     vec = Float64[range for i in value]
     return FloatGene(value, vec, m)
 end
+
+function FloatGene(value ::Vector{Float64}; m ::Int64 = 20)
+    range = rand(Float64, length(value))
+    return FloatGene(value, range, m)
+end
+
+function FloatGene(n ::Int64)
+    value = rand(Float64, n)
+    range = rand(Float64, n)
+    return FloatGene(value, range, 20)
+end
+
+####################################################################
 
 mutable struct Chromossome
     n           ::Int64
@@ -50,7 +95,11 @@ function Chromossome( chromossome ::AbstractGene ,
     return Chromossome(chrom, crossover, selection)
 end
 
-##################################################################
+function Chromossome()
+    chrom = AbstractGene[BinaryGene(), IntegerGene(3), FloatGene(1)]
+end
+
+####################################################################
 
 # Genetic Algorithms
 # ==================

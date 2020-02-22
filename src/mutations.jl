@@ -159,26 +159,32 @@ end
 
 ###############################################
 
-function mutate(gene ::IntegerGene)
+# This function serves only to choose the mutation function for binary functions. The actual `mutate`
+# function is created in the `IntegerGene` structure.
+# FM   - Flip Mutation
+# InvM - Inversion Mutation
+# InsM - Insertion Mutation
+# SwM  - Swap Mutation
+# ScrM - Scramble Mutation
+# ShM  - Shifting Mutation
+function int_mutate(mutateype ::Symbol)
     mut_func = nothing
-    mutatetype = gene.mutatetype
-    if mutatetype == :flip
+    if mutatetype == :FM
         mut_func = flip
-    elseif mutatetype == :inversion
+    elseif mutatetype == :InvM
         mut_func = inversion
-    elseif mutatetype == :insertion
+    elseif mutatetype == :InsM
         mut_func = insertion
-    elseif mutatetype == :swap2
+    elseif mutatetype == :SwM
         mut_func = swap2
-    elseif mutatetype == :scramble
+    elseif mutatetype == :ScrM
         mut_func = scramble
-    elseif mutatetype == :shifting
+    elseif mutatetype == :ShM
         mut_func = shifting
     else
         error("Unknown mutation type")
     end
-    gene.value = mut_func(gene.value)
-    return nothing
+    return mut_func
 end
 
 function mutate(gene ::BinaryGene)

@@ -1,3 +1,4 @@
+
 # GA selections
 # ==============
 
@@ -95,6 +96,8 @@ function tournament(groupSize ::Int)
     return tournamentN
 end
 
+####################################################################
+
 # :RBS  - Rank-Based Selection
 # :URS  - Uniform-Ranking Selection
 # :RWS  - Roulette Wheel Selection
@@ -130,7 +133,7 @@ function selection(; sp        ::Union{Nothing, Float64} = nothing ,
     end
 end
 
-###########################################################
+####################################################################
 
 # Utils: selection
 function pselection(prob ::Vector{<:Real}, N ::Int)

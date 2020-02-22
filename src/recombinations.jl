@@ -1,4 +1,4 @@
-
+ 
 # Recombinations
 # ==============
 function average(population ::Vector{T}) where {T <: Vector}
@@ -44,6 +44,8 @@ function averageSigmaN(ss ::Vector{S}) where {S <: Strategy}
     return s
 end
 
+####################################################################
+
 # ==================
 # Genetic algorithms
 # ==================
@@ -81,27 +83,27 @@ function uniform(v1 ::T, v2 ::T) where {T <: Vector}
     l   = length(v1)
     c1  = copy(v1)
     c2  = copy(v2)
-    xch = rand(Bool, l)
     for i in 1:l
-        if xch[i]
+        if rand(Bool)
             vswap!(c1, c2, i)
         end
     end
     return c1, c2
 end
 
+####################################################################
 
 # Real valued crossovers
 # ----------------------
 
+# Discrete Crossover
 function discrete(v1 ::T, v2 ::T) where {T <: Vector}
     l    = length(v1)
     c1   = similar(v1)
     c2   = similar(v2)
-    sltc = rand(Bool, 2, l)
     for i in 1:l
-        c1[i] = sltc[1,i] ? v1[i] : v2[i]
-        c2[i] = sltc[2,i] ? v2[i] : v1[i]
+        c1[i] = rand(Bool) ? v1[i] : v2[i]
+        c2[i] = rand(Bool) ? v2[i] : v1[i]
     end
     return c1, c2
 end
@@ -109,7 +111,7 @@ end
 # Weighted arithmetic mean
 function waverage(w ::Vector{Float64})
     function wavexvr(v1 ::T, v2 ::T) where {T <: Vector}
-        c1 = (v1+v2)./w
+        c1 = (v1+v2) ./ w
         return c1, copy(c1)
     end
     return wavexvr
@@ -139,6 +141,7 @@ function line(d ::Float64 = 0.0)
     return linexvr
 end
 
+####################################################################
 
 # Permutation crossovers
 # ----------------------
@@ -295,6 +298,26 @@ function pos(v1 ::T, v2 ::T) where {T <: Vector}
     end
     return c1, c2
 end
+
+####################################################################
+
+# SPX - Single Point Crossover               - singlepoint
+# TPX - Two Point Crossover                  - twopoint
+# UX  - Uniform Crossover                    - uniform
+# DX  - Discrete Crossover                   - discrete
+# WMX - Weighted Mean Crossover              - waverage(w ::Vector{Float6})
+# IRX - Intermediate Recombination Crossover - intermediate(d ::Float64)
+# LRX - Line Recombination Crossover         - line(d ::Float64)
+# PMX - Partially Mapped Crossover           - pmx
+# O1X - Order 1 Crossover                    - ox1
+# O2X - Order 2 Crossover                    - ox2
+# CX  - Cycle Crossover                      - cx
+# PX  - Position-based Crossover             - pos
+function crossover()
+end
+
+####################################################################
+
 
 # Utils
 # =====
