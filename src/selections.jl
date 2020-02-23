@@ -104,9 +104,10 @@ end
 # :SUSS - Stochastic Universal Sampling Selection
 # :TrS  - Truncation Selection
 # :ToS  - Tournament Selection
-function selection(; sp        ::Union{Nothing, Float64} = nothing ,
-                     μ         ::Union{Nothing, Int64  } = nothing ,
-                     groupsize ::Union{Nothing, Int64  } = nothing )
+function selection( chrom     ::Chromossome                       ;
+                    sp        ::Union{Nothing, Float64} = nothing ,
+                    μ         ::Union{Nothing, Int64  } = nothing ,
+                    groupsize ::Union{Nothing, Int64  } = nothing )
     if chrom.selection == :RBS
         if isnothing(sp)
             error("need to specify `sp` value")

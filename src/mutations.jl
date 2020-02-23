@@ -16,6 +16,7 @@ function anisotropic(recombinant::T, s::S) where {T <: Vector, S <: Strategy}
     return recombinant
 end
 
+####################################################################
 
 # Strategy mutation operators
 # ===========================
@@ -35,6 +36,7 @@ function anisotropicSigma(s::S) where {S <: Strategy}
     return strategy(σ = σ, τ = s[:τ], τ0 = s[:τ0])
 end
 
+####################################################################
 
 # Genetic mutations
 # =================
@@ -157,7 +159,7 @@ function mutationwrapper(gamutation ::Function)
     return wrapper
 end
 
-###############################################
+####################################################################
 
 # This function serves only to choose the mutation function for binary functions. The actual `mutate`
 # function is created in the `IntegerGene` structure.

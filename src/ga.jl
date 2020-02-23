@@ -23,7 +23,11 @@ mutable struct IntegerGene <: AbstractGene
     value    ::BitVector
     mutation ::Symbol
     function IntegerGene(value ::BitVector, mutation ::Symbol)
-        @eval mutate(gene ::IntegerGene) = int_mutate($mutation)(gene.value)
+        @eval begin
+            function mutate(gene ::IntegerGene)
+                return int_mutate($mutation)(gene.value)
+            end
+        end
         return new(value, mutation)
     end
 end
@@ -80,10 +84,21 @@ mutable struct Chromossome
     chromossome ::Vector{<:AbstractGene}
     crossover   ::Symbol
     selection   ::Symbol
-    function Chromossome( chromossome ::Vector{<:AbstractGene} ,
-                          crossover   ::Symbol                 ,
-                          selection   ::Symbol                 )
-        n = length(chromossome)
+    function Chromossome( chromossome ::Vector{<:AbstractGene}           ,
+                          crossover   ::Symbol                           ,
+                          selection   ::Symbol                           ;
+                          w           ::Union{Nothing        ,
+                                              Vector{Float64}} = nothing ,
+                          d           ::Union{Nothing        ,
+                                              Float64        } = nothing )
+        @eval begin
+            function int_crossover(chrom ::Chromossome)
+                
+            end
+        end
+
+                
+        n = length(chromossome)        
         return new(n, chromossome, crossover, selection)
     end
 end
@@ -97,6 +112,9 @@ end
 
 function Chromossome()
     chrom = AbstractGene[BinaryGene(), IntegerGene(3), FloatGene(1)]
+    selection = :RWS
+    crossover = :SPX
+    return Chromossome(chrom, crossover, selection)
 end
 
 ####################################################################
@@ -142,6 +160,9 @@ function ga( objfun         ::Function                         ,
     fitness = zeros(populationSize)
     population = Vector{Individual}(undef, populationSize)
     offspring = similar(population)
+
+    # choose selection function
+    # selection = initpopulation.
 
     # Generate population
     # for i in 1:populationSize
