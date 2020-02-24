@@ -1,3 +1,8 @@
+
+export mutate
+
+####################################################################
+
 # Mutation operators
 # ==================
 
@@ -169,7 +174,7 @@ end
 # SwM  - Swap Mutation
 # ScrM - Scramble Mutation
 # ShM  - Shifting Mutation
-function int_mutate(mutateype ::Symbol)
+function int_mutate(mutatetype ::Symbol)
     mut_func = nothing
     if mutatetype == :FM
         mut_func = flip
@@ -211,7 +216,7 @@ function mutate(gene ::FloatGene)
 end
 
 function mutate(chromossome ::Chromossome)
-    for gene in chromossome
+    for gene in chromossome.chromossome
         mutate(gene)
     end
     return nothing

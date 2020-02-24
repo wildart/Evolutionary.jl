@@ -98,41 +98,6 @@ end
 
 ####################################################################
 
-# :RBS  - Rank-Based Selection
-# :URS  - Uniform-Ranking Selection
-# :RWS  - Roulette Wheel Selection
-# :SUSS - Stochastic Universal Sampling Selection
-# :TrS  - Truncation Selection
-# :ToS  - Tournament Selection
-function selection( chrom     ::Chromossome                       ;
-                    sp        ::Union{Nothing, Float64} = nothing ,
-                    μ         ::Union{Nothing, Int64  } = nothing ,
-                    groupsize ::Union{Nothing, Int64  } = nothing )
-    if chrom.selection == :RBS
-        if isnothing(sp)
-            error("need to specify `sp` value")
-        end
-        return ranklinear(sp)
-    elseif chrom.selection == :URS
-        if isnothing(μ)
-            error("need to specify `μ` value")
-        end
-        return uniformranking(μ)
-    elseif chrom.selection == :RWS
-        return roulette
-    elseif chrom.selection == :SUSS
-        return sus
-    elseif chrom.selection == :TrS
-        return truncation
-    elseif chrom.selection == :ToS
-        if isnothing(groupsize)
-            error("need to specify `groupsize` value")
-        end
-        return tournament(groupsize)
-    else
-        error("Unknown parameter " * string(chrom.selection))
-    end
-end
 
 ####################################################################
 

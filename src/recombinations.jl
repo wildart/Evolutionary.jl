@@ -301,57 +301,7 @@ end
 
 ####################################################################
 
-# SPX - Single Point Crossover               - singlepoint
-# TPX - Two Point Crossover                  - twopoint
-# UX  - Uniform Crossover                    - uniform
-# DX  - Discrete Crossover                   - discrete
-# WMX - Weighted Mean Crossover              - waverage(w ::Vector{Float64})
-# IRX - Intermediate Recombination Crossover - intermediate(d ::Float64)
-# LRX - Line Recombination Crossover         - line(d ::Float64)
-# PMX - Partially Mapped Crossover           - pmx
-# O1X - Order 1 Crossover                    - ox1
-# O2X - Order 2 Crossover                    - ox2
-# CX  - Cycle Crossover                      - cx
-# PX  - Position-based Crossover             - pos
-function crossover_func( cross ::Symbol                                    ;
-                         w     ::Union{Nothing, Vector{Float64}} = nothing ,
-                         d     ::Union{Nothing, Float64        } = nothing )
-    if cross == :SPX
-        return singlepoint
-    elseif cross == :TPX
-        return twopoint
-    elseif cross == :UX
-        return uniform
-    elseif cross == :DX
-        return discrete
-    elseif cross == :WMX
-        if isnothing(w)
-            error("value `w` must be given a value")
-        end
-        return waverage(w)
-    elseif cross == :IRX
-        if isnothing(d)
-            error("value `d` must be given a value")
-        end
-        return intermediate(d)
-    elseif cross == :LRX
-        if isnothing(d)
-            error("value `d` must be given a value")
-        end
-        return line(d)
-    elseif cross == :PMX
-        return pmx
-    elseif cross == :O1X
-        return ox1
-    elseif cross == :O2X
-        return ox2
-    elseif cross == :CX
-        return cx
-    elseif cross == :PX
-        return pos
-    end
-    return nothing
-end
+
 
 ####################################################################
 
