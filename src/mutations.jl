@@ -215,9 +215,9 @@ function mutate(gene ::FloatGene)
     return nothing
 end
 
-function mutate(chromossome ::Chromossome)
-    for gene in chromossome.chromossome
+function mutate(chromossome ::Vector{<:AbstractGene})
+    for gene in chromossome
         mutate(gene)
     end
-    return nothing
+    return 
 end

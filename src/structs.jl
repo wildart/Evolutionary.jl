@@ -1,6 +1,7 @@
 
 export BinaryGene, IntegerGene, FloatGene
 export Crossover, Selection, Chromossome
+export AbstractGene
 
 ####################################################################
 
@@ -37,6 +38,9 @@ end
 
 function IntegerGene(n ::Int64)
     value = BitVector(undef, n)
+    for i in 1:n
+        value[i] = rand(Bool)
+    end
     return IntegerGene(value, :FM)
 end
 
@@ -47,9 +51,9 @@ mutable struct FloatGene <: AbstractGene
     range ::Vector{Float64}
     m     ::Int64
     
-    function FloatGene(value ::Vector{Float64} ,
-                       range ::Vector{Float64} ,
-                       m     ::Int64           )
+    function FloatGene( value ::Vector{Float64} ,
+                        range ::Vector{Float64} ,
+                        m     ::Int64           )
         if length(value) != length(range)
             error("vectors mush have the same length")
         end
@@ -97,7 +101,6 @@ end
 # :PX  - Position-based Crossover             - pos
 mutable struct Crossover
     cross ::Symbol
-    func  ::Function
     w     ::Union{Nothing, Vector{Float64}}
     d     ::Union{Nothing, Float64        }
     
@@ -109,44 +112,50 @@ mutable struct Crossover
                                                Vector{Float64}} = nothing ,
                                  d     ::Union{Nothing        ,
                                                Float64        } = nothing )
+            cross_func = nothing
             if cross == :SPX
-                return singlepoint
+                cross_func = singlepoint
             elseif cross == :TPX
-                return twopoint
+                cross_func = twopoint
             elseif cross == :UX
-                return uniform
+                cross_func = uniform
             elseif cross == :DX
-                return discrete
+                cross_func = discrete
             elseif cross == :WMX
                 if isnothing(w)
                     error("value `w` must be given a value")
                 end
-                return waverage(w)
+                cross_func = waverage(w)
             elseif cross == :IRX
                 if isnothing(d)
                     error("value `d` must be given a value")
                 end
-                return intermediate(d)
+                cross_func = intermediate(d)
             elseif cross == :LRX
                 if isnothing(d)
                     error("value `d` must be given a value")
                 end
-                return line(d)
+                cross_func = line(d)
             elseif cross == :PMX
-                return pmx
+                cross_func = pmx
             elseif cross == :O1X
-                return ox1
+                cross_func = ox1
             elseif cross == :O2X
-                return ox2
+                cross_func = ox2
             elseif cross == :CX
-                return cx
+                cross_func = cx
             elseif cross == :PX
-                return pos
+                cross_func = pos
+            end
+            @eval begin
+                function crossover(v1::T, v2 ::T) where {T <: AbstractVector}    
+                    return $cross_func(v1, v2)
+                end
             end
             return nothing
         end
-        func = crossover_func(cross; w=w, d=d)
-        return new(cross, func, w, d)
+        crossover_func(cross, w=w, d=d)
+        return new(cross, w, d)
     end
 end
 
@@ -160,62 +169,49 @@ end
 # :ToS  - Tournament Selection
 mutable struct Selection
     select ::Symbol
-    func   ::Function
     sp     ::Union{Nothing, Float64}
-    μ      ::Union{Nothing, Int64  }
-    gsize  ::Union{Nothing, Int64  }
+    μ      ::Union{Nothing,   Int64}
+    gsize  ::Union{Nothing,   Int64}
     
     function Selection( select    ::Symbol                            ;
                         sp        ::Union{Nothing, Float64} = nothing ,
-                        μ         ::Union{Nothing, Int64  } = nothing ,
-                        groupsize ::Union{Nothing, Int64  } = nothing )
+                        μ         ::Union{Nothing,   Int64} = nothing ,
+                        groupsize ::Union{Nothing,   Int64} = nothing )
         function selection( select    ::Symbol                            ;
                             sp        ::Union{Nothing, Float64} = nothing ,
-                            μ         ::Union{Nothing, Int64  } = nothing ,
-                            groupsize ::Union{Nothing, Int64  } = nothing )
+                            μ         ::Union{Nothing,   Int64} = nothing ,
+                            groupsize ::Union{Nothing,   Int64} = nothing )
+            selec_func = nothing
             if select == :RBS
                 if isnothing(sp)
                     error("need to specify `sp` value")
                 end
-                return ranklinear(sp)
+                selec_func = ranklinear(sp)
             elseif select == :URS
                 if isnothing(μ)
                     error("need to specify `μ` value")
                 end
-                return uniformranking(μ)
+                selec_func = uniformranking(μ)
             elseif select == :RWS
-                return roulette
+                selec_func = roulette
             elseif select == :SUSS
-                return sus
+                selec_func = sus
             elseif select == :TrS
-                return truncation
+                selec_func = truncation
             elseif select == :ToS
                 if isnothing(groupsize)
                     error("need to specify `groupsize` value")
                 end
-                return tournament(groupsize)
+                selec_func = tournament(groupsize)
             else
                 error("Unknown parameter " * string(select))
             end
         end
-        func = selection(select; sp=sp, μ=μ, groupsize=groupsize)
-        return new(select, func, sp, μ, groupsize)
+        @eval begin
+            function selection(fit ::Vector{<:Real}, N ::Int)
+                return $selec_func(fit, N)
+            end
+        end
+        return new(select, sp, μ, groupsize)
     end
-end
-
-####################################################################
-
-mutable struct Chromossome
-    n           ::Int64
-    chromossome ::Vector{<:AbstractGene}
-    
-    function Chromossome(chromossome ::Vector{<:AbstractGene})
-        n = length(chromossome)        
-        return new(n, chromossome, cross, select)
-    end
-end
-
-function Chromossome(gene ::AbstractGene)
-    chromossome = AbstractGene[gene]
-    return Chromossome(chromossome)
 end

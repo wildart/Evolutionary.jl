@@ -1,5 +1,5 @@
 
-
+export ga
 
 ####################################################################
 
@@ -17,21 +17,23 @@
 #                  are guaranteed to survive to the next generation.
 #                  Floating number specifies fraction of population.
 #
-function ga( objfun         ::Function                         ,
-             initpopulation ::Chromossome                      ,
-             populationSize ::Int64                            ;
-             lowerBounds    ::Union{Nothing, Vector} = nothing ,
-             upperBounds    ::Union{Nothing, Vector} = nothing ,
-             crossoverRate  ::Float64                = 0.8     ,
-             mutationRate   ::Float64                = 0.1     ,
-             ɛ              ::Real                   = 0       ,
-             iterations     ::Integer                = 100     ,
-             tol            ::Real                   = 0.0     ,
-             tolIter        ::Int64                  = 10      ,
-             verbose        ::Bool                   = false   ,
-             debug          ::Bool                   = false   ,
-             interim        ::Bool                   = false   ,
-             parallel       ::Bool                   = false   )
+function ga( objfun         ::Function                          ,
+             initpopulation ::Vector{<:AbstractGene}            ,
+             populationSize ::Int64                             ;
+             cross          ::Union{Symbol,Crossover} = :SPX    ,
+             select         ::Union{Symbol,Selection} = :RWS    ,
+             lowerBounds    ::Union{Nothing, Vector } = nothing ,
+             upperBounds    ::Union{Nothing, Vector } = nothing ,
+             crossoverRate  ::Float64                 = 0.8     ,
+             mutationRate   ::Float64                 = 0.1     ,
+             ɛ              ::Real                    = 0       ,
+             iterations     ::Integer                 = 100     ,
+             tol            ::Real                    = 0.0     ,
+             tolIter        ::Int64                   = 10      ,
+             verbose        ::Bool                    = false   ,
+             debug          ::Bool                    = false   ,
+             interim        ::Bool                    = false   ,
+             parallel       ::Bool                    = false   )
 
     store = Dict{Symbol,Any}()
     
@@ -40,28 +42,10 @@ function ga( objfun         ::Function                         ,
     fitFunc = inverseFunc(objfun)
 
     # Initialize population
-    # individual = getIndividual(initPopulation, N)
     fitness = zeros(populationSize)
-    population = Vector{Individual}(undef, populationSize)
+    population = Vector{Vector{<:AbstractGene}}(undef, populationSize)
     offspring = similar(population)
 
-    # choose selection function
-    # selection = initpopulation.
-
-    # Generate population
-    # for i in 1:populationSize
-    #     if isa(initPopulation, Vector)
-    #         population[i] = initPopulation.*rand(eltype(initPopulation), N)
-    #     elseif isa(initPopulation, Matrix)
-    #         population[i] = initPopulation[:, i]
-    #     elseif isa(initPopulation, Function)
-    #         population[i] = initPopulation(N) # Creation function
-    #     else
-    #         error("Cannot generate population")
-    #     end
-    #     fitness[i] = fitFunc(population[i])
-    #     debug && println("INIT $(i): $(population[i]) : $(fitness[i])")
-    # end
     for i in 1:populationSize
         population[i] = initpopulation
         fitness[i] = fitFunc(population[i])
@@ -70,6 +54,30 @@ function ga( objfun         ::Function                         ,
     fitidx = sortperm(fitness, rev = true)
     keep(interim, :fitness, copy(fitness), store)
 
+    # choose crossover function
+    if typeof(cross) == Symbol
+        try
+            crossover = Crossover(cross).func
+        catch
+            error("Crossover mode $cross needs extra arguments. Consider creating " *
+                  "the crossover function using the Crossover structure."           )
+        end
+    else
+        crossover = cross.func
+    end
+
+    # Choose selection function
+    if typeof(select) == Symbol
+        try
+            selection = Selection(select).func
+        catch
+            error("Selection mode $select needs extra arguments. Consider creating " *
+                  "the selection function using the Selection structure."            )
+        end
+    else
+        selection = select.func
+    end
+    
     # Generate and evaluate offspring
     itr = 1
     bestFitness = 0.0
@@ -88,9 +96,9 @@ function ga( objfun         ::Function                         ,
             j = (i == populationSize) ? i-1 : i+1
             if rand() < crossoverRate
                 debug &&
-                    println("MATE $(offidx[i])+$(offidx[j])>: "     *
-                            "$(population[selected[offidx[i]]]) : " *
-                            "$(population[selected[offidx[j]]])"    )
+                    println( "MATE $(offidx[i])+$(offidx[j])>: "     *
+                             "$(population[selected[offidx[i]]]) : " *
+                             "$(population[selected[offidx[j]]])"    )
                 offspring[i], offspring[j] =
                     crossover(population[selected[offidx[i]]], population[selected[offidx[j]]])
                 debug &&

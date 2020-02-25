@@ -1,4 +1,9 @@
- 
+
+export crossover
+export GAVector
+
+####################################################################
+
 # Recombinations
 # ==============
 function average(population ::Vector{T}) where {T <: Vector}
@@ -50,11 +55,13 @@ end
 # Genetic algorithms
 # ==================
 
+const GAVector = Union{T, BitVector} where T <: Vector
+
 # Binary crossovers
 # -----------------
 
 # Single point crossover
-function singlepoint(v1 ::T, v2 ::T) where {T <: Vector}
+function singlepoint(v1 ::T, v2 ::T) where {T <: AbstractVector}
     l   = length(v1)
     c1  = copy(v1)
     c2  = copy(v2)
@@ -66,7 +73,7 @@ function singlepoint(v1 ::T, v2 ::T) where {T <: Vector}
 end
 
 # Two point crossover
-function twopoint(v1 ::T, v2 ::T) where {T <: Vector}
+function twopoint(v1 ::T, v2 ::T) where {T <: AbstractVector}
     l  = length(v1)
     c1 = copy(v1)
     c2 = copy(v2)
@@ -79,7 +86,7 @@ function twopoint(v1 ::T, v2 ::T) where {T <: Vector}
 end
 
 # Uniform crossover
-function uniform(v1 ::T, v2 ::T) where {T <: Vector}
+function uniform(v1 ::T, v2 ::T) where {T <: AbstractVector}
     l   = length(v1)
     c1  = copy(v1)
     c2  = copy(v2)
@@ -97,7 +104,7 @@ end
 # ----------------------
 
 # Discrete Crossover
-function discrete(v1 ::T, v2 ::T) where {T <: Vector}
+function discrete(v1 ::T, v2 ::T) where {T <: AbstractVector}
     l    = length(v1)
     c1   = similar(v1)
     c2   = similar(v2)
@@ -110,7 +117,7 @@ end
 
 # Weighted arithmetic mean
 function waverage(w ::Vector{Float64})
-    function wavexvr(v1 ::T, v2 ::T) where {T <: Vector}
+    function wavexvr(v1 ::T, v2 ::T) where {T <: AbstractVector}
         c1 = (v1+v2) ./ w
         return c1, copy(c1)
     end
@@ -119,7 +126,7 @@ end
 
 # Intermediate recombination
 function intermediate(d ::Float64 = 0.0)
-    function intermxvr(v1 ::T, v2 ::T) where {T <: Vector}
+    function intermxvr(v1 ::T, v2 ::T) where {T <: AbstractVector}
         l  = length(v1)
         α  = (1.0+2d) * rand(l) .- d
         c1 = v2 .+ α .* (v1 - v2)
@@ -132,7 +139,7 @@ end
 
 # Line recombination
 function line(d ::Float64 = 0.0)
-    function linexvr(v1 ::T, v2 ::T) where {T <: Vector}
+    function linexvr(v1 ::T, v2 ::T) where {T <: AbstractVector}
         α1, α2 = (1.0+2d) * rand(2) .- d
         c1 = v2 .+ α2 * (v1 - v2)
         c2 = v1 .+ α1 * (v2 - v1)
@@ -147,7 +154,7 @@ end
 # ----------------------
 
 # Partially mapped crossover
-function pmx(v1 ::T, v2 ::T) where {T <: Vector}
+function pmx(v1 ::T, v2 ::T) where {T <: AbstractVector}
     s = length(v1)
     from, to = rand(1:s, 2)
     from, to = from > to ? (to, from)  : (from, to)
@@ -189,7 +196,7 @@ function pmx(v1 ::T, v2 ::T) where {T <: Vector}
 end
 
 # Order crossover
-function ox1(v1 ::T, v2 ::T) where {T <: Vector}
+function ox1(v1 ::T, v2 ::T) where {T <: AbstractVector}
     s = length(v1)
     from, to = rand(1:s, 2)
     from, to = from > to ? (to, from)  : (from, to)
@@ -215,7 +222,7 @@ function ox1(v1 ::T, v2 ::T) where {T <: Vector}
 end
 
 # Cycle crossover
-function cx(v1 ::T, v2 ::T) where {T <: Vector}
+function cx(v1 ::T, v2 ::T) where {T <: AbstractVector}
     s  = length(v1)
     c1 = zeros(v1)
     c2 = zeros(v2)
@@ -246,7 +253,7 @@ function cx(v1 ::T, v2 ::T) where {T <: Vector}
 end
 
 # Order-based crossover
-function ox2(v1 ::T, v2 ::T) where {T <: Vector}
+function ox2(v1 ::T, v2 ::T) where {T <: AbstractVector}
     s  = length(v1)
     c1 = copy(v1)
     c2 = copy(v2)
@@ -274,7 +281,7 @@ function ox2(v1 ::T, v2 ::T) where {T <: Vector}
 end
 
 # Position-based crossover
-function pos(v1 ::T, v2 ::T) where {T <: Vector}
+function pos(v1 ::T, v2 ::T) where {T <: AbstractVector}
     s  = length(v1)
     c1 = zeros(v1)
     c2 = zeros(v2)
@@ -301,13 +308,30 @@ end
 
 ####################################################################
 
+export singlepoint
 
+function crossover(gene1 ::T, gene2 ::T) where {T <: IntegerGene}
+    return crossover(gene1.value, gene2.value)
+end
+
+function crossover(gene1 ::T, gene2 ::T) where {T <: FloatGene}
+    return crossover(gene1.value, gene2.value)
+end
+
+function crossover(chromo1 ::T, chromo2 ::T) where {T <: Vector{AbstractGene}}
+    c1 = copy(chromo1)
+    c2 = copy(chromo2)
+    for i in 1:length(chromo1)
+        c1[i].value, c2[i].value = crossover(chromo1[i], chromo2[i])
+    end
+    return c1, c2
+end
 
 ####################################################################
 
 # Utils
 # =====
-function vswap!(v1 ::T, v2 ::T, idx ::Int) where {T <: Vector}
+function vswap!(v1 ::T, v2 ::T, idx ::Int) where {T <: AbstractVector}
     val     = v1[idx]
     v1[idx] = v2[idx]
     v2[idx] = val
