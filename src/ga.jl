@@ -20,13 +20,11 @@ export ga
 function ga( objfun         ::Function                          ,
              initpopulation ::Vector{<:AbstractGene}            ,
              populationSize ::Int64                             ;
-             cross          ::Union{Symbol,Crossover} = :SPX    ,
-             select         ::Union{Symbol,Selection} = :RWS    ,
              lowerBounds    ::Union{Nothing, Vector } = nothing ,
              upperBounds    ::Union{Nothing, Vector } = nothing ,
-             crossoverRate  ::Float64                 = 0.8     ,
-             mutationRate   ::Float64                 = 0.1     ,
-             ɛ              ::Real                    = 0       ,
+             crossoverRate  ::Float64                 = 0.5     ,
+             mutationRate   ::Float64                 = 0.5     ,
+             ϵ              ::Real                    = 0       ,
              iterations     ::Integer                 = 100     ,
              tol            ::Real                    = 0.0     ,
              tolIter        ::Int64                   = 10      ,
@@ -38,7 +36,7 @@ function ga( objfun         ::Function                          ,
     store = Dict{Symbol,Any}()
     
     # Setup parameters
-    elite = isa(ɛ, Int) ? ɛ : round(Int, ɛ * populationSize)
+    elite = isa(ϵ, Int) ? ϵ : round(Int, ϵ * populationSize)
     fitFunc = inverseFunc(objfun)
 
     # Initialize population
@@ -53,30 +51,6 @@ function ga( objfun         ::Function                          ,
     end
     fitidx = sortperm(fitness, rev = true)
     keep(interim, :fitness, copy(fitness), store)
-
-    # choose crossover function
-    if typeof(cross) == Symbol
-        try
-            crossover = Crossover(cross).func
-        catch
-            error("Crossover mode $cross needs extra arguments. Consider creating " *
-                  "the crossover function using the Crossover structure."           )
-        end
-    else
-        crossover = cross.func
-    end
-
-    # Choose selection function
-    if typeof(select) == Symbol
-        try
-            selection = Selection(select).func
-        catch
-            error("Selection mode $select needs extra arguments. Consider creating " *
-                  "the selection function using the Selection structure."            )
-        end
-    else
-        selection = select.func
-    end
     
     # Generate and evaluate offspring
     itr = 1
@@ -146,7 +120,8 @@ function ga( objfun         ::Function                          ,
 
         # Verbose step
         verbose &&
-            println("BEST: $(bestFitness): $(population[bestIndividual]), G: $(itr)")
+            println("BEST: $(round(bestFitness, digits=3)): " *
+                    "$(population[bestIndividual]), G: $(itr)")
 
         # Terminate:
         # if fitness tolerance is met for specified number of steps

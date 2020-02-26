@@ -1,7 +1,8 @@
 
+export AbstractGene
 export BinaryGene, IntegerGene, FloatGene
 export Crossover, Selection, Chromossome
-export AbstractGene
+export selection, crossover, bin
 
 ####################################################################
 
@@ -15,9 +16,7 @@ mutable struct BinaryGene <: AbstractGene
     BinaryGene(value ::Bool) = new(value)
 end
 
-function BinaryGene()
-    return BinaryGene(rand(Bool))
-end
+BinaryGene() = BinaryGene(rand(Bool))
 
 ####################################################################
 
@@ -42,6 +41,14 @@ function IntegerGene(n ::Int64)
         value[i] = rand(Bool)
     end
     return IntegerGene(value, :FM)
+end
+
+function bin(gene ::IntegerGene)
+    bin_val = 0
+    for (i,j) in enumerate(gene.value)
+        bin_val += j ? 2^(i-1) : 0
+    end
+    return bin_val
 end
 
 ####################################################################
@@ -107,11 +114,6 @@ mutable struct Crossover
     function Crossover(cross ::Symbol                                    ;
                        w     ::Union{Nothing, Vector{Float64}} = nothing ,
                        d     ::Union{Nothing, Float64        } = nothing )
-        function crossover_func( cross ::Symbol                           ;
-                                 w     ::Union{Nothing        ,
-                                               Vector{Float64}} = nothing ,
-                                 d     ::Union{Nothing        ,
-                                               Float64        } = nothing )
             cross_func = nothing
             if cross == :SPX
                 cross_func = singlepoint
@@ -147,14 +149,12 @@ mutable struct Crossover
             elseif cross == :PX
                 cross_func = pos
             end
+        
             @eval begin
                 function crossover(v1::T, v2 ::T) where {T <: AbstractVector}    
                     return $cross_func(v1, v2)
                 end
             end
-            return nothing
-        end
-        crossover_func(cross, w=w, d=d)
         return new(cross, w, d)
     end
 end
@@ -177,36 +177,32 @@ mutable struct Selection
                         sp        ::Union{Nothing, Float64} = nothing ,
                         μ         ::Union{Nothing,   Int64} = nothing ,
                         groupsize ::Union{Nothing,   Int64} = nothing )
-        function selection( select    ::Symbol                            ;
-                            sp        ::Union{Nothing, Float64} = nothing ,
-                            μ         ::Union{Nothing,   Int64} = nothing ,
-                            groupsize ::Union{Nothing,   Int64} = nothing )
-            selec_func = nothing
-            if select == :RBS
-                if isnothing(sp)
-                    error("need to specify `sp` value")
-                end
-                selec_func = ranklinear(sp)
-            elseif select == :URS
-                if isnothing(μ)
-                    error("need to specify `μ` value")
-                end
-                selec_func = uniformranking(μ)
-            elseif select == :RWS
-                selec_func = roulette
-            elseif select == :SUSS
-                selec_func = sus
-            elseif select == :TrS
-                selec_func = truncation
-            elseif select == :ToS
-                if isnothing(groupsize)
-                    error("need to specify `groupsize` value")
-                end
-                selec_func = tournament(groupsize)
-            else
-                error("Unknown parameter " * string(select))
+        selec_func = nothing
+        if select == :RBS
+            if isnothing(sp)
+                error("need to specify `sp` value")
             end
+            selec_func = ranklinear(sp)
+        elseif select == :URS
+            if isnothing(μ)
+                error("need to specify `μ` value")
+            end
+            selec_func = uniformranking(μ)
+        elseif select == :RWS
+            selec_func = roulette
+        elseif select == :SUSS
+            selec_func = sus
+        elseif select == :TrS
+            selec_func = truncation
+        elseif select == :ToS
+            if isnothing(groupsize)
+                error("need to specify `groupsize` value")
+            end
+            selec_func = tournament(groupsize)
+        else
+            error("Unknown parameter " * string(select))
         end
+        
         @eval begin
             function selection(fit ::Vector{<:Real}, N ::Int)
                 return $selec_func(fit, N)
