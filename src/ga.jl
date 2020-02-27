@@ -123,8 +123,8 @@ function ga( objfun         ::Function                          ,
             println("BEST: $(round(bestFitness, digits=3)): " *
                     "$(population[bestIndividual]), G: $(iter)")
 
+        itr = iter
         if bestFitness <= tol
-            itr = iter
             break
         end
     end
