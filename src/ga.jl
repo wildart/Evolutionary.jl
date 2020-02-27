@@ -51,6 +51,8 @@ function ga( objfun         ::Function                          ,
     end
     fitidx = sortperm(fitness, rev = true)
     keep(interim, :fitness, copy(fitness), store)
+
+    
     
     # Generate and evaluate offspring
     itr = 1
@@ -58,7 +60,7 @@ function ga( objfun         ::Function                          ,
     bestIndividual = 0
     fittol = 0.0
     fittolitr = 1
-    while true
+    for iter in 1:iterations
         debug && println("BEST: $(fitidx)")
 
         # Select offspring
@@ -111,9 +113,7 @@ function ga( objfun         ::Function                          ,
         end
         fitidx = sortperm(fitness, rev = true)
         bestIndividual = fitidx[1]
-        curGenFitness = Float64(objfun(population[bestIndividual]))
-        fittol = abs(bestFitness - curGenFitness)
-        bestFitness = curGenFitness
+        bestFitness = Float64(objfun(population[bestIndividual]))
 
         keep(interim, :fitness, copy(fitness), store)
         keep(interim, :bestFitness, bestFitness, store)
@@ -121,25 +121,12 @@ function ga( objfun         ::Function                          ,
         # Verbose step
         verbose &&
             println("BEST: $(round(bestFitness, digits=3)): " *
-                    "$(population[bestIndividual]), G: $(itr)")
+                    "$(population[bestIndividual]), G: $(iter)")
 
-        # Terminate:
-        # if fitness tolerance is met for specified number of steps
-        if fittol <= tol
-            if fittolitr > tolIter
-                break
-            else
-                fittolitr += 1
-            end
-        else
-            fittolitr = 1
-        end
-        # if number of iterations more then specified
-        if itr >= iterations
+        if bestFitness <= tol
+            itr = iter
             break
         end
-        itr += 1
     end
-
     return population[bestIndividual], bestFitness, itr, fittol, store
 end

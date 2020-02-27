@@ -1,7 +1,7 @@
 
 module Evolutionary
 
-using Random
+using Random, Base.Threads
 
 export Strategy, strategy, inverse, mutationwrapper,
     # ES mutations
