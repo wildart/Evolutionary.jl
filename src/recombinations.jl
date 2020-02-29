@@ -1,6 +1,12 @@
+##### recombinations.jl #####
+
+# In this file you will find all the functions regarding recombinations and crossovers.
+# Recombinations are used specially for Evolution Strategies, while crossovers are used
+# specially for Genetic Algorithms.
+
+####################################################################
 
 export crossover
-export GAVector
 
 ####################################################################
 
@@ -54,8 +60,6 @@ end
 # ==================
 # Genetic algorithms
 # ==================
-
-const GAVector = Union{T, BitVector} where T <: Vector
 
 # Binary crossovers
 # -----------------
@@ -308,16 +312,29 @@ end
 
 ####################################################################
 
-export singlepoint
+"""
+    crossover(gene1 ::T, gene2 ::T) where {T <: IntegerGene}
 
+Crosses two `IntegerGene` genes according to the crossover function chosen.
+"""
 function crossover(gene1 ::T, gene2 ::T) where {T <: IntegerGene}
     return crossover(gene1.value, gene2.value)
 end
 
+"""
+    crossover(gene1 ::T, gene2 ::T) where {T <: FloatGene}
+
+Crosses two `FloatGene` genes according to the crossover function chosen.
+"""
 function crossover(gene1 ::T, gene2 ::T) where {T <: FloatGene}
     return crossover(gene1.value, gene2.value)
 end
 
+"""
+    crossover(chromo1 ::T, chromo2 ::T) where {T <: Vector{AbstractGene}}
+
+`chromo1` and `chromo2` are two vectors of genes. Crosses each entry of both chromossomes according to the crossover function chosen.
+"""
 function crossover(chromo1 ::T, chromo2 ::T) where {T <: Vector{AbstractGene}}
     c1 = copy(chromo1)
     c2 = copy(chromo2)

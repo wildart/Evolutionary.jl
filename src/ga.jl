@@ -1,3 +1,8 @@
+##### ga.jl #####
+
+# In this file you will find the Genetic Algorithm.
+
+####################################################################
 
 export ga
 
@@ -13,10 +18,29 @@ export ga
 #  crossoverRate : The fraction of the population at the next generation, not including elite
 #                  children, that is created by the crossover function.
 #   mutationRate : Probability of chromosome to be mutated
-#              ɛ : Positive integer specifies how many individuals in the current generation
+#              ϵ : Positive integer specifies how many individuals in the current generation
 #                  are guaranteed to survive to the next generation.
 #                  Floating number specifies fraction of population.
 #
+"""
+    ga( objfun         ::Function                          ,
+        initpopulation ::Vector{<:AbstractGene}            ,
+        populationSize ::Int64                             ;
+        lowerBounds    ::Union{Nothing, Vector } = nothing ,
+        upperBounds    ::Union{Nothing, Vector } = nothing ,
+        crossoverRate  ::Float64                 = 0.5     ,
+        mutationRate   ::Float64                 = 0.5     ,
+        ϵ              ::Real                    = 0       ,
+        iterations     ::Integer                 = 100     ,
+        tol            ::Real                    = 0.0     ,
+        tolIter        ::Int64                   = 10      ,
+        verbose        ::Bool                    = false   ,
+        debug          ::Bool                    = false   ,
+        interim        ::Bool                    = false   ,
+        parallel       ::Bool                    = false   )
+
+Runs the Genetic Algorithm using the objective function `objfun`, the initial population `initpopulation` and the population size `populationSize`. `objfun` is the function to MINIMIZE. 
+"""
 function ga( objfun         ::Function                          ,
              initpopulation ::Vector{<:AbstractGene}            ,
              populationSize ::Int64                             ;
@@ -51,8 +75,6 @@ function ga( objfun         ::Function                          ,
     end
     fitidx = sortperm(fitness, rev = true)
     keep(interim, :fitness, copy(fitness), store)
-
-    
     
     # Generate and evaluate offspring
     itr = 1

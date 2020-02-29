@@ -1,3 +1,9 @@
+##### selections.jl #####
+
+# In this file you will all the functions regarding population selection.
+# All functions can be used for both Evolution Strategies and Genetic Algorithms.
+
+####################################################################
 
 # GA selections
 # ==============
@@ -95,9 +101,6 @@ function tournament(groupSize ::Int)
     end
     return tournamentN
 end
-
-####################################################################
-
 
 ####################################################################
 

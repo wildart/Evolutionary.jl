@@ -17,11 +17,17 @@ export Strategy, strategy, inverse, mutationwrapper,
     # GA selections
     ranklinear, uniformranking, roulette, sus, tournament, truncation,
     # Optimization methods
-    es, cmaes, ga
+    es, cmaes, ga,
+    # Constants
+    GAVector
 
 const Strategy = Dict{Symbol,Any}
 
 const Individual = Nothing
+
+const GAVector = Union{T, BitVector} where T <: Vector
+
+####################################################################
 
 # Wrapping function for strategy
 function strategy(; kwargs...)
@@ -67,7 +73,7 @@ function keep(interim, v, vv, col)
     end
 end
 
-# Structures
+# General Structures
 include("structs.jl")
 
 # ES & GA recombination functions

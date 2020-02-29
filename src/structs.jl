@@ -1,40 +1,83 @@
+##### structs.jl #####
+
+# In this file you will find all the structures needed to generalize code.
+# You will find also some functions to help create the global structures.
+
+####################################################################
 
 export AbstractGene
 export BinaryGene, IntegerGene, FloatGene
-export Crossover, Selection, Chromossome
+export Crossover, Selection
 export selection, crossover, bin
 
 ####################################################################
 
+"""
+Abstract Type to represent all types of genes supported.
+"""
 abstract type AbstractGene end
 
 ####################################################################
 
+"""
+    BinaryGene(value ::Bool)
+
+Creates a `BinaryGene` structure. This gene represents a `Bool` variable (1 or 0). Useful to make decisions (will a reactor work or not, will a SMB pathway be used or not, etc.).
+"""
 mutable struct BinaryGene <: AbstractGene
     value ::Bool
     
     BinaryGene(value ::Bool) = new(value)
 end
 
+"""
+    BinaryGene()
+
+Creates a `BinaryGene` structure with a random `Bool` value.
+"""
 BinaryGene() = BinaryGene(rand(Bool))
 
 ####################################################################
 
+"""
+    IntegerGene(value ::BitVector, mutation ::Symbol)
+
+Creates a `IntegerGene` structure. This gene represents an integer variable as `BitVector`. To convert the `BitVector` in an integer, just look at the `bin` function from this package by typing `?bin` on the command prompt. `mutation` is a symbol that represents the type of mutation used for the bit vector. The below table shows all the mutation types supported:
+
+| Symbol | Algorithm |
+|-----|-----|
+| :FM | Flip Mutation |
+| :InvM | Inversion Mutation |
+| :InsM | Insertion Mutation |
+| :SwM | Swap Mutation |
+| :ScrM | Scramble Mutation |
+| :ShM | Shifting Mutation |
+"""
 mutable struct IntegerGene <: AbstractGene
     value    ::BitVector
     mutation ::Symbol
     
     function IntegerGene(value ::BitVector, mutation ::Symbol)
-        int_func = int_mutate(mutation)
+        int_func = mutate(mutation)
         @eval mutate(gene ::IntegerGene) = $int_func(gene.value)
         return new(value, mutation)
     end
 end
 
+"""
+    IntegerGene(value ::BitVector)
+
+Creates a `IntegerGene` structure with the default mutation being Flip Mutation.
+"""
 function IntegerGene(value ::BitVector) 
     return IntegerGene(value, :FM)
 end
 
+"""
+    IntegerGene(n ::Int64)
+
+Creates a `IntegerGene` structure in which the `BitVector` is of length `n` with random `Bool` values.
+"""
 function IntegerGene(n ::Int64)
     value = BitVector(undef, n)
     for i in 1:n
@@ -43,6 +86,11 @@ function IntegerGene(n ::Int64)
     return IntegerGene(value, :FM)
 end
 
+"""
+    bin(gene ::IntegerGene)
+
+Returns the integer number represented by the `BitVector` of `gene`.
+"""
 function bin(gene ::IntegerGene)
     bin_val = 0
     for (i,j) in enumerate(gene.value)
@@ -53,6 +101,11 @@ end
 
 ####################################################################
 
+"""
+    FloatGene(value ::Vector{Float64}, range ::Vector{Float64}, m ::Int64)
+
+Creates a `FloatGene` structure. `value` is a vector with the variables to be changed. `range` is a vector with the minimum and maximum values a variable can take. `m` is just a parameter that changes how much in a mutation the variables change, the bigger the value, the bigger the change in each mutation. If the range of a variable is 0.5, then the biggest mutation a variable can suffer is 0.5 for instance.
+"""
 mutable struct FloatGene <: AbstractGene
     value ::Vector{Float64}
     range ::Vector{Float64}
@@ -62,30 +115,55 @@ mutable struct FloatGene <: AbstractGene
                         range ::Vector{Float64} ,
                         m     ::Int64           )
         if length(value) != length(range)
-            error("vectors mush have the same length")
+            error("vectors must have the same length")
         end
         return new(value, range, m)
     end
 end
 
+"""
+    FloatGene(value ::Float64, range ::Float64; m ::Int64 = 20)
+
+Creates a `FloatGene` structure. Handy for creating just one real number variable.
+"""
 function FloatGene(value ::Float64, range ::Float64; m ::Int64 = 20)
     return FloatGene(Float64[value], Float64[range], m)
 end
 
+"""
+    FloatGene(value ::Vector{Float64}, range ::Float64; m ::Int64 = 20)
+
+Creates a `FloatGene` structure. Handy for creating a vector of real numbers with the same range.
+"""
 function FloatGene(value ::Vector{Float64}, range ::Float64; m ::Int64 = 20)
     vec = Float64[range for i in value]
     return FloatGene(value, vec, m)
 end
 
+"""
+    FloatGene(value ::Vector{Float64}; m ::Int64 = 20)
+
+Creates a `FloatGene` structure. Handy for creating a vector of real numbers with a random range.
+"""
 function FloatGene(value ::Vector{Float64}; m ::Int64 = 20)
     range = rand(Float64, length(value))
     return FloatGene(value, range, m)
 end
 
+"""
+    FloatGene(value ::Float64; m ::Int64 = 20)
+
+Creates a `FloatGene` structure. Handy for creating one variable with a random range.
+"""
 function FloatGene(value ::Float64; m ::Int64 = 20)
     return FloatGene(value, rand(); m=m)
 end
 
+"""
+    FloatGene(n ::Int64)
+
+Creates a `FloatGene` structure. Creates a vector of length `n` with random variables and random ranges. Used particularly for testing purposes.
+"""
 function FloatGene(n ::Int64)
     value = rand(Float64, n)
     range = rand(Float64, n)
@@ -106,6 +184,29 @@ end
 # :O2X - Order 2 Crossover                    - ox2
 # :CX  - Cycle Crossover                      - cx
 # :PX  - Position-based Crossover             - pos
+
+"""
+    Crossover(cross ::Symbol                                    ;
+              w     ::Union{Nothing, Vector{Float64}} = nothing ,
+              d     ::Union{Nothing, Float64        } = nothing )
+
+Creates a `Crossover` structure. `cross` is a Symbol that represents the type of crossover that would be used. `w` and `d` are not mandatory but need to be set for some types of crossovers. All algorithms will be shown in the table below:
+
+| Symbol | Algorithm | Optional Arguments |
+|----|----|---|
+| :SPX | Single Point Crossover | not needed |
+| :TPX | Two Point Crossover | not needed |
+| :UX | Uniform Crossover | not needed |
+| :DX | Discrete Crossover | not needed |
+| :WMX | Weighted Mean Crossover | needs `w` |
+| :IRX | Intermediate Recombination Crossover | needs `d` |
+| :LRX | Line Recombination Crossover | needs `d` |
+| :PMX | Partially Mapped Crossover | not needed |
+| :O1X | Order 1 Crossover | not needed |
+| :O2X | Order 2 Crossover | not needed |
+| :CX | Cycle Crossover | not needed |
+| :PX | Position-based Crossover | not needed |
+"""
 mutable struct Crossover
     cross ::Symbol
     w     ::Union{Nothing, Vector{Float64}}
@@ -167,6 +268,24 @@ end
 # :SUSS - Stochastic Universal Sampling Selection
 # :TrS  - Truncation Selection
 # :ToS  - Tournament Selection
+
+"""
+    Selection( select    ::Symbol                            ;
+               sp        ::Union{Nothing, Float64} = nothing ,
+               μ         ::Union{Nothing,   Int64} = nothing ,
+               groupsize ::Union{Nothing,   Int64} = nothing )
+
+Creates a `Selection` structure. `select` is a symbol that represents the type of selection that will be used. `sp`, `μ` and `groupsize` are optional but need to be set for some types of selections. All algorithms will be shown in the table below:
+
+| Symbol | Algorithm | Optional Arguments |
+|----|----|----|
+| :RBS | Rank-based Selection | needs `sp` |
+| :URS | Uniform-Ranking Selection | needs `μ` |
+| :RWS | Roulette Wheel Selection | not needed |
+| :SUSS | Stochastic Universal Sampling Selection | not needed |
+| :TrS | Truncation Selection | not needed |
+| :ToS | Tournament Selection | needs `groupsize` |
+"""
 mutable struct Selection
     select ::Symbol
     sp     ::Union{Nothing, Float64}

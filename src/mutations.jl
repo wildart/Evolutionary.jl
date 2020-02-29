@@ -1,3 +1,9 @@
+##### mutations.jl #####
+
+# In this file you will several functions that correspond to specific types of mutations.
+# Has functions for both Evolution Strategies and Genetic Algorithms.
+
+####################################################################
 
 export mutate
 
@@ -174,7 +180,13 @@ end
 # SwM  - Swap Mutation
 # ScrM - Scramble Mutation
 # ShM  - Shifting Mutation
-function int_mutate(mutatetype ::Symbol)
+
+"""
+    mutate(gene ::IntegerGene)
+
+Mutates `gene` according to the mutation function chosen in the `IntegerGene` structure.
+"""
+function mutate(mutatetype ::Symbol)
     mut_func = nothing
     if mutatetype == :FM
         mut_func = flip
@@ -194,11 +206,21 @@ function int_mutate(mutatetype ::Symbol)
     return mut_func
 end
 
+"""
+    mutate(gene ::BinaryGene)
+
+Mutates `gene` using the Single Flip Mutation.
+"""
 function mutate(gene ::BinaryGene)
     gene.value = singleflip(gene.value)
     return nothing
 end
 
+"""
+    mutate(gene ::FloatGene)
+
+Mutates `gene` using Real Valued Mutation.
+"""
 function mutate(gene ::FloatGene)
     prob = 1.0 / gene.m
     δ = zeros(gene.m)
@@ -215,9 +237,14 @@ function mutate(gene ::FloatGene)
     return nothing
 end
 
+"""
+    mutate(chromossome ::Vector{<:AbstractGene})
+
+Mutates each entry of `chromossome` according to the mutations chosen.
+"""
 function mutate(chromossome ::Vector{<:AbstractGene})
     for gene in chromossome
         mutate(gene)
     end
-    return 
+    return nothing
 end
