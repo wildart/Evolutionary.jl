@@ -331,13 +331,13 @@ function crossover(gene1 ::T, gene2 ::T) where {T <: FloatGene}
 end
 
 """
-    crossover(chromo1 ::T, chromo2 ::T) where {T <: Vector{AbstractGene}}
+    crossover(chromo1 ::T, chromo2 ::T) where {T <: Vector{<:AbstractGene}}
 
 `chromo1` and `chromo2` are two vectors of genes. Crosses each entry of both chromossomes according to the crossover function chosen.
 """
-function crossover(chromo1 ::T, chromo2 ::T) where {T <: Vector{AbstractGene}}
-    c1 = copy(chromo1)
-    c2 = copy(chromo2)
+function crossover(chromo1 ::T, chromo2 ::T) where {T <: Vector{<:AbstractGene}}
+    c1 = deepcopy(chromo1)
+    c2 = deepcopy(chromo2)
     for i in 1:length(chromo1)
         c1[i].value, c2[i].value = crossover(chromo1[i], chromo2[i])
     end

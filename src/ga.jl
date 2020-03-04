@@ -42,13 +42,13 @@ export ga
 Runs the Genetic Algorithm using the objective function `objfun`, the initial population `initpopulation` and the population size `populationSize`. `objfun` is the function to MINIMIZE. 
 """
 function ga( objfun         ::Function                          ,
-             initpopulation ::Vector{<:AbstractGene}            ,
+             initpopulation ::Vector{Vector{<:AbstractGene}}    ,
              populationSize ::Int64                             ;
              lowerBounds    ::Union{Nothing, Vector } = nothing ,
              upperBounds    ::Union{Nothing, Vector } = nothing ,
              crossoverRate  ::Float64                 = 0.5     ,
              mutationRate   ::Float64                 = 0.5     ,
-             ϵ              ::Real                    = 0       ,
+             ϵ              ::Bool                    = false   ,
              iterations     ::Integer                 = 100     ,
              tol            ::Real                    = 0.0     ,
              tolIter        ::Int64                   = 10      ,
@@ -59,9 +59,8 @@ function ga( objfun         ::Function                          ,
 
     store = Dict{Symbol,Any}()
     
-    # Setup parameters
-    elite = isa(ϵ, Int) ? ϵ : round(Int, ϵ * populationSize)
-    fitFunc = inverseFunc(objfun)
+    fitFunc = objfun
+    # fitFunc = inverseFunc(objfun)
 
     # Initialize population
     fitness = zeros(populationSize)
@@ -69,19 +68,19 @@ function ga( objfun         ::Function                          ,
     offspring = similar(population)
 
     for i in 1:populationSize
-        population[i] = initpopulation
+        population[i] = initpopulation[i]
         fitness[i] = fitFunc(population[i])
         debug && println("INIT $(i): $(population[i]) : $(fitness[i])")
     end
-    fitidx = sortperm(fitness, rev = true)
+    fitidx = sortperm(fitness)
     keep(interim, :fitness, copy(fitness), store)
     
     # Generate and evaluate offspring
-    itr = 1
+    generations = 1
     bestFitness = 0.0
     bestIndividual = 0
-    fittol = 0.0
-    fittolitr = 1
+    full_fitness = Vector{Float64}(undef, 2*populationSize)
+    full_pop = Vector{Vector{<:AbstractGene}}(undef, 2*populationSize)
     for iter in 1:iterations
         debug && println("BEST: $(fitidx)")
 
@@ -106,7 +105,7 @@ function ga( objfun         ::Function                          ,
                     population[selected[i]], population[selected[j]]
             end
         end
-
+        
         # Perform mutation
         for i in 1:populationSize
             if rand() < mutationRate
@@ -115,27 +114,31 @@ function ga( objfun         ::Function                          ,
                 debug && println("MUTATED >$(i): $(offspring[i])")
             end
         end
-
+        
+        
+        
         # Elitism
-        if elite > 0
-            for i in 1:elite
-                subs = rand(1:populationSize)
-                debug &&
-                    println("ELITE $(fitidx[i])=>$(subs): "                  *
-                            "$(population[fitidx[i]]) => $(offspring[subs])" )
-                offspring[subs] = population[fitidx[i]]
+        # When true, always picks N best individuals from the full population
+        # (parents+offspring), which is size 2*N.
+        # When false, does everything randomly
+        if ϵ
+            full_pop[1:populationSize] = population
+            full_pop[populationSize+1:end] = offspring
+            full_fitness = fitFunc.(full_pop)
+            fitidx = sortperm(full_fitness)
+            for i in 1:populationSize
+                population[i] = full_pop[fitidx[i]]
+                fitness[i] = fitFunc(population[i])
+            end
+        else
+            for i in 1:populationSize
+                population[i] = offspring[i]
+                fitness[i] = fitFunc(population[i])
+                debug && println("FIT $(i): $(fitness[i])")
             end
         end
 
-        # New generation
-        for i in 1:populationSize
-            population[i] = offspring[i]
-            fitness[i] = fitFunc(offspring[i])
-            debug && println("FIT $(i): $(fitness[i])")
-        end
-        fitidx = sortperm(fitness, rev = true)
-        bestIndividual = fitidx[1]
-        bestFitness = Float64(objfun(population[bestIndividual]))
+        bestFitness, bestIndividual = findmin(fitness)
 
         keep(interim, :fitness, copy(fitness), store)
         keep(interim, :bestFitness, bestFitness, store)
@@ -145,10 +148,24 @@ function ga( objfun         ::Function                          ,
             println("BEST: $(round(bestFitness, digits=3)): " *
                     "$(population[bestIndividual]), G: $(iter)")
 
-        itr = iter
+        generations = iter
         if bestFitness <= tol
             break
         end
     end
-    return population[bestIndividual], bestFitness, itr, fittol, store
+
+    # result presentation
+    printstyled("\nRESULTS :\n", color=:bold)
+    println("number of generations = " * string(generations))
+    println("best Fitness          = " * string(bestFitness))
+    println("")
+    println("genes of best individual :")
+    for gene in population[bestIndividual]
+        for (i,j) in enumerate(gene.value)
+            println("$(gene.name[i]) = $j")
+        end
+    end
+    println("")
+    
+    return population[bestIndividual], bestFitness, generations, store
 end

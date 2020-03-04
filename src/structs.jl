@@ -13,21 +13,24 @@ export selection, crossover, bin
 ####################################################################
 
 """
-Abstract Type to represent all types of genes supported.
+Abstract Type that represents all types of genes supported.
 """
 abstract type AbstractGene end
 
 ####################################################################
 
 """
-    BinaryGene(value ::Bool)
+    BinaryGene(value ::Bool, name ::AbstractString)
 
-Creates a `BinaryGene` structure. This gene represents a `Bool` variable (1 or 0). Useful to make decisions (will a reactor work or not, will a SMB pathway be used or not, etc.).
+Creates a `BinaryGene` structure. This gene represents a `Bool` variable (1 or 0). Useful to make decisions (will a reactor work or not, will a SMB pathway be used or not, etc.). `name` is the variable name for presentation purposes.
 """
 mutable struct BinaryGene <: AbstractGene
     value ::Bool
+    name  ::AbstractString
     
-    BinaryGene(value ::Bool) = new(value)
+    function BinaryGene(value ::Bool, name ::AbstractString)
+        return new(value, name)
+    end
 end
 
 """
@@ -35,7 +38,7 @@ end
 
 Creates a `BinaryGene` structure with a random `Bool` value.
 """
-BinaryGene() = BinaryGene(rand(Bool))
+BinaryGene() = BinaryGene(rand(Bool), "bin_var")
 
 ####################################################################
 
@@ -56,11 +59,13 @@ Creates a `IntegerGene` structure. This gene represents an integer variable as `
 mutable struct IntegerGene <: AbstractGene
     value    ::BitVector
     mutation ::Symbol
+    name     ::AbstractString
     
-    function IntegerGene(value ::BitVector, mutation ::Symbol)
+    function IntegerGene(value ::BitVector, mutation ::Symbol,
+                         name ::AbstractString)
         int_func = mutate(mutation)
         @eval mutate(gene ::IntegerGene) = $int_func(gene.value)
-        return new(value, mutation)
+        return new(value, mutation, name)
     end
 end
 
@@ -69,8 +74,8 @@ end
 
 Creates a `IntegerGene` structure with the default mutation being Flip Mutation.
 """
-function IntegerGene(value ::BitVector) 
-    return IntegerGene(value, :FM)
+function IntegerGene(value ::BitVector, name ::AbstractString) 
+    return IntegerGene(value, :FM, name)
 end
 
 """
@@ -78,12 +83,12 @@ end
 
 Creates a `IntegerGene` structure in which the `BitVector` is of length `n` with random `Bool` values.
 """
-function IntegerGene(n ::Int64)
+function IntegerGene(n ::Int64, name ::AbstractString)
     value = BitVector(undef, n)
     for i in 1:n
         value[i] = rand(Bool)
     end
-    return IntegerGene(value, :FM)
+    return IntegerGene(value, :FM, name)
 end
 
 """
@@ -104,20 +109,22 @@ end
 """
     FloatGene(value ::Vector{Float64}, range ::Vector{Float64}, m ::Int64)
 
-Creates a `FloatGene` structure. `value` is a vector with the variables to be changed. `range` is a vector with the minimum and maximum values a variable can take. `m` is just a parameter that changes how much in a mutation the variables change, the bigger the value, the bigger the change in each mutation. If the range of a variable is 0.5, then the biggest mutation a variable can suffer is 0.5 for instance.
+Creates a `FloatGene` structure. `value` is a vector with the variables to be changed. `range` is a vector with the minimum and maximum values a variable can take. `m` is just a parameter that changes how much in a mutation the variables change, the bigger the value, the bigger the change in each mutation. If the range of a variable is 0.5, then the biggest mutation a variable can suffer in one iteration is 0.5 for instance.
 """
 mutable struct FloatGene <: AbstractGene
     value ::Vector{Float64}
     range ::Vector{Float64}
     m     ::Int64
+    name  ::Vector{<:AbstractString}
     
-    function FloatGene( value ::Vector{Float64} ,
-                        range ::Vector{Float64} ,
-                        m     ::Int64           )
+    function FloatGene( value ::Vector{Float64}          ,
+                        range ::Vector{Float64}          ,
+                        m     ::Int64                    ,
+                        name  ::Vector{<:AbstractString} )
         if length(value) != length(range)
             error("vectors must have the same length")
         end
-        return new(value, range, m)
+        return new(value, range, m, name)
     end
 end
 
@@ -126,8 +133,11 @@ end
 
 Creates a `FloatGene` structure. Handy for creating just one real number variable.
 """
-function FloatGene(value ::Float64, range ::Float64; m ::Int64 = 20)
-    return FloatGene(Float64[value], Float64[range], m)
+function FloatGene( value ::Float64        ,
+                    range ::Float64        ,
+                    name  ::AbstractString ;
+                    m     ::Int64 = 20     )
+    return FloatGene(Float64[value], Float64[range], m, [name])
 end
 
 """
@@ -135,9 +145,12 @@ end
 
 Creates a `FloatGene` structure. Handy for creating a vector of real numbers with the same range.
 """
-function FloatGene(value ::Vector{Float64}, range ::Float64; m ::Int64 = 20)
+function FloatGene( value ::Vector{Float64}          ,
+                    range ::Float64                  ,
+                    name  ::Vector{<:AbstractString} ;
+                    m     ::Int64 = 20               )
     vec = Float64[range for i in value]
-    return FloatGene(value, vec, m)
+    return FloatGene(value, vec, m, name)
 end
 
 """
@@ -145,9 +158,11 @@ end
 
 Creates a `FloatGene` structure. Handy for creating a vector of real numbers with a random range.
 """
-function FloatGene(value ::Vector{Float64}; m ::Int64 = 20)
+function FloatGene( value ::Vector{Float64}          ,
+                    name  ::Vector{<:AbstractString} ;
+                    m     ::Int64 = 20               )
     range = rand(Float64, length(value))
-    return FloatGene(value, range, m)
+    return FloatGene(value, range, m, name)
 end
 
 """
@@ -164,26 +179,17 @@ end
 
 Creates a `FloatGene` structure. Creates a vector of length `n` with random variables and random ranges. Used particularly for testing purposes.
 """
-function FloatGene(n ::Int64)
+function FloatGene(n ::Int64, name ::AbstractString)
     value = rand(Float64, n)
     range = rand(Float64, n)
-    return FloatGene(value, range, 20)
+    vec_name = Vector{AbstractString}(undef, n)
+    for i in 1:n
+        vec_name[i] = string(name, "_", i)
+    end
+    return FloatGene(value, range, 20, vec_name)
 end
 
 ####################################################################
-
-# :SPX - Single Point Crossover               - singlepoint
-# :TPX - Two Point Crossover                  - twopoint
-# :UX  - Uniform Crossover                    - uniform
-# :DX  - Discrete Crossover                   - discrete
-# :WMX - Weighted Mean Crossover              - waverage(w ::Vector{Float64})
-# :IRX - Intermediate Recombination Crossover - intermediate(d ::Float64)
-# :LRX - Line Recombination Crossover         - line(d ::Float64)
-# :PMX - Partially Mapped Crossover           - pmx
-# :O1X - Order 1 Crossover                    - ox1
-# :O2X - Order 2 Crossover                    - ox2
-# :CX  - Cycle Crossover                      - cx
-# :PX  - Position-based Crossover             - pos
 
 """
     Crossover(cross ::Symbol                                    ;
@@ -252,7 +258,7 @@ mutable struct Crossover
             end
         
             @eval begin
-                function crossover(v1::T, v2 ::T) where {T <: AbstractVector}    
+                function crossover(v1 ::T, v2 ::T) where {T <: Vector{<:Real}}
                     return $cross_func(v1, v2)
                 end
             end
@@ -261,13 +267,6 @@ mutable struct Crossover
 end
 
 ####################################################################
-
-# :RBS  - Rank-Based Selection
-# :URS  - Uniform-Ranking Selection
-# :RWS  - Roulette Wheel Selection
-# :SUSS - Stochastic Universal Sampling Selection
-# :TrS  - Truncation Selection
-# :ToS  - Tournament Selection
 
 """
     Selection( select    ::Symbol                            ;
