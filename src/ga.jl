@@ -58,9 +58,6 @@ function ga( objfun         ::Function                          ,
              parallel       ::Bool                    = false   )
 
     store = Dict{Symbol,Any}()
-    
-    fitFunc = objfun
-    # fitFunc = inverseFunc(objfun)
 
     # Initialize population
     fitness = zeros(populationSize)
@@ -69,7 +66,7 @@ function ga( objfun         ::Function                          ,
 
     for i in 1:populationSize
         population[i] = initpopulation[i]
-        fitness[i] = fitFunc(population[i])
+        fitness[i] = objfun(population[i])
         debug && println("INIT $(i): $(population[i]) : $(fitness[i])")
     end
     fitidx = sortperm(fitness)
@@ -115,8 +112,6 @@ function ga( objfun         ::Function                          ,
             end
         end
         
-        
-        
         # Elitism
         # When true, always picks N best individuals from the full population
         # (parents+offspring), which is size 2*N.
@@ -124,16 +119,16 @@ function ga( objfun         ::Function                          ,
         if ϵ
             full_pop[1:populationSize] = population
             full_pop[populationSize+1:end] = offspring
-            full_fitness = fitFunc.(full_pop)
+            full_fitness = objfun.(full_pop)
             fitidx = sortperm(full_fitness)
             for i in 1:populationSize
                 population[i] = full_pop[fitidx[i]]
-                fitness[i] = fitFunc(population[i])
+                fitness[i] = objfun(population[i])
             end
         else
             for i in 1:populationSize
                 population[i] = offspring[i]
-                fitness[i] = fitFunc(population[i])
+                fitness[i] = objfun(population[i])
                 debug && println("FIT $(i): $(fitness[i])")
             end
         end
@@ -161,8 +156,14 @@ function ga( objfun         ::Function                          ,
     println("")
     println("genes of best individual :")
     for gene in population[bestIndividual]
-        for (i,j) in enumerate(gene.value)
-            println("$(gene.name[i]) = $j")
+        if isa(gene, FloatGene)
+            for (i,j) in enumerate(gene.value)
+                println("$(gene.name[i]) = $j")
+            end
+        elseif isa(gene, IntegerGene)
+            println("$(gene.name) = $(bin(gene))")
+        else
+            println("$(gene.name) = $(gene.value)")
         end
     end
     println("")

@@ -258,7 +258,7 @@ mutable struct Crossover
             end
         
             @eval begin
-                function crossover(v1 ::T, v2 ::T) where {T <: Vector{<:Real}}
+                function crossover(v1 ::T, v2 ::T) where {T <: AbstractVector}
                     return $cross_func(v1, v2)
                 end
             end
