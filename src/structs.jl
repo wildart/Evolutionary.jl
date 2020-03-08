@@ -78,7 +78,7 @@ Creates a `IntegerGene` structure in which the `BitVector` is of length `n` with
 function IntegerGene(n ::Int64, name ::AbstractString)
     value = BitVector(undef, n)
     for i in 1:n
-        value[i] = rand(Bool)
+        @inbounds value[i] = rand(Bool)
     end
     return IntegerGene(value, :FM, name)
 end

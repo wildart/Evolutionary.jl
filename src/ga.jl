@@ -276,8 +276,8 @@ function data_presentation( individual   ::Individual ,
         end
     end
     
-    table = string("| parameter | value |\n" ,
-                   "|-----------|-------|\n" )
+    table = string( "| parameter | value |\n" ,
+                    "|-----------|-------|\n" )
     for (i,j) in enumerate(params)
         table *= "| $j | $(values[i]) |\n"
     end
