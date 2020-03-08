@@ -17,7 +17,7 @@ function ranklinear(sp ::Float64)
         idx = sortperm(fitness)
         ranks = zeros(λ)
         for i in 1:λ
-            ranks[i] = ( 2 - sp + 2*(sp-1)*(idx[i]-1) / (λ-1) ) / λ
+            @inbounds ranks[i] = ( 2 - sp + 2*(sp-1)*(idx[i]-1) / (λ-1) ) / λ
         end
         return pselection(ranks, N)
     end
@@ -32,7 +32,7 @@ function uniformranking(μ ::Int)
         @assert μ < λ "μ should be less then $(λ)"
         ranks = similar(fitness, Float64)
         for i in 1:μ
-            ranks[idx[i]] = 1/μ
+            @inbounds ranks[idx[i]] = 1/μ
         end
         return pselection(ranks, N)
     end
@@ -91,7 +91,7 @@ function tournament(groupSize ::Int)
                 c = contender[idx]
                 if winnerFitness < fitness[c]
                     winner        = c
-                    winnerFitness = fitness[c]
+                    @inbounds winnerFitness = fitness[c]
                 end
             end
 
