@@ -1,3 +1,14 @@
+##### mutations.jl #####
+
+# In this file you will several functions that correspond to specific types of mutations.
+# Has functions for both Evolution Strategies and Genetic Algorithms.
+
+####################################################################
+
+export mutate
+
+####################################################################
+
 # Mutation operators
 # ==================
 
@@ -16,6 +27,7 @@ function anisotropic(recombinant::T, s::S) where {T <: Vector, S <: Strategy}
     return recombinant
 end
 
+####################################################################
 
 # Strategy mutation operators
 # ===========================
@@ -35,25 +47,33 @@ function anisotropicSigma(s::S) where {S <: Strategy}
     return strategy(σ = σ, τ = s[:τ], τ0 = s[:τ0])
 end
 
+####################################################################
 
 # Genetic mutations
 # =================
 
 # Binary mutations
 # ----------------
-function flip(recombinant::Vector{Bool})
+function flip(recombinant ::BitVector)
     s = length(recombinant)
     pos = rand(1:s)
     recombinant[pos] = !recombinant[pos]
     return recombinant
 end
 
+function singleflip(recombinant ::Bool)
+    if rand() > 0.5
+        recombinant = !recombinant
+    end
+    return recombinant
+end
+
 # Real valued mutation
 # Mühlenbein, H. and Schlierkamp-Voosen, D.: Predictive Models for the Breeder Genetic Algorithm: I. Continuous Parameter Optimization. Evolutionary Computation, 1 (1), pp. 25-49, 1993.
 # --------------------
-function domainrange(valrange::Vector, m::Int = 20)
+function domainrange(valrange:: Vector{Float64}, m ::Int = 20)
     prob = 1.0 / m
-    function mutation(recombinant::T) where {T <: Vector}
+    function mutation(recombinant ::Vector{Float64})
         d = length(recombinant)
         @assert length(valrange) == d "Range matrix must have $(d) columns"
         δ = zeros(m)
@@ -72,10 +92,9 @@ function domainrange(valrange::Vector, m::Int = 20)
     return mutation
 end
 
-
 # Combinatorial mutations (applicable to binary vectors)
 # ------------------------------------------------------
-function inversion(recombinant::T) where {T <: Vector}
+function inversion(recombinant ::BitVector)
     l = length(recombinant)
     from, to = rand(1:l, 2)
     from, to = from > to ? (to, from)  : (from, to)
@@ -86,7 +105,7 @@ function inversion(recombinant::T) where {T <: Vector}
     return recombinant
 end
 
-function insertion(recombinant::T) where {T <: Vector}
+function insertion(recombinant ::BitVector)
     l = length(recombinant)
     from, to = rand(1:l, 2)
     val = recombinant[from]
@@ -94,14 +113,14 @@ function insertion(recombinant::T) where {T <: Vector}
     return insert!(recombinant, to, val)
 end
 
-function swap2(recombinant::T) where {T <: Vector}
+function swap2(recombinant ::BitVector)
     l = length(recombinant)
     from, to = rand(1:l, 2)
     swap!(recombinant, from, to)
     return recombinant
 end
 
-function scramble(recombinant::T) where {T <: Vector}
+function scramble(recombinant ::BitVector)
     l = length(recombinant)
     from, to = rand(1:l, 2)
     from, to = from > to ? (to, from)  : (from, to)
@@ -117,7 +136,7 @@ function scramble(recombinant::T) where {T <: Vector}
     return recombinant
 end
 
-function shifting(recombinant::T) where {T <: Vector}
+function shifting(recombinant ::BitVector)
     l = length(recombinant)
     from, to, where = sort(rand(1:l, 3))
     patch = recombinant[from:to]
@@ -139,13 +158,93 @@ end
 
 # Utils
 # =====
-function swap!(v::T, from::Int, to::Int) where {T <: Vector}
+function swap!(v ::T, from ::Int, to ::Int) where {T <: Vector}
     val = v[from]
     v[from] = v[to]
     v[to] = val
 end
 
-function mutationwrapper(gamutation::Function)
-    wrapper(recombinant::T, s::S) where {T <: Vector, S <: Strategy} =  gamutation(recombinant) 
+function mutationwrapper(gamutation ::Function)
+    wrapper(recombinant::T, s::S) where {T <: Vector, S <: Strategy} =
+        gamutation(recombinant) 
     return wrapper
+end
+
+####################################################################
+
+# This function serves only to choose the mutation function for binary functions. The actual `mutate`
+# function is created in the `IntegerGene` structure.
+# FM   - Flip Mutation
+# InvM - Inversion Mutation
+# InsM - Insertion Mutation
+# SwM  - Swap Mutation
+# ScrM - Scramble Mutation
+# ShM  - Shifting Mutation
+
+"""
+    mutate(gene ::IntegerGene)
+
+Mutates `gene` according to the mutation function chosen in the `IntegerGene` structure.
+"""
+function mutate(mutatetype ::Symbol)
+    mut_func = nothing
+    if mutatetype == :FM
+        mut_func = flip
+    elseif mutatetype == :InvM
+        mut_func = inversion
+    elseif mutatetype == :InsM
+        mut_func = insertion
+    elseif mutatetype == :SwM
+        mut_func = swap2
+    elseif mutatetype == :ScrM
+        mut_func = scramble
+    elseif mutatetype == :ShM
+        mut_func = shifting
+    else
+        error("Unknown mutation type")
+    end
+    return mut_func
+end
+
+"""
+    mutate(gene ::BinaryGene)
+
+Mutates `gene` using the Single Flip Mutation.
+"""
+function mutate(gene ::BinaryGene)
+    gene.value = singleflip(gene.value)
+    return nothing
+end
+
+"""
+    mutate(gene ::FloatGene)
+
+Mutates `gene` using Real Valued Mutation.
+"""
+function mutate(gene ::FloatGene)
+    prob = 1.0 / gene.m
+    δ = zeros(gene.m)
+    for i in 1:length(gene.value)
+        for j in 1:gene.m
+            δ[j] = (rand() < prob) ? 2.0^(-j) : 0.0
+        end
+        if rand() > 0.5
+            gene.value[i] += sum(δ)*gene.range[i]
+        else
+            gene.value[i] -= sum(δ)*gene.range[i]
+        end
+    end
+    return nothing
+end
+
+"""
+    mutate(chromossome ::Vector{<:AbstractGene})
+
+Mutates each entry of `chromossome` according to the mutations chosen.
+"""
+function mutate(chromossome ::Individual)
+    for gene in chromossome
+        mutate(gene)
+    end
+    return nothing
 end
