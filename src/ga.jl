@@ -96,7 +96,6 @@ end
 
 ####################################################################
 
-# DArray{Individual,1,Vector{Individual}}
 function generations( objfun     ::Function           ,
                       population ::Vector{Individual} ,
                       N          ::Integer            ,
@@ -230,16 +229,18 @@ function generations_parallel( objfun ::Function                                
                 full_pop[1+N:2*N] = offspring
                 full_fitness      = objfun.(full_pop)
                 fitidx            = sortperm(full_fitness)
-                for i in 1:N
+            end
+            for i in 1:N
+                @inbounds begin
                     population[i] = full_pop[fitidx[i]]
-                    fitness[i] = objfun(population[i])
+                       fitness[i] = objfun(population[i])
                 end
             end
         else
-            @inbounds begin
-                for i in 1:N
+            for i in 1:N
+                @inbounds begin
                     population[i] = offspring[i]
-                    fitness[i] = objfun(population[i])
+                       fitness[i] = objfun(population[i])
                 end
             end
         end
