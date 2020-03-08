@@ -39,128 +39,222 @@ export ga
 
 Runs the Genetic Algorithm using the objective function `objfun`, the initial population `initpopulation` and the population size `populationSize`. `objfun` is the function to MINIMIZE. 
 """
-function ga( objfun         ::Function                          ,
-             population     ::Vector{Vector{<:AbstractGene}}    ;
-             lowerBounds    ::Union{Nothing, Vector } = nothing ,
-             upperBounds    ::Union{Nothing, Vector } = nothing ,
-             crossoverRate  ::Float64                 = 0.5     ,
-             mutationRate   ::Float64                 = 0.5     ,
-             ϵ              ::Bool                    = false   ,
-             iterations     ::Integer                 = 100     ,
-             tol            ::Real                    = 0.0     ,
-             tolIter        ::Int64                   = 10      ,
-             verbose        ::Bool                    = false   ,
-             debug          ::Bool                    = false   ,
-             interim        ::Bool                    = false   ,
-             parallel       ::Bool                    = false   )
-
-    store = Dict{Symbol,Any}()
+function ga( objfun         ::Function                        ,
+             population     ::Vector{Individual}              ;
+             crossoverRate  ::Float64                 = 0.5   ,
+             mutationRate   ::Float64                 = 0.5   ,
+             ϵ              ::Bool                    = true  ,
+             iterations     ::Integer                 = 100   ,
+             tol            ::Real                    = 0.0   ,
+             parallel       ::Bool                    = false )
 
     # Initialize population
-    populationSize = length(population)
-    fitness = Vector{Float64}(undef, populationSize)
-    offspring = similar(population)
+    N = length(population)
+    fitness = Vector{Float64}(undef, N)
 
-    for i in 1:populationSize
-        fitness[i] = objfun(population[i])
-        debug && println("INIT $(i): $(population[i]) : $(fitness[i])")
+    for i in 1:N
+        @inbounds fitness[i] = objfun(population[i])
     end
     fitidx = sortperm(fitness)
-    keep(interim, :fitness, copy(fitness), store)
+
+    # save optional arguments in a dictionary
+    # to pass to generation function
+    pars = Dict{Symbol, Any}()
+    pars[:crossoverRate] = crossoverRate
+    pars[:mutationRate ] = mutationRate
+    pars[:ϵ            ] = ϵ
+    pars[:iterations   ] = iterations
+    pars[:tol          ] = tol
     
     # Generate and evaluate offspring
-    isfit = false
-    generations = 1
-    bestFitness = 0.0
-    bestIndividual = 0
-    full_fitness = Vector{Float64}(undef, 2*populationSize)
-    full_pop = Vector{Vector{<:AbstractGene}}(undef, 2*populationSize)
+    if parallel
+        population = distribute(population)
+        fitness    = distribute(fitness)
+        elapsed_time = @elapsed begin
+            spmd(generations_parallel, objfun,
+                 population, fitness, pars)
+        end
+    else
+        elapsed_time = @elapsed begin
+            generations(objfun, population, N, fitness, pars)
+        end
+    end
+
+    bestFitness, bestIndividual = findmin(fitness)
+    if bestFitness <= tol
+        isfit = true
+    else
+        isfit = false
+    end
+
+    # result presentation
+    data_presentation( population[bestIndividual], iterations,
+                       bestFitness, isfit, elapsed_time )
     
-    elapsed_time = @elapsed begin
-        for iter in 1:iterations
-            debug && println("BEST: $(fitidx)")
-            
-            # Select offspring
-            selected = selection(fitness, populationSize)
-            
-            # Perform mating
-            offidx = randperm(populationSize)
-            for i in 1:2:populationSize
-                j = (i == populationSize) ? i-1 : i+1
-                if rand() < crossoverRate
-                    debug &&
-                        println( "MATE $(offidx[i])+$(offidx[j])>: "     *
-                                 "$(population[selected[offidx[i]]]) : " *
-                                 "$(population[selected[offidx[j]]])"    )
+    return population[bestIndividual], bestFitness
+end
+
+####################################################################
+
+# DArray{Individual,1,Vector{Individual}}
+function generations( objfun     ::Function           ,
+                      population ::Vector{Individual} ,
+                      N          ::Integer            ,
+                      fitness    ::Vector{Float64}    ,
+                      pars       ::Dict{Symbol,Any}   )
+    
+    # Variable initialization
+    generations    = 1
+    bestIndividual = 0
+    bestFitness    = 0.0
+    offspring      = Vector{Individual}(undef,   N)
+    full_pop       = Vector{Individual}(undef, 2*N)
+    full_fitness   = Vector{Float64   }(undef, 2*N)
+
+    for iter in 1:pars[:iterations]
+        
+        # Select offspring
+        selected = selection(fitness, N)
+        
+        # Perform mating
+        offidx = randperm(N)
+        for i in 1:2:N
+            j = (i == N) ? i-1 : i+1
+            if rand() < pars[:crossoverRate]
+                @inbounds begin
                     offspring[i], offspring[j] =
-                        crossover(population[selected[offidx[i]]], population[selected[offidx[j]]])
-                    debug &&
-                        println("MATE >$(offidx[i])+$(offidx[j]): $(offspring[i]) : $(offspring[j])")
-                else
+                        crossover( population[selected[offidx[i]]] ,
+                                   population[selected[offidx[j]]] )
+                end
+            else
+                @inbounds begin
                     offspring[i], offspring[j] =
                         population[selected[i]], population[selected[j]]
                 end
             end
-            
-            # Perform mutation
-            for i in 1:populationSize
-                if rand() < mutationRate
-                    debug && println("MUTATED $(i)>: $(offspring[i])")
-                    mutate(offspring[i])
-                    debug && println("MUTATED >$(i): $(offspring[i])")
-                end
+        end
+        
+        # Perform mutation
+        for i in 1:N
+            if rand() < pars[:mutationRate]
+                @inbounds mutate(offspring[i])
             end
-            
-            # Elitism
-            # When true, always picks N best individuals from the full population
-            # (parents+offspring), which is size 2*N.
-            # When false, does everything randomly
-            if ϵ
-                full_pop[1:populationSize] = population
-                full_pop[populationSize+1:end] = offspring
+        end
+        
+        # Elitism
+        # When true, always picks N best individuals from the full population
+        # (parents+offspring), which is size 2*N.
+        # When false, does everything randomly
+        if pars[:ϵ]
+            @inbounds begin
+                full_pop[  1:  N] = population
+                full_pop[N+1:2*N] = offspring
                 full_fitness = objfun.(full_pop)
                 fitidx = sortperm(full_fitness)
-                for i in 1:populationSize
+            end
+            for i in 1:N
+                @inbounds begin
                     population[i] = full_pop[fitidx[i]]
-                    fitness[i] = objfun(population[i])
-                end
-            else
-                for i in 1:populationSize
-                    population[i] = offspring[i]
-                    fitness[i] = objfun(population[i])
-                    debug && println("FIT $(i): $(fitness[i])")
+                       fitness[i] = objfun(population[i])
                 end
             end
-
-            bestFitness, bestIndividual = findmin(fitness)
-
-            keep(interim, :fitness, copy(fitness), store)
-            keep(interim, :bestFitness, bestFitness, store)
-
-            # Verbose step
-            verbose &&
-                println("BEST: $(round(bestFitness, digits=3)): " *
-                        "$(population[bestIndividual]), G: $(iter)")
-
-            generations = iter
-            if bestFitness <= tol
-                isfit = true
-                break
+        else
+            for i in 1:N
+                @inbounds begin
+                    population[i] = offspring[i]
+                       fitness[i] = objfun(population[i])
+                end
             end
         end
     end
-    # result presentation
-    data_presentation(population[bestIndividual], generations,
-                      bestFitness, isfit, elapsed_time)
-    
-    return population[bestIndividual], bestFitness, generations, store
+
+    return nothing
 end
 
-function data_presentation( individual   ::Vector{<:AbstractGene} ,
-                            generations  ::Integer                ,
-                            bestFitness  ::Float64                ,
-                            isfit        ::Bool                   ,
-                            elapsed_time ::Float64                )
+####################################################################
+
+function generations_parallel( objfun ::Function                                ,
+                               popul  ::DArray{Individual,1,Vector{Individual}} ,
+                               fit    ::DArray{Float64,1,Vector{Float64}}       ,
+                               pars   ::Dict{Symbol,Any}                        )
+
+    # Variable initialization
+    population     = popul[:L]
+    fitness        =   fit[:L]
+    N              = length(population)
+    generations    = 1
+    bestIndividual = 0
+    bestFitness    = 0.0
+    offspring      = Vector{Individual}(undef,   N)
+    full_pop       = Vector{Individual}(undef, 2*N)
+    full_fitness   = Vector{Float64   }(undef, 2*N)
+
+    # Generate and evaluate offspring
+    for iter in 1:pars[:iterations]
+        
+        # Select offspring
+        selected = selection(fitness, N)
+        
+        # Perform mating
+        offidx = randperm(N)
+        for i in 1:2:N
+            j = (i == N) ? i-1 : i+1
+            if rand() < pars[:crossoverRate]
+                @inbounds begin
+                    offspring[i], offspring[j] =
+                        crossover( population[selected[offidx[i]]] ,
+                                   population[selected[offidx[j]]] )
+                end
+            else
+                @inbounds begin
+                    offspring[i], offspring[j] =
+                        population[selected[i]], population[selected[j]]
+                end
+            end
+        end
+        
+        # Perform mutation
+        for i in 1:N
+            if rand() < pars[:mutationRate]
+                @inbounds mutate(offspring[i])
+            end
+        end
+        
+        # Elitism
+        # When true, always picks N best individuals from the full population
+        # (parents+offspring), which is size 2*N.
+        # When false, does everything randomly
+        if pars[:ϵ]
+            @inbounds begin
+                full_pop[1  :  N] = population
+                full_pop[1+N:2*N] = offspring
+                full_fitness      = objfun.(full_pop)
+                fitidx            = sortperm(full_fitness)
+                for i in 1:N
+                    population[i] = full_pop[fitidx[i]]
+                    fitness[i] = objfun(population[i])
+                end
+            end
+        else
+            @inbounds begin
+                for i in 1:N
+                    population[i] = offspring[i]
+                    fitness[i] = objfun(population[i])
+                end
+            end
+        end
+    end
+
+    return nothing
+end
+
+####################################################################
+
+function data_presentation( individual   ::Individual ,
+                            generations  ::Integer    ,
+                            bestFitness  ::Float64    ,
+                            isfit        ::Bool       ,
+                            elapsed_time ::Float64    )
 
     optim_time = round(elapsed_time, digits=3)
     
@@ -204,3 +298,4 @@ function data_presentation( individual   ::Vector{<:AbstractGene} ,
 
     return nothing
 end
+

@@ -5,17 +5,9 @@
 
 ####################################################################
 
-export AbstractGene
 export BinaryGene, IntegerGene, FloatGene
 export Crossover, Selection
 export selection, crossover, bin
-
-####################################################################
-
-"""
-Abstract Type that represents all types of genes supported.
-"""
-abstract type AbstractGene end
 
 ####################################################################
 

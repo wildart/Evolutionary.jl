@@ -2,28 +2,25 @@
 module Evolutionary
 
 using Random, Base.Threads
+using Distributed
+using DistributedArrays, DistributedArrays.SPMD
 
-export Strategy, strategy, inverse, mutationwrapper,
-    # ES mutations
-    isotropic, anisotropic, isotropicSigma, anisotropicSigma,
-    # GA mutations
-    flip, domainrange, inversion, insertion, swap2, scramble, shifting,
-    # ES recombinations
-    average, marriage, averageSigma1, averageSigmaN,
-    # GA recombinations
-    singlepoint, twopoint, uniform,
-    discrete, waverage, intermediate, line,
-    pmx, ox1, cx, ox2, pos,
-    # GA selections
-    ranklinear, uniformranking, roulette, sus, tournament, truncation,
+export
     # Optimization methods
     es, cmaes, ga,
     # Constants
-    GAVector
+    GAVector, Individual, AbstractGene
+
+####################################################################
+
+"""
+Abstract Type that represents all types of genes supported.
+"""
+abstract type AbstractGene end
 
 const Strategy = Dict{Symbol,Any}
 
-const Individual = Nothing
+const Individual = Vector{<:AbstractGene}
 
 const GAVector = Union{T, BitVector} where T <: Vector
 

@@ -242,7 +242,7 @@ end
 
 Mutates each entry of `chromossome` according to the mutations chosen.
 """
-function mutate(chromossome ::Vector{<:AbstractGene})
+function mutate(chromossome ::Individual)
     for gene in chromossome
         mutate(gene)
     end

@@ -335,7 +335,7 @@ end
 
 `chromo1` and `chromo2` are two vectors of genes. Crosses each entry of both chromossomes according to the crossover function chosen.
 """
-function crossover(chromo1 ::T, chromo2 ::T) where {T <: Vector{<:AbstractGene}}
+function crossover(chromo1 ::T, chromo2 ::T) where {T <: Individual}
     c1 = deepcopy(chromo1)
     c2 = deepcopy(chromo2)
     for i in 1:length(chromo1)
