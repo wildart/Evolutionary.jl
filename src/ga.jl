@@ -46,7 +46,8 @@ function ga( objfun         ::Function                        ,
              ϵ              ::Bool                    = true  ,
              iterations     ::Integer                 = 100   ,
              tol            ::Real                    = 0.0   ,
-             parallel       ::Bool                    = false )
+             parallel       ::Bool                    = false ,
+             piping         ::Bool                    = false )
 
     # Initialize population
     N = length(population)
@@ -65,6 +66,12 @@ function ga( objfun         ::Function                        ,
     pars[:ϵ            ] = ϵ
     pars[:iterations   ] = iterations
     pars[:tol          ] = tol
+
+    # If the objective function uses an external program, use piping
+    if piping
+    else
+    end
+       
     
     # Generate and evaluate offspring
     if parallel
