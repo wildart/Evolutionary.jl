@@ -39,22 +39,28 @@ export ga
 
 Runs the Genetic Algorithm using the objective function `objfun`, the initial population `initpopulation` and the population size `populationSize`. `objfun` is the function to MINIMIZE. 
 """
-function ga( objfun         ::Function                        ,
-             population     ::Vector{Individual}              ;
-             crossoverRate  ::Float64                 = 0.5   ,
-             mutationRate   ::Float64                 = 0.5   ,
-             ϵ              ::Bool                    = true  ,
-             iterations     ::Integer                 = 100   ,
-             tol            ::Real                    = 0.0   ,
-             parallel       ::Bool                    = false ,
-             piping         ::Bool                    = false )
+function ga( objfun        ::Function                            ,
+             population    ::Vector{Individual}                  ;
+             crossoverRate ::Float64                   = 0.5     ,
+             mutationRate  ::Float64                   = 0.5     ,
+             ϵ             ::Bool                      = true    ,
+             iterations    ::Integer                   = 100     ,
+             tol           ::Real                      = 0.0     ,
+             parallel      ::Bool                      = false   ,
+             piping        ::Union{Nothing,GAExternal} = nothing )
 
     # Initialize population
     N = length(population)
     fitness = Vector{Float64}(undef, N)
 
+    if piping == nothing
+        objfunc = objfun
+    else
+        objfunc(x ::Vector{Individual}) = objfun(x, piping)
+    end
+    
     for i in 1:N
-        @inbounds fitness[i] = objfun(population[i])
+        @inbounds fitness[i] = objfunc(population[i])
     end
     fitidx = sortperm(fitness)
 
@@ -67,23 +73,17 @@ function ga( objfun         ::Function                        ,
     pars[:iterations   ] = iterations
     pars[:tol          ] = tol
 
-    # If the objective function uses an external program, use piping
-    if piping
-    else
-    end
-       
-    
     # Generate and evaluate offspring
     if parallel
         population = distribute(population)
         fitness    = distribute(fitness)
         elapsed_time = @elapsed begin
-            spmd(generations_parallel, objfun,
+            spmd(generations_parallel, objfunc,
                  population, fitness, pars)
         end
     else
         elapsed_time = @elapsed begin
-            generations(objfun, population, N, fitness, pars)
+            generations(objfunc, population, N, fitness, pars)
         end
     end
 
