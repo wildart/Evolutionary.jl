@@ -8,6 +8,7 @@
 export BinaryGene, IntegerGene, FloatGene
 export Crossover, Selection
 export selection, crossover, bin
+export GAExternal
 
 ####################################################################
 
@@ -319,5 +320,75 @@ mutable struct Selection
             end
         end
         return new(select, sp, μ, groupsize)
+    end
+end
+
+####################################################################
+
+"""
+    function GAExternal( program  ::AbstractString ,
+                         pipename ::AbstractString ;
+                         parallel ::Bool = false   )
+
+Creates communication pipes for the external program `program`. If `parallel` is `true`, then, considering N workers available, N pipes for reading and N pipes for writing will be created. `pipename` is just a handle for the name of the pipes. If `pipename` is `pipe`, then the pipe names will be `pipe_in` and `pipe_out` for `parallel` as false and `pipe_inn` and `pipe_outn` for `parallel` as true, such as `n` being one of the N workers.
+"""
+mutable struct GAExternal
+    program   ::AbstractString
+    pipes_in  ::DArray{String,1,Vector{String}}
+    pipes_out ::DArray{String,1,Vector{String}}
+    parallel  ::Bool
+
+    function GAExternal( program  ::AbstractString ,
+                         pipename ::AbstractString ;
+                         parallel ::Bool = false   )
+        pipes = Dict{String,Vector{String}}()
+        pipes["in" ] = Vector{String}(undef, 0)
+        pipes["out"] = Vector{String}(undef, 0)
+        if parallel
+            # create one pipe for reading and another for writing
+            # for each worker
+            for i in ["in","out"]
+                for p in workers()
+                    f = string(pipename, "_", i, p)
+                    push!(pipes[i], f)
+                    rm(f, force=true)
+                    run(`mkfifo $f`)
+                    
+                end
+            end
+        else
+            # create one pipe for reading and another for writing
+            for i in ["in","out"]
+                f = string(pipename, "_", i)
+                push!(pipes[i], f)
+                rm(f, force=true)
+                run(`mkfifo $f`)
+            end
+        end
+
+        pin  = distribute(pipes["in" ])
+        pout = distribute(pipes["out"])
+
+        # activate writing pipes to a big amount of time
+        # reading pipes do not need, the program needs to
+        # write explicitly to the pipe internally,
+        # otherwise the processes block
+        for p in pipes["in"]
+            @spawnat :any run(pipeline(`sleep 100000000`, p))
+            @spawnat :any run(pipeline(`$program`; stdin=p))
+        end
+        
+        # remove all pipes when exiting julia
+        function external_atexit()
+            for k in keys(pipes)
+                for p in pipes[k]
+                    rm(p, force=true)
+                end
+            end
+            return nothing
+        end
+        atexit(external_atexit)
+
+        return new(program, pin, pout, parallel)
     end
 end
