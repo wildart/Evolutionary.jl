@@ -53,19 +53,15 @@ function ga( objfun        ::Function                            ,
     N = length(population)
     fitness = Vector{Float64}(undef, N)
 
+    # check if piping is used
     if piping == nothing
-        objfunc = objfun
+        func = objfun
     else
-        objfunc(x ::Vector{Individual}) = objfun(x, piping)
+        func = (x) -> objfun(x, piping)
     end
-    
-    for i in 1:N
-        @inbounds fitness[i] = objfunc(population[i])
-    end
-    fitidx = sortperm(fitness)
 
     # save optional arguments in a dictionary
-    # to pass to generation function
+    # to pass to one of the generation functions
     pars = Dict{Symbol, Any}()
     pars[:crossoverRate] = crossoverRate
     pars[:mutationRate ] = mutationRate
@@ -75,15 +71,21 @@ function ga( objfun        ::Function                            ,
 
     # Generate and evaluate offspring
     if parallel
-        population = distribute(population)
-        fitness    = distribute(fitness)
+        if piping == nothing
+            works = workers()[1:Sys.CPU_THREADS]
+        else
+            works = piping.avail_workers
+        end
+        population = distribute(population;procs=works)
+        fitness    = distribute(fitness;procs=works)
         elapsed_time = @elapsed begin
-            spmd(generations_parallel, objfunc,
-                 population, fitness, pars)
+            spmd(generations_parallel, func,
+                 population, fitness, pars;
+                 pids=works)
         end
     else
         elapsed_time = @elapsed begin
-            generations(objfunc, population, N, fitness, pars)
+            generations(func, population, N, fitness, pars)
         end
     end
 
@@ -115,8 +117,9 @@ function generations( objfun     ::Function           ,
     bestFitness    = 0.0
     offspring      = Vector{Individual}(undef,   N)
     full_pop       = Vector{Individual}(undef, 2*N)
-    full_fitness   = Vector{Float64   }(undef, 2*N)
+    full_fit       = Vector{Float64   }(undef, 2*N)
 
+    # Generate and evaluate offspring
     for iter in 1:pars[:iterations]
         
         # Select offspring
@@ -155,13 +158,13 @@ function generations( objfun     ::Function           ,
             @inbounds begin
                 full_pop[  1:  N] = population
                 full_pop[N+1:2*N] = offspring
-                full_fitness = objfun.(full_pop)
-                fitidx = sortperm(full_fitness)
+                full_fit          = objfun.(full_pop)
+                fitidx            = sortperm(full_fitness)
             end
             for i in 1:N
                 @inbounds begin
                     population[i] = full_pop[fitidx[i]]
-                       fitness[i] = objfun(population[i])
+                       fitness[i] = full_fit[fitidx[i]]
                 end
             end
         else
@@ -193,11 +196,11 @@ function generations_parallel( objfun ::Function                                
     bestFitness    = 0.0
     offspring      = Vector{Individual}(undef,   N)
     full_pop       = Vector{Individual}(undef, 2*N)
-    full_fitness   = Vector{Float64   }(undef, 2*N)
+    full_fit       = Vector{Float64   }(undef, 2*N)
 
     # Generate and evaluate offspring
     for iter in 1:pars[:iterations]
-        
+
         # Select offspring
         selected = selection(fitness, N)
         
@@ -227,20 +230,20 @@ function generations_parallel( objfun ::Function                                
         end
         
         # Elitism
-        # When true, always picks N best individuals from the full population
-        # (parents+offspring), which is size 2*N.
+        # When true, always picks N best individuals from the
+        # full population (parents+offspring), which is size 2*N.
         # When false, does everything randomly
         if pars[:ϵ]
             @inbounds begin
                 full_pop[1  :  N] = population
                 full_pop[1+N:2*N] = offspring
-                full_fitness      = objfun.(full_pop)
-                fitidx            = sortperm(full_fitness)
+                full_fit          = objfun.(full_pop)
+                fitidx            = sortperm(full_fit)
             end
             for i in 1:N
                 @inbounds begin
                     population[i] = full_pop[fitidx[i]]
-                       fitness[i] = objfun(population[i])
+                       fitness[i] = full_fit[fitidx[i]]
                 end
             end
         else
@@ -264,7 +267,7 @@ function data_presentation( individual   ::Individual ,
                             isfit        ::Bool       ,
                             elapsed_time ::Float64    )
 
-    optim_time = round(elapsed_time, digits=3)
+    optim_time = round(elapsed_time, digits=5)
     
     params = Vector{AbstractString}(undef, 0)
     values = Vector{Real}(undef, 0)
@@ -283,12 +286,11 @@ function data_presentation( individual   ::Individual ,
         end
     end
     
-    table = string( "| parameter | value |\n" ,
-                    "|-----------|-------|\n" )
+    table = @sprintf("| parameter | %-20s |\n", "value")
+    table *= @sprintf("|-----------|----------------------|\n")
     for (i,j) in enumerate(params)
-        table *= "| $j | $(values[i]) |\n"
+        table *= @sprintf("| %-9s | %-20s |\n", j, values[i])
     end
-    @doc table present
     
     printstyled("\nRESULTS :\n", color=:bold)
     println("number of generations = " * string(generations))
@@ -296,7 +298,7 @@ function data_presentation( individual   ::Individual ,
     println("Run time              = $optim_time seconds")
     println("")
     printstyled("GENES OF BEST INDIVIDUAL :\n", color=:bold)
-    display(@doc present)
+    println(table)
     println("")
     if isfit
         printstyled("OPTIMIZATION SUCCESSFUL\n"  , color=:bold)

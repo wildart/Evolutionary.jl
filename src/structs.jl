@@ -36,9 +36,25 @@ BinaryGene() = BinaryGene(rand(Bool), "bin_var")
 ####################################################################
 
 """
-    IntegerGene(value ::BitVector, mutation ::Symbol)
+    IntegerGene(value ::BitVector, name ::AbstractString)
 
-Creates a `IntegerGene` structure. This gene represents an integer variable as `BitVector`. To convert the `BitVector` in an integer, just look at the `bin` function from this package by typing `?bin` on the command prompt. `mutation` is a symbol that represents the type of mutation used for the bit vector. The below table shows all the mutation types supported:
+Creates a `IntegerGene` structure. This gene represents an integer variable as `BitVector`. To convert the `BitVector` in an integer, just look at the `bin` function from this package by typing `?bin` on the command prompt. `name` is a stringt that represents the name of the variable. It's needed for result presentation purposes.
+"""
+mutable struct IntegerGene <: AbstractGene
+    value    ::BitVector
+    name     ::AbstractString
+    
+    function IntegerGene(value ::BitVector, name ::AbstractString)
+        return new(value, name)
+    end
+end
+
+"""
+    IntegerGene(mutation ::Symbol)
+
+Chooses the mutation type. Does NOT create a structure. This dispatch was created because, when creating a population of integer genes, each gene would create this function, which was unnecessary work. You still need to run one of the other dispatches to create the gene.
+
+Below are the types of mutations supported:
 
 | Symbol | Algorithm |
 |-----|-----|
@@ -49,26 +65,10 @@ Creates a `IntegerGene` structure. This gene represents an integer variable as `
 | :ScrM | Scramble Mutation |
 | :ShM | Shifting Mutation |
 """
-mutable struct IntegerGene <: AbstractGene
-    value    ::BitVector
-    mutation ::Symbol
-    name     ::AbstractString
-    
-    function IntegerGene(value ::BitVector, mutation ::Symbol,
-                         name ::AbstractString)
-        int_func = mutate(mutation)
-        @eval mutate(gene ::IntegerGene) = $int_func(gene.value)
-        return new(value, mutation, name)
-    end
-end
-
-"""
-    IntegerGene(value ::BitVector)
-
-Creates a `IntegerGene` structure with the default mutation being Flip Mutation.
-"""
-function IntegerGene(value ::BitVector, name ::AbstractString) 
-    return IntegerGene(value, :FM, name)
+function IntegerGene(mutation ::Symbol)
+    int_func = mutate(mutation)
+    @eval mutate(gene ::IntegerGene) = $int_func(gene.value)
+    return nothing
 end
 
 """
@@ -81,7 +81,7 @@ function IntegerGene(n ::Int64, name ::AbstractString)
     for i in 1:n
         @inbounds value[i] = rand(Bool)
     end
-    return IntegerGene(value, :FM, name)
+    return IntegerGene(value, name)
 end
 
 """
@@ -116,6 +116,11 @@ mutable struct FloatGene <: AbstractGene
                         name  ::Vector{<:AbstractString} )
         if length(value) != length(range)
             error("vectors must have the same length")
+        end
+        for i in name
+            if length(i) > 9
+                error("variable name $i too long, must be less than 9 characters")
+            end
         end
         return new(value, range, m, name)
     end
@@ -177,7 +182,7 @@ function FloatGene(n ::Int64, name ::AbstractString)
     range = rand(Float64, n)
     vec_name = Vector{AbstractString}(undef, n)
     for i in 1:n
-        vec_name[i] = string(name, "_", i)
+        vec_name[i] = string(name, i)
     end
     return FloatGene(value, range, 20, vec_name)
 end
@@ -333,27 +338,30 @@ end
 Creates communication pipes for the external program `program`. If `parallel` is `true`, then, considering N workers available, N pipes for reading and N pipes for writing will be created. `pipename` is just a handle for the name of the pipes. If `pipename` is `pipe`, then the pipe names will be `pipe_in` and `pipe_out` for `parallel` as false and `pipe_inn` and `pipe_outn` for `parallel` as true, such as `n` being one of the N workers.
 """
 mutable struct GAExternal
-    program   ::AbstractString
-    pipes_in  ::DArray{String,1,Vector{String}}
-    pipes_out ::DArray{String,1,Vector{String}}
-    parallel  ::Bool
+    program       ::AbstractString
+    pipes_in      ::DArray{String,1,Vector{String}}
+    pipes_out     ::DArray{String,1,Vector{String}}
+    rch           ::Dict{AbstractString,RemoteChannel}
+    avail_workers ::Vector{Int64}
+    parallel      ::Bool
 
-    function GAExternal( program  ::AbstractString ,
-                         pipename ::AbstractString ;
-                         parallel ::Bool = false   )
+    function GAExternal( program  ::AbstractString         ,
+                         pipename ::AbstractString         ;
+                         nworkers ::Int64          = 8     ,
+                         parallel ::Bool           = false )
         pipes = Dict{String,Vector{String}}()
         pipes["in" ] = Vector{String}(undef, 0)
         pipes["out"] = Vector{String}(undef, 0)
+        avail_workers = workers()[1:nworkers]
         if parallel
             # create one pipe for reading and another for writing
             # for each worker
             for i in ["in","out"]
-                for p in workers()
+                for p in avail_workers
                     f = string(pipename, "_", i, p)
                     push!(pipes[i], f)
                     rm(f, force=true)
                     run(`mkfifo $f`)
-                    
                 end
             end
         else
@@ -366,19 +374,41 @@ mutable struct GAExternal
             end
         end
 
-        pin  = distribute(pipes["in" ])
-        pout = distribute(pipes["out"])
+        pin  = distribute(pipes["in" ]; procs=avail_workers)
+        pout = distribute(pipes["out"]; procs=avail_workers)
 
-        # activate writing pipes to a big amount of time
-        # reading pipes do not need, the program needs to
-        # write explicitly to the pipe internally,
-        # otherwise the processes block
+        # activate writing pipes for a big amount of time
         for p in pipes["in"]
             @spawnat :any run(pipeline(`sleep 100000000`, p))
             @spawnat :any run(pipeline(`$program`; stdin=p))
         end
-        
-        # remove all pipes when exiting julia
+
+        # Create remote channels to save return value(s)
+        # from the external program
+        rch = Dict{String,RemoteChannel}()
+        for p in pipes["out"]
+            rch[p] = RemoteChannel(()->Channel{Float64}(1))
+        end
+
+        # Open reading pipes in separate processes.
+        # The pipes have to be open before writing to them,
+        # otherwise we get SIGPIPE errors when writing.
+        function spawn_readpipes(pipe, rch)
+            f = open(pipe, "r")
+            while true
+                x = @elapsed begin
+                    b = readline(f)
+                    put!(rch[pipe], parse(Float64, b))
+                end
+            end
+            return nothing
+        end
+        for (i,p) in enumerate(pipes["out"])
+            v = nworkers+1 + i
+            @spawnat v spawn_readpipes(p, rch)
+        end
+
+        # delete all pipes when exiting julia
         function external_atexit()
             for k in keys(pipes)
                 for p in pipes[k]
@@ -389,6 +419,6 @@ mutable struct GAExternal
         end
         atexit(external_atexit)
 
-        return new(program, pin, pout, parallel)
+        return new(program, pin, pout, rch, avail_workers, parallel)
     end
 end
