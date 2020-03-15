@@ -341,14 +341,13 @@ mutable struct GAExternal
     program       ::AbstractString
     pipes_in      ::DArray{String,1,Vector{String}}
     pipes_out     ::DArray{String,1,Vector{String}}
-    rch           ::Dict{AbstractString,RemoteChannel}
     avail_workers ::Vector{Int64}
     parallel      ::Bool
 
-    function GAExternal( program  ::AbstractString         ,
-                         pipename ::AbstractString         ;
-                         nworkers ::Int64          = 8     ,
-                         parallel ::Bool           = false )
+    function GAExternal( program  ::AbstractString                   ,
+                         pipename ::AbstractString                   ;
+                         nworkers ::Int64          = Sys.CPU_THREADS ,
+                         parallel ::Bool           = false           )
         pipes = Dict{String,Vector{String}}()
         pipes["in" ] = Vector{String}(undef, 0)
         pipes["out"] = Vector{String}(undef, 0)
@@ -383,29 +382,16 @@ mutable struct GAExternal
             @spawnat :any run(pipeline(`$program`; stdin=p))
         end
 
-        # Create remote channels to save return value(s)
-        # from the external program
-        rch = Dict{String,RemoteChannel}()
-        for p in pipes["out"]
-            rch[p] = RemoteChannel(()->Channel{Float64}(1))
-        end
-
         # Open reading pipes in separate processes.
         # The pipes have to be open before writing to them,
         # otherwise we get SIGPIPE errors when writing.
-        function spawn_readpipes(pipe, rch)
+        function spawn_readpipes(pipe)
             f = open(pipe, "r")
-            while true
-                x = @elapsed begin
-                    b = readline(f)
-                    put!(rch[pipe], parse(Float64, b))
-                end
-            end
             return nothing
         end
         for (i,p) in enumerate(pipes["out"])
             v = nworkers+1 + i
-            @spawnat v spawn_readpipes(p, rch)
+            @spawnat v spawn_readpipes(p)
         end
 
         # delete all pipes when exiting julia
@@ -415,10 +401,12 @@ mutable struct GAExternal
                     rm(p, force=true)
                 end
             end
+            run(`killall ampl`)
+            run(`killall sleep`)
             return nothing
         end
         atexit(external_atexit)
 
-        return new(program, pin, pout, rch, avail_workers, parallel)
+        return new(program, pin, pout, avail_workers, parallel)
     end
 end
