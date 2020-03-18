@@ -111,7 +111,7 @@ function pselection(prob ::Vector{<:Real}, N ::Int)
     for i in 1:N
         j = 1
         r = rand()
-        while cp[j] < r
+        while (cp[j] < r && j <= N)
             j += 1
         end
         selected[i] = j

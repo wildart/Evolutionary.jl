@@ -359,8 +359,8 @@ mutable struct GAExternal
                 for p in avail_workers
                     f = string(pipename, "_", i, p)
                     push!(pipes[i], f)
-                    rm(f, force=true)
-                    run(`mkfifo $f`)
+                    remotecall_fetch(rm, p, f, force=true)
+                    remotecall_fetch(run, p, `mkfifo $f`)
                 end
             end
         else
@@ -377,9 +377,14 @@ mutable struct GAExternal
         pout = distribute(pipes["out"]; procs=avail_workers)
 
         # activate writing pipes for a big amount of time
-        for p in pipes["in"]
-            @spawnat :any run(pipeline(`sleep 100000000`, p))
-            @spawnat :any run(pipeline(`$program`; stdin=p))
+        for (i,p) in enumerate(pipes["in"])
+            id = workers()[i]
+            id1 = rand(workers())
+            while id1 == id
+                id1 = rand(workers())
+            end
+            @spawnat id1 run(pipeline(`sleep 100000000`, p))
+            @spawnat id1 run(pipeline(`$program`; stdin=p))
         end
 
         # Open reading pipes in separate processes.
@@ -397,12 +402,12 @@ mutable struct GAExternal
         # delete all pipes when exiting julia
         function external_atexit()
             for k in keys(pipes)
-                for p in pipes[k]
-                    rm(p, force=true)
+                for (i,p) in enumerate(pipes[k])
+                    id = i+1
+                    remotecall_fetch(rm, id, p)
                 end
             end
-            run(`killall ampl`)
-            run(`killall sleep`)
+            
             return nothing
         end
         atexit(external_atexit)

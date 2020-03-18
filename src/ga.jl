@@ -39,15 +39,16 @@ export ga
 
 Runs the Genetic Algorithm using the objective function `objfun`, the initial population `initpopulation` and the population size `populationSize`. `objfun` is the function to MINIMIZE. 
 """
-function ga( objfun        ::Function                            ,
-             population    ::Vector{Individual}                  ;
-             crossoverRate ::Float64                   = 0.5     ,
-             mutationRate  ::Float64                   = 0.5     ,
-             ϵ             ::Bool                      = true    ,
-             iterations    ::Integer                   = 100     ,
-             tol           ::Real                      = 0.0     ,
-             parallel      ::Bool                      = false   ,
-             piping        ::Union{Nothing,GAExternal} = nothing )
+function ga( objfun        ::Function                                    ,
+             population    ::Vector{Individual}                          ;
+             crossoverRate ::Float64                   = 0.5             ,
+             mutationRate  ::Float64                   = 0.5             ,
+             ϵ             ::Bool                      = true            ,
+             iterations    ::Integer                   = 100             ,
+             tol           ::Real                      = 0.0             ,
+             parallel      ::Bool                      = false           ,
+             piping        ::Union{Nothing,GAExternal} = nothing         ,
+             nworkers      ::Integer                   = Sys.CPU_THREADS )
 
     # Initialize population
     N = length(population)
@@ -72,7 +73,7 @@ function ga( objfun        ::Function                            ,
     # Generate and evaluate offspring
     if parallel
         if piping == nothing
-            works = workers()[1:Sys.CPU_THREADS]
+            works = workers()[1:nworkers]
         else
             works = piping.avail_workers
         end
@@ -180,10 +181,7 @@ function generations( objfun     ::Function           ,
         
         # Perform mutation
         for i in 1:N
-            if rand() < pars[:mutationRate]
-                @inbounds mutate(offspring[i])
-                #mutate(offspring[i])
-            end
+            @inbounds mutate(offspring[i], pars[:mutationRate])
         end
         
         elitism()
@@ -237,9 +235,7 @@ function generations_parallel( objfun ::Function                                
         
         # Perform mutation
         for i in 1:N
-            if rand() < pars[:mutationRate]
-                @inbounds mutate(offspring[i])
-            end
+             @inbounds mutate(offspring[i], pars[:mutationRate])
         end
         
         # Elitism
@@ -302,7 +298,11 @@ function data_presentation( individual   ::Individual ,
     table = @sprintf("| parameter | %-20s |\n", "value")
     table *= @sprintf("|-----------|----------------------|\n")
     for (i,j) in enumerate(params)
-        table *= @sprintf("| %-9s | %-20s |\n", j, values[i])
+        s_val = string(values[i])
+        if length(s_val) > 20
+            s_val = s_val[1:20]
+        end
+        table *= @sprintf("| %-9s | %-20s |\n", j, s_val)
     end
     
     printstyled("\nRESULTS :\n", color=:bold)

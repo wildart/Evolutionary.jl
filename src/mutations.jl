@@ -244,9 +244,11 @@ end
 
 Mutates each entry of `chromossome` according to the mutations chosen.
 """
-function mutate(chromossome ::Individual)
+function mutate(chromossome ::Individual, rate ::Float64)
     for gene in chromossome
-        mutate(gene)
+        if rand() < rate
+            mutate(gene)
+        end
     end
     return nothing
 end
