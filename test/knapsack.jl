@@ -21,7 +21,7 @@
         ɛ = 0.1,                                # Elitism
         iterations = 20,
         tolIter = 20,
-        populationSize = 50,
+        populationSize = 10,
         interim = true);
 
     @test fitness(best) == 21.
