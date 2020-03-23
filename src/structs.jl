@@ -31,7 +31,14 @@ end
 
 Creates a `BinaryGene` structure with a random `Bool` value.
 """
-BinaryGene() = BinaryGene(rand(Bool), "bin_var")
+BinaryGene(name ::AbstractString) = BinaryGene(rand(Bool), name)
+
+"""
+    BinaryGene()
+
+Creates a `BinaryGene` structure with a random `Bool` value and a default variable name.
+"""
+BinaryGene() = BinaryGene(rand(Bool), "bin")
 
 ####################################################################
 
@@ -56,14 +63,14 @@ Chooses the mutation type. Does NOT create a structure. This dispatch was create
 
 Below are the types of mutations supported:
 
-| Symbol | Algorithm |
-|-----|-----|
-| :FM | Flip Mutation |
-| :InvM | Inversion Mutation |
-| :InsM | Insertion Mutation |
-| :SwM | Swap Mutation |
-| :ScrM | Scramble Mutation |
-| :ShM | Shifting Mutation |
+| Symbol | Algorithm          |
+|--------|--------------------|
+| :FM    | Flip Mutation      |
+| :InvM  | Inversion Mutation |
+| :InsM  | Insertion Mutation |
+| :SwM   | Swap Mutation      |
+| :ScrM  | Scramble Mutation  |
+| :ShM   | Shifting Mutation  |
 """
 function IntegerGene(mutation ::Symbol)
     int_func = mutate(mutation)
@@ -116,11 +123,6 @@ mutable struct FloatGene <: AbstractGene
                         name  ::Vector{<:AbstractString} )
         if length(value) != length(range)
             error("vectors must have the same length")
-        end
-        for i in name
-            if length(i) > 9
-                error("variable name $i too long, must be less than 9 characters")
-            end
         end
         return new(value, range, m, name)
     end
@@ -196,20 +198,20 @@ end
 
 Creates a `Crossover` structure. `cross` is a Symbol that represents the type of crossover that would be used. `w` and `d` are not mandatory but need to be set for some types of crossovers. All algorithms will be shown in the table below:
 
-| Symbol | Algorithm | Optional Arguments |
-|----|----|---|
-| :SPX | Single Point Crossover | not needed |
-| :TPX | Two Point Crossover | not needed |
-| :UX | Uniform Crossover | not needed |
-| :DX | Discrete Crossover | not needed |
-| :WMX | Weighted Mean Crossover | needs `w` |
-| :IRX | Intermediate Recombination Crossover | needs `d` |
-| :LRX | Line Recombination Crossover | needs `d` |
-| :PMX | Partially Mapped Crossover | not needed |
-| :O1X | Order 1 Crossover | not needed |
-| :O2X | Order 2 Crossover | not needed |
-| :CX | Cycle Crossover | not needed |
-| :PX | Position-based Crossover | not needed |
+| Symbol | Algorithm                            | Optional Arguments |
+|--------|--------------------------------------|--------------------|
+| :SPX   | Single Point Crossover               | not needed         |
+| :TPX   | Two Point Crossover                  | not needed         |
+| :UX    | Uniform Crossover                    | not needed         |
+| :DX    | Discrete Crossover                   | not needed         |
+| :WMX   | Weighted Mean Crossover              | needs `w`          |
+| :IRX   | Intermediate Recombination Crossover | needs `d`          |
+| :LRX   | Line Recombination Crossover         | needs `d`          |
+| :PMX   | Partially Mapped Crossover           | not needed         |
+| :O1X   | Order 1 Crossover                    | not needed         |
+| :O2X   | Order 2 Crossover                    | not needed         |
+| :CX    | Cycle Crossover                      | not needed         |
+| :PX    | Position-based Crossover             | not needed         |
 """
 mutable struct Crossover
     cross ::Symbol
@@ -274,14 +276,14 @@ end
 
 Creates a `Selection` structure. `select` is a symbol that represents the type of selection that will be used. `sp`, `μ` and `groupsize` are optional but need to be set for some types of selections. All algorithms will be shown in the table below:
 
-| Symbol | Algorithm | Optional Arguments |
-|----|----|----|
-| :RBS | Rank-based Selection | needs `sp` |
-| :URS | Uniform-Ranking Selection | needs `μ` |
-| :RWS | Roulette Wheel Selection | not needed |
-| :SUSS | Stochastic Universal Sampling Selection | not needed |
-| :TrS | Truncation Selection | not needed |
-| :ToS | Tournament Selection | needs `groupsize` |
+| Symbol | Algorithm                               | Optional Arguments |
+|--------|-----------------------------------------|--------------------|
+| :RBS   | Rank-based Selection                    | needs `sp`         |
+| :URS   | Uniform-Ranking Selection               | needs `μ`          |
+| :RWS   | Roulette Wheel Selection                | not needed         |
+| :SUSS  | Stochastic Universal Sampling Selection | not needed         |
+| :TrS   | Truncation Selection                    | not needed         |
+| :ToS   | Tournament Selection                    | needs `groupsize`  |
 """
 mutable struct Selection
     select ::Symbol
@@ -378,12 +380,9 @@ mutable struct GAExternal
 
         # activate writing pipes for a big amount of time
         for (i,p) in enumerate(pipes["in"])
-            id = workers()[i]
-            id1 = rand(workers())
-            while id1 == id
-                id1 = rand(workers())
-            end
-            @spawnat id1 run(pipeline(`sleep 100000000`, p))
+            id  = 2*nworkers+1 + i
+            id1 = 3*nworkers+1 + i
+            @spawnat id  run(pipeline(`sleep 100000000`, p))
             @spawnat id1 run(pipeline(`$program`; stdin=p))
         end
 
