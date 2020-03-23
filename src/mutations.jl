@@ -57,7 +57,7 @@ end
 function flip(recombinant ::BitVector)
     s = length(recombinant)
     pos = rand(1:s)
-    recombinant[pos] = !recombinant[pos]
+    @inbounds recombinant[pos] = !recombinant[pos]
     return recombinant
 end
 
@@ -79,12 +79,12 @@ function domainrange(valrange:: Vector{Float64}, m ::Int = 20)
         δ = zeros(m)
         for i in 1:length(recombinant)
             for j in 1:m
-                δ[j] = (rand() < prob) ? 2.0^(-j) : 0.0
+                @inbounds δ[j] = (rand() < prob) ? 2.0^(-j) : 0.0
             end
             if rand() > 0.5
-                recombinant[i] += sum(δ)*valrange[i]
+                @inbounds recombinant[i] += sum(δ)*valrange[i]
             else
-                recombinant[i] -= sum(δ)*valrange[i]
+                @inbounds recombinant[i] -= sum(δ)*valrange[i]
             end
         end
         return recombinant
@@ -126,11 +126,11 @@ function scramble(recombinant ::BitVector)
     from, to = from > to ? (to, from)  : (from, to)
     diff = to - from + 1
     if diff > 1
-        patch = recombinant[from:to]
+        @inbounds patch = recombinant[from:to]
         idx = randperm(diff)
         # println("$(from)-$(to), P: $(patch), I: $(idx)")
         for i in 1:(diff)
-            recombinant[from+i-1] = patch[idx[i]]
+            @inbounds recombinant[from+i-1] = patch[idx[i]]
         end
     end
     return recombinant
@@ -139,18 +139,18 @@ end
 function shifting(recombinant ::BitVector)
     l = length(recombinant)
     from, to, where = sort(rand(1:l, 3))
-    patch = recombinant[from:to]
+    @inbounds patch = recombinant[from:to]
     diff = where - to
     if diff > 0
         # move values after tail of patch to the patch head position
         #println([from, to, where, diff])
         for i in 1:diff
-            recombinant[from+i-1] = recombinant[to+i]
+            @inbounds recombinant[from+i-1] = recombinant[to+i]
         end
         # place patch values in order
         start = from + diff
         for i in 1:length(patch)
-            recombinant[start+i-1] = patch[i]
+            @inbounds recombinant[start+i-1] = patch[i]
         end
     end
     return recombinant
@@ -159,9 +159,11 @@ end
 # Utils
 # =====
 function swap!(v ::T, from ::Int, to ::Int) where {T <: Vector}
-    val = v[from]
-    v[from] = v[to]
-    v[to] = val
+    @inbounds begin
+        val = v[from]
+        v[from] = v[to]
+        v[to] = val
+    end
 end
 
 function mutationwrapper(gamutation ::Function)
@@ -242,9 +244,11 @@ end
 
 Mutates each entry of `chromossome` according to the mutations chosen.
 """
-function mutate(chromossome ::Individual)
+function mutate(chromossome ::Individual, rate ::Float64)
     for gene in chromossome
-        mutate(gene)
+        if rand() < rate
+            mutate(gene)
+        end
     end
     return nothing
 end

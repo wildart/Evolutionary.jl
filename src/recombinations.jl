@@ -113,8 +113,8 @@ function discrete(v1 ::T, v2 ::T) where {T <: AbstractVector}
     c1   = similar(v1)
     c2   = similar(v2)
     for i in 1:l
-        c1[i] = rand(Bool) ? v1[i] : v2[i]
-        c2[i] = rand(Bool) ? v2[i] : v1[i]
+        @inbounds c1[i] = rand(Bool) ? v1[i] : v2[i]
+        @inbounds c2[i] = rand(Bool) ? v2[i] : v1[i]
     end
     return c1, c2
 end
@@ -166,34 +166,34 @@ function pmx(v1 ::T, v2 ::T) where {T <: AbstractVector}
     c2 = similar(v2)
 
     # Swap
-    c1[from:to] = v2[from:to]
-    c2[from:to] = v1[from:to]
+    @inbounds c1[from:to] = v2[from:to]
+    @inbounds c2[from:to] = v1[from:to]
 
     # Fill in from parents
     for i in vcat(1:from-1, to+1:s)
         # Check conflicting offspring
         in1 = inmap(v1[i], c1, from, to)
         if in1 == 0
-            c1[i] = v1[i]
+            @inbounds c1[i] = v1[i]
         else
             tmpin = in1
             while tmpin > 0
-                tmpin = inmap(c2[in1], c1, from, to)
+                @inbounds tmpin = inmap(c2[in1], c1, from, to)
                 in1   = tmpin > 0 ? tmpin : in1
             end
-            c1[i] = v1[in1]
+            @inbounds c1[i] = v1[in1]
         end
 
         in2 = inmap(v2[i], c2, from, to)
         if in2 == 0
-            c2[i] = v2[i]
+            @inbounds c2[i] = v2[i]
         else
             tmpin = in2
             while tmpin > 0
-                tmpin = inmap(c1[in2], c2, from, to)
+                @inbounds tmpin = inmap(c1[in2], c2, from, to)
                 in2   = tmpin > 0 ? tmpin : in2
             end
-            c2[i] = v2[in2]
+            @inbounds c2[i] = v2[in2]
         end
     end
     return c1, c2
@@ -207,8 +207,10 @@ function ox1(v1 ::T, v2 ::T) where {T <: AbstractVector}
     c1 = zeros(v1)
     c2 = zeros(v2)
     # Swap
-    c1[from:to] = v2[from:to]
-    c2[from:to] = v1[from:to]
+    @inbounds begin
+        c1[from:to] = v2[from:to]
+        c2[from:to] = v1[from:to]
+    end
     # Fill in from parents
     k = to+1 > s ? 1 : to+1 #child1 index
     j = to+1 > s ? 1 : to+1 #child2 index
@@ -216,11 +218,11 @@ function ox1(v1 ::T, v2 ::T) where {T <: AbstractVector}
         while in(v1[k],c1)
             k = k+1 > s ? 1 : k+1
         end
-        c1[i] = v1[k]
+        @inbounds c1[i] = v1[k]
         while in(v2[j],c2)
             j = j+1 > s ? 1 : j+1
         end
-        c2[i] = v2[j]
+        @inbounds c2[i] = v2[j]
     end
     return c1, c2
 end
@@ -238,16 +240,16 @@ function cx(v1 ::T, v2 ::T) where {T <: AbstractVector}
         if f1
             #cycle from v1
             while c1[idx] == zero(T)
-            c1[idx] = v1[idx]
-            c2[idx] = v2[idx]
-            idx = inmap(v2[idx],v1,1,s)
+                @inbounds c1[idx] = v1[idx]
+                @inbounds c2[idx] = v2[idx]
+                idx = inmap(v2[idx],v1,1,s)
             end
         else
             #cycle from v2
             while c2[idx] == zero(T)
-            c1[idx] = v2[idx]
-            c2[idx] = v1[idx]
-            idx = inmap(v1[idx],v2,1,s)
+                @inbounds c1[idx] = v2[idx]
+                @inbounds c2[idx] = v1[idx]
+                idx = inmap(v1[idx],v2,1,s)
             end
         end
         f1 $= true
@@ -264,21 +266,23 @@ function ox2(v1 ::T, v2 ::T) where {T <: AbstractVector}
 
     for i in 1:s
         if rand(Bool)
-            idx1 = inmap(v2[i],v1,1,s)
-            idx2 = inmap(v1[i],v2,1,s)
-            c1[idx1] = zero(T)
-            c2[idx2] = zero(T)
+            @inbounds begin
+                idx1 = inmap(v2[i],v1,1,s)
+                idx2 = inmap(v1[i],v2,1,s)
+                c1[idx1] = zero(T)
+                c2[idx2] = zero(T)
+            end
         end
     end
 
     for i in 1:s
         if !in(v2[i],c1)
             tmpin     = inmap(zero(T),c1,1,s)
-            c1[tmpin] = v2[i]
+            @inbounds c1[tmpin] = v2[i]
         end
         if !in(v1[i],c2)
             tmpin     = inmap(zero(T),c2,1,s)
-            c2[tmpin] = v1[i]
+            @inbounds c2[tmpin] = v1[i]
         end
     end
     return c1,c2
@@ -292,19 +296,21 @@ function pos(v1 ::T, v2 ::T) where {T <: AbstractVector}
 
     for i in 1:s
         if rand(Bool)
-            c1[i] = v2[i]
-            c2[i] = v1[i]
+            @inbounds begin
+                c1[i] = v2[i]
+                c2[i] = v1[i]
+            end
         end
     end
 
     for i in 1:s
         if !in(v1[i],c1)
             tmpin     = inmap(zero(T),c1,1,s)
-            c1[tmpin] = v1[i]
+            @inbounds c1[tmpin] = v1[i]
         end
         if !in(v2[i],c2)
             tmpin     = inmap(zero(T),c2,1,s)
-            c2[tmpin] = v2[i]
+            @inbounds c2[tmpin] = v2[i]
         end
     end
     return c1, c2
@@ -339,7 +345,7 @@ function crossover(chromo1 ::T, chromo2 ::T) where {T <: Individual}
     c1 = deepcopy(chromo1)
     c2 = deepcopy(chromo2)
     for i in 1:length(chromo1)
-        c1[i].value, c2[i].value = crossover(chromo1[i], chromo2[i])
+        @inbounds c1[i].value, c2[i].value = crossover(chromo1[i], chromo2[i])
     end
     return c1, c2
 end
@@ -349,9 +355,11 @@ end
 # Utils
 # =====
 function vswap!(v1 ::T, v2 ::T, idx ::Int) where {T <: AbstractVector}
-    val     = v1[idx]
-    v1[idx] = v2[idx]
-    v2[idx] = val
+    @inbounds begin
+        val     = v1[idx]
+        v1[idx] = v2[idx]
+        v2[idx] = val
+    end
 end
 
 function inmap(v ::T, c ::Vector{T}, from ::Int, to ::Int) where {T}

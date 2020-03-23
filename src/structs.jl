@@ -8,6 +8,7 @@
 export BinaryGene, IntegerGene, FloatGene
 export Crossover, Selection
 export selection, crossover, bin
+export GAExternal
 
 ####################################################################
 
@@ -30,44 +31,51 @@ end
 
 Creates a `BinaryGene` structure with a random `Bool` value.
 """
-BinaryGene() = BinaryGene(rand(Bool), "bin_var")
+BinaryGene(name ::AbstractString) = BinaryGene(rand(Bool), name)
+
+"""
+    BinaryGene()
+
+Creates a `BinaryGene` structure with a random `Bool` value and a default variable name.
+"""
+BinaryGene() = BinaryGene(rand(Bool), "bin")
 
 ####################################################################
 
 """
-    IntegerGene(value ::BitVector, mutation ::Symbol)
+    IntegerGene(value ::BitVector, name ::AbstractString)
 
-Creates a `IntegerGene` structure. This gene represents an integer variable as `BitVector`. To convert the `BitVector` in an integer, just look at the `bin` function from this package by typing `?bin` on the command prompt. `mutation` is a symbol that represents the type of mutation used for the bit vector. The below table shows all the mutation types supported:
-
-| Symbol | Algorithm |
-|-----|-----|
-| :FM | Flip Mutation |
-| :InvM | Inversion Mutation |
-| :InsM | Insertion Mutation |
-| :SwM | Swap Mutation |
-| :ScrM | Scramble Mutation |
-| :ShM | Shifting Mutation |
+Creates a `IntegerGene` structure. This gene represents an integer variable as `BitVector`. To convert the `BitVector` in an integer, just look at the `bin` function from this package by typing `?bin` on the command prompt. `name` is a stringt that represents the name of the variable. It's needed for result presentation purposes.
 """
 mutable struct IntegerGene <: AbstractGene
     value    ::BitVector
-    mutation ::Symbol
     name     ::AbstractString
     
-    function IntegerGene(value ::BitVector, mutation ::Symbol,
-                         name ::AbstractString)
-        int_func = mutate(mutation)
-        @eval mutate(gene ::IntegerGene) = $int_func(gene.value)
-        return new(value, mutation, name)
+    function IntegerGene(value ::BitVector, name ::AbstractString)
+        return new(value, name)
     end
 end
 
 """
-    IntegerGene(value ::BitVector)
+    IntegerGene(mutation ::Symbol)
 
-Creates a `IntegerGene` structure with the default mutation being Flip Mutation.
+Chooses the mutation type. Does NOT create a structure. This dispatch was created because, when creating a population of integer genes, each gene would create this function, which was unnecessary work. You still need to run one of the other dispatches to create the gene.
+
+Below are the types of mutations supported:
+
+| Symbol | Algorithm          |
+|--------|--------------------|
+| :FM    | Flip Mutation      |
+| :InvM  | Inversion Mutation |
+| :InsM  | Insertion Mutation |
+| :SwM   | Swap Mutation      |
+| :ScrM  | Scramble Mutation  |
+| :ShM   | Shifting Mutation  |
 """
-function IntegerGene(value ::BitVector, name ::AbstractString) 
-    return IntegerGene(value, :FM, name)
+function IntegerGene(mutation ::Symbol)
+    int_func = mutate(mutation)
+    @eval mutate(gene ::IntegerGene) = $int_func(gene.value)
+    return nothing
 end
 
 """
@@ -78,9 +86,9 @@ Creates a `IntegerGene` structure in which the `BitVector` is of length `n` with
 function IntegerGene(n ::Int64, name ::AbstractString)
     value = BitVector(undef, n)
     for i in 1:n
-        value[i] = rand(Bool)
+        @inbounds value[i] = rand(Bool)
     end
-    return IntegerGene(value, :FM, name)
+    return IntegerGene(value, name)
 end
 
 """
@@ -176,7 +184,7 @@ function FloatGene(n ::Int64, name ::AbstractString)
     range = rand(Float64, n)
     vec_name = Vector{AbstractString}(undef, n)
     for i in 1:n
-        vec_name[i] = string(name, "_", i)
+        vec_name[i] = string(name, i)
     end
     return FloatGene(value, range, 20, vec_name)
 end
@@ -190,20 +198,20 @@ end
 
 Creates a `Crossover` structure. `cross` is a Symbol that represents the type of crossover that would be used. `w` and `d` are not mandatory but need to be set for some types of crossovers. All algorithms will be shown in the table below:
 
-| Symbol | Algorithm | Optional Arguments |
-|----|----|---|
-| :SPX | Single Point Crossover | not needed |
-| :TPX | Two Point Crossover | not needed |
-| :UX | Uniform Crossover | not needed |
-| :DX | Discrete Crossover | not needed |
-| :WMX | Weighted Mean Crossover | needs `w` |
-| :IRX | Intermediate Recombination Crossover | needs `d` |
-| :LRX | Line Recombination Crossover | needs `d` |
-| :PMX | Partially Mapped Crossover | not needed |
-| :O1X | Order 1 Crossover | not needed |
-| :O2X | Order 2 Crossover | not needed |
-| :CX | Cycle Crossover | not needed |
-| :PX | Position-based Crossover | not needed |
+| Symbol | Algorithm                            | Optional Arguments |
+|--------|--------------------------------------|--------------------|
+| :SPX   | Single Point Crossover               | not needed         |
+| :TPX   | Two Point Crossover                  | not needed         |
+| :UX    | Uniform Crossover                    | not needed         |
+| :DX    | Discrete Crossover                   | not needed         |
+| :WMX   | Weighted Mean Crossover              | needs `w`          |
+| :IRX   | Intermediate Recombination Crossover | needs `d`          |
+| :LRX   | Line Recombination Crossover         | needs `d`          |
+| :PMX   | Partially Mapped Crossover           | not needed         |
+| :O1X   | Order 1 Crossover                    | not needed         |
+| :O2X   | Order 2 Crossover                    | not needed         |
+| :CX    | Cycle Crossover                      | not needed         |
+| :PX    | Position-based Crossover             | not needed         |
 """
 mutable struct Crossover
     cross ::Symbol
@@ -268,14 +276,14 @@ end
 
 Creates a `Selection` structure. `select` is a symbol that represents the type of selection that will be used. `sp`, `μ` and `groupsize` are optional but need to be set for some types of selections. All algorithms will be shown in the table below:
 
-| Symbol | Algorithm | Optional Arguments |
-|----|----|----|
-| :RBS | Rank-based Selection | needs `sp` |
-| :URS | Uniform-Ranking Selection | needs `μ` |
-| :RWS | Roulette Wheel Selection | not needed |
-| :SUSS | Stochastic Universal Sampling Selection | not needed |
-| :TrS | Truncation Selection | not needed |
-| :ToS | Tournament Selection | needs `groupsize` |
+| Symbol | Algorithm                               | Optional Arguments |
+|--------|-----------------------------------------|--------------------|
+| :RBS   | Rank-based Selection                    | needs `sp`         |
+| :URS   | Uniform-Ranking Selection               | needs `μ`          |
+| :RWS   | Roulette Wheel Selection                | not needed         |
+| :SUSS  | Stochastic Universal Sampling Selection | not needed         |
+| :TrS   | Truncation Selection                    | not needed         |
+| :ToS   | Tournament Selection                    | needs `groupsize`  |
 """
 mutable struct Selection
     select ::Symbol
@@ -319,5 +327,90 @@ mutable struct Selection
             end
         end
         return new(select, sp, μ, groupsize)
+    end
+end
+
+####################################################################
+
+"""
+    function GAExternal( program  ::AbstractString ,
+                         pipename ::AbstractString ;
+                         parallel ::Bool = false   )
+
+Creates communication pipes for the external program `program`. If `parallel` is `true`, then, considering N workers available, N pipes for reading and N pipes for writing will be created. `pipename` is just a handle for the name of the pipes. If `pipename` is `pipe`, then the pipe names will be `pipe_in` and `pipe_out` for `parallel` as false and `pipe_inn` and `pipe_outn` for `parallel` as true, such as `n` being one of the N workers.
+"""
+mutable struct GAExternal
+    program       ::AbstractString
+    pipes_in      ::DArray{String,1,Vector{String}}
+    pipes_out     ::DArray{String,1,Vector{String}}
+    avail_workers ::Vector{Int64}
+    parallel      ::Bool
+
+    function GAExternal( program  ::AbstractString                   ,
+                         pipename ::AbstractString                   ;
+                         nworkers ::Int64          = Sys.CPU_THREADS ,
+                         parallel ::Bool           = false           )
+        pipes = Dict{String,Vector{String}}()
+        pipes["in" ] = Vector{String}(undef, 0)
+        pipes["out"] = Vector{String}(undef, 0)
+        avail_workers = workers()[1:nworkers]
+        if parallel
+            # create one pipe for reading and another for writing
+            # for each worker
+            for i in ["in","out"]
+                for p in avail_workers
+                    f = string(pipename, "_", i, p)
+                    push!(pipes[i], f)
+                    remotecall_fetch(rm, p, f, force=true)
+                    remotecall_fetch(run, p, `mkfifo $f`)
+                end
+            end
+        else
+            # create one pipe for reading and another for writing
+            for i in ["in","out"]
+                f = string(pipename, "_", i)
+                push!(pipes[i], f)
+                rm(f, force=true)
+                run(`mkfifo $f`)
+            end
+        end
+
+        pin  = distribute(pipes["in" ]; procs=avail_workers)
+        pout = distribute(pipes["out"]; procs=avail_workers)
+
+        # activate writing pipes for a big amount of time
+        for (i,p) in enumerate(pipes["in"])
+            id  = 2*nworkers+1 + i
+            id1 = 3*nworkers+1 + i
+            @spawnat id  run(pipeline(`sleep 100000000`, p))
+            @spawnat id1 run(pipeline(`$program`; stdin=p))
+        end
+
+        # Open reading pipes in separate processes.
+        # The pipes have to be open before writing to them,
+        # otherwise we get SIGPIPE errors when writing.
+        function spawn_readpipes(pipe)
+            f = open(pipe, "r")
+            return nothing
+        end
+        for (i,p) in enumerate(pipes["out"])
+            v = nworkers+1 + i
+            @spawnat v spawn_readpipes(p)
+        end
+
+        # delete all pipes when exiting julia
+        function external_atexit()
+            for k in keys(pipes)
+                for (i,p) in enumerate(pipes[k])
+                    id = i+1
+                    remotecall_fetch(rm, id, p)
+                end
+            end
+            
+            return nothing
+        end
+        atexit(external_atexit)
+
+        return new(program, pin, pout, avail_workers, parallel)
     end
 end

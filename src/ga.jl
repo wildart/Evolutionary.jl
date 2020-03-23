@@ -39,44 +39,55 @@ export ga
 
 Runs the Genetic Algorithm using the objective function `objfun`, the initial population `initpopulation` and the population size `populationSize`. `objfun` is the function to MINIMIZE. 
 """
-function ga( objfun         ::Function                        ,
-             population     ::Vector{Individual}              ;
-             crossoverRate  ::Float64                 = 0.5   ,
-             mutationRate   ::Float64                 = 0.5   ,
-             ϵ              ::Bool                    = true  ,
-             iterations     ::Integer                 = 100   ,
-             tol            ::Real                    = 0.0   ,
-             parallel       ::Bool                    = false )
+function ga( objfun        ::Function                                    ,
+             population    ::Vector{Individual}                          ;
+             crossoverRate ::Float64                   = 0.5             ,
+             mutationRate  ::Float64                   = 0.5             ,
+             ϵ             ::Bool                      = true            ,
+             iterations    ::Integer                   = 100             ,
+             tol           ::Real                      = 0.0             ,
+             parallel      ::Bool                      = false           ,
+             piping        ::Union{Nothing,GAExternal} = nothing         ,
+             nworkers      ::Integer                   = Sys.CPU_THREADS ,
+             output        ::AbstractString            = ""              )
 
     # Initialize population
     N = length(population)
     fitness = Vector{Float64}(undef, N)
 
-    for i in 1:N
-        @inbounds fitness[i] = objfun(population[i])
+    # check if piping is used
+    if piping == nothing
+        func = objfun
+    else
+        func = (x) -> objfun(x, piping)
     end
-    fitidx = sortperm(fitness)
 
     # save optional arguments in a dictionary
-    # to pass to generation function
+    # to pass to one of the generation functions
     pars = Dict{Symbol, Any}()
     pars[:crossoverRate] = crossoverRate
     pars[:mutationRate ] = mutationRate
     pars[:ϵ            ] = ϵ
     pars[:iterations   ] = iterations
     pars[:tol          ] = tol
-    
+
     # Generate and evaluate offspring
     if parallel
-        population = distribute(population)
-        fitness    = distribute(fitness)
+        if piping == nothing
+            works = workers()[1:nworkers]
+        else
+            works = piping.avail_workers
+        end
+        population = distribute(population;procs=works)
+        fitness    = distribute(fitness;procs=works)
         elapsed_time = @elapsed begin
-            spmd(generations_parallel, objfun,
-                 population, fitness, pars)
+            spmd(generations_parallel, func,
+                 population, fitness, pars;
+                 pids=works)
         end
     else
         elapsed_time = @elapsed begin
-            generations(objfun, population, N, fitness, pars)
+            generations(func, population, N, fitness, pars)
         end
     end
 
@@ -89,7 +100,7 @@ function ga( objfun         ::Function                        ,
 
     # result presentation
     data_presentation( population[bestIndividual], iterations,
-                       bestFitness, isfit, elapsed_time )
+                       bestFitness, isfit, elapsed_time, output )
     
     return population[bestIndividual], bestFitness
 end
@@ -108,8 +119,44 @@ function generations( objfun     ::Function           ,
     bestFitness    = 0.0
     offspring      = Vector{Individual}(undef,   N)
     full_pop       = Vector{Individual}(undef, 2*N)
-    full_fitness   = Vector{Float64   }(undef, 2*N)
+    full_fit       = Vector{Float64   }(undef, 2*N)
 
+    # Elitism
+    # When true, always picks N best individuals from the full population
+    # (parents+offspring), which is size 2*N.
+    # When false, does everything randomly
+    function elitism_true()
+        @inbounds begin
+            full_pop[  1:  N] = population
+            full_pop[N+1:2*N] = offspring
+            full_fit          = objfun.(full_pop)
+            fitidx            = sortperm(full_fitness)
+        end
+        for i in 1:N
+            @inbounds begin
+                population[i] = full_pop[fitidx[i]]
+                   fitness[i] = full_fit[fitidx[i]]
+            end
+        end
+        return nothing
+    end
+    function elitism_false()
+        for i in 1:N
+            @inbounds begin
+                population[i] = offspring[i]
+                   fitness[i] = objfun(population[i])
+            end
+        end
+        return nothing
+    end
+
+    if pars[:ϵ]
+        elitism = elitism_true
+    else
+        elitism = elitism_false
+    end
+
+    # Generate and evaluate offspring
     for iter in 1:pars[:iterations]
         
         # Select offspring
@@ -135,36 +182,11 @@ function generations( objfun     ::Function           ,
         
         # Perform mutation
         for i in 1:N
-            if rand() < pars[:mutationRate]
-                @inbounds mutate(offspring[i])
-            end
+            @inbounds mutate(offspring[i], pars[:mutationRate])
         end
         
-        # Elitism
-        # When true, always picks N best individuals from the full population
-        # (parents+offspring), which is size 2*N.
-        # When false, does everything randomly
-        if pars[:ϵ]
-            @inbounds begin
-                full_pop[  1:  N] = population
-                full_pop[N+1:2*N] = offspring
-                full_fitness = objfun.(full_pop)
-                fitidx = sortperm(full_fitness)
-            end
-            for i in 1:N
-                @inbounds begin
-                    population[i] = full_pop[fitidx[i]]
-                       fitness[i] = objfun(population[i])
-                end
-            end
-        else
-            for i in 1:N
-                @inbounds begin
-                    population[i] = offspring[i]
-                       fitness[i] = objfun(population[i])
-                end
-            end
-        end
+        elitism()
+        
     end
 
     return nothing
@@ -186,11 +208,11 @@ function generations_parallel( objfun ::Function                                
     bestFitness    = 0.0
     offspring      = Vector{Individual}(undef,   N)
     full_pop       = Vector{Individual}(undef, 2*N)
-    full_fitness   = Vector{Float64   }(undef, 2*N)
+    full_fit       = Vector{Float64   }(undef, 2*N)
 
     # Generate and evaluate offspring
     for iter in 1:pars[:iterations]
-        
+
         # Select offspring
         selected = selection(fitness, N)
         
@@ -214,26 +236,24 @@ function generations_parallel( objfun ::Function                                
         
         # Perform mutation
         for i in 1:N
-            if rand() < pars[:mutationRate]
-                @inbounds mutate(offspring[i])
-            end
+             @inbounds mutate(offspring[i], pars[:mutationRate])
         end
         
         # Elitism
-        # When true, always picks N best individuals from the full population
-        # (parents+offspring), which is size 2*N.
+        # When true, always picks N best individuals from the
+        # full population (parents+offspring), which is size 2*N.
         # When false, does everything randomly
         if pars[:ϵ]
             @inbounds begin
                 full_pop[1  :  N] = population
                 full_pop[1+N:2*N] = offspring
-                full_fitness      = objfun.(full_pop)
-                fitidx            = sortperm(full_fitness)
+                full_fit          = objfun.(full_pop)
+                fitidx            = sortperm(full_fit)
             end
             for i in 1:N
                 @inbounds begin
                     population[i] = full_pop[fitidx[i]]
-                       fitness[i] = objfun(population[i])
+                       fitness[i] = full_fit[fitidx[i]]
                 end
             end
         else
@@ -248,16 +268,18 @@ function generations_parallel( objfun ::Function                                
 
     return nothing
 end
-
+    
 ####################################################################
 
 function data_presentation( individual   ::Individual ,
                             generations  ::Integer    ,
                             bestFitness  ::Float64    ,
                             isfit        ::Bool       ,
-                            elapsed_time ::Float64    )
+                            elapsed_time ::Float64    ,
+                            output       ::String     )
 
-    optim_time = round(elapsed_time, digits=3)
+    optim_time  = round(elapsed_time, digits=5)
+    bestFitness = round(bestFitness, digits=15)
     
     params = Vector{AbstractString}(undef, 0)
     values = Vector{Real}(undef, 0)
@@ -270,26 +292,45 @@ function data_presentation( individual   ::Individual ,
         elseif isa(gene, IntegerGene)
             push!(params, gene.name)
             push!(values, bin(gene))
-        else
+        elseif isa(gene, BinaryGene)
             push!(params, gene.name)
             push!(values, gene.value)
+        else
+            nothing
         end
     end
-    
-    table = string("| parameter | value |\n" ,
-                   "|-----------|-------|\n" )
-    for (i,j) in enumerate(params)
-        table *= "| $j | $(values[i]) |\n"
+
+    val_maxsize, str_vals = present_numbers(values, 15)
+    name_maxsize = present_names(params)
+    if val_maxsize < length("value")
+        val_maxsize = length("value")
     end
-    @doc table present
-    
+    if name_maxsize < length("parameter")
+        name_maxsize = length("parameter")
+    end
+    i_str = "| %-$(name_maxsize)s | %-$(val_maxsize)s |\n"
+    table = @eval @sprintf($i_str, "parameter", "value")
+    iv = "|"
+    for i in 1:name_maxsize+2
+        iv *= "-"
+    end
+    iv *= "|"
+    for i in 1:val_maxsize+2
+        iv *= "-"
+    end
+    table *= iv * "|\n"
+    for (i,j) in enumerate(params)
+        s_val = str_vals[i]
+        table *= @eval @sprintf($i_str, $j, $s_val)
+    end
+
     printstyled("\nRESULTS :\n", color=:bold)
     println("number of generations = " * string(generations))
     println("best Fitness          = " * string(bestFitness))
     println("Run time              = $optim_time seconds")
     println("")
     printstyled("GENES OF BEST INDIVIDUAL :\n", color=:bold)
-    display(@doc present)
+    println(table)
     println("")
     if isfit
         printstyled("OPTIMIZATION SUCCESSFUL\n"  , color=:bold)
@@ -297,6 +338,126 @@ function data_presentation( individual   ::Individual ,
         printstyled("OPTIMIZATION UNSUCCESSFUL\n", color=:bold)
     end
 
+    if output != ""
+        open(output, "w") do f
+            write(f, "Result File of Genetic Algorithm, $(now())\n\n")
+            write(f, "RESULTS :\n")
+            write(f, string("number of generations = ", generations, "\n"))
+            write(f, string("best Fitness          = ", bestFitness, "\n"))
+            write(f, "Run time              = $optim_time seconds\n")
+            write(f, "\n")
+            write(f, "GENES OF BEST INDIVIDUAL :\n")
+            write(f, table)
+            write(f, "\n")
+            if isfit
+                write(f, "OPTIMIZATION SUCCESSFUL\n")
+            else
+                write(f, "OPTIMIZATION UNSUCCESSFUL\n")
+            end
+        end
+    end
+
     return nothing
 end
 
+####################################################################
+
+function present_numbers(values ::Vector{<:Real}, round_digits ::Int64)
+    for (i,j) in enumerate(values)
+        if isa(j, Float64)
+            values[i] = round(j, digits=round_digits)
+        end
+    end
+    
+    str_vals = [string(j) for j in values]
+    for (i,j) in enumerate(str_vals)
+        if j == "true"
+            str_vals[i] = "1"
+        elseif j == "false"
+            str_vals[i] = "0"
+        else
+            nothing
+        end
+    end
+    
+     left_dot = Vector{AbstractString}(undef, length(values))
+    right_dot = Vector{AbstractString}(undef, length(values))
+    for (i,j) in enumerate(str_vals)
+        j_spl = split(j, ".")
+        if length(j_spl) == 2
+            left  = j_spl[1]
+            right = j_spl[2]
+        else
+            left  = j_spl[1]
+            right = ""
+        end
+         left_dot[i] = left
+        right_dot[i] = right
+    end
+
+    left_maxsize = 0
+    for i in left_dot
+        l = length(i)
+        if l > left_maxsize
+            left_maxsize = l
+        end
+    end
+
+    right_maxsize = 0
+    for i in right_dot
+        l = length(i)
+        if l > right_maxsize
+            right_maxsize = l
+        end
+    end
+    
+    for (i,j) in enumerate(left_dot)
+        ind = left_maxsize - length(j)
+        str = ""
+        if ind > 0
+            for k in 1:ind
+                str *= " "
+            end
+        end
+        left_dot[i] = str * j
+    end
+
+    for i in 1:length(str_vals)
+        if right_dot[i] == ""
+            str_vals[i] = left_dot[i]
+            if right_maxsize == 0
+                iv = right_maxsize
+            else
+                iv = right_maxsize+1
+            end
+            for i in 1:iv
+                str_vals[i] *= " "
+            end
+        else
+            str_vals[i] = string(left_dot[i],".",right_dot[i])
+        end
+    end
+
+    str_maxsize = 0
+    for i in str_vals
+        l = length(i)
+        if l > str_maxsize
+            str_maxsize = l
+        end
+    end
+
+    return str_maxsize, str_vals
+end
+
+####################################################################
+
+function present_names(names ::Vector{AbstractString})
+    name_maxsize = 0
+    for i in names
+        l = length(i)
+        if l > name_maxsize
+            name_maxsize = l
+        end
+    end
+    return name_maxsize
+end

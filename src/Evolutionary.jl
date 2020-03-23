@@ -4,6 +4,8 @@ module Evolutionary
 using Random, Base.Threads
 using Distributed
 using DistributedArrays, DistributedArrays.SPMD
+using Printf
+using Dates
 
 export
     # Optimization methods
