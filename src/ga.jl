@@ -49,7 +49,8 @@ function ga( objfun        ::Function                                    ,
              parallel      ::Bool                      = false           ,
              piping        ::Union{Nothing,GAExternal} = nothing         ,
              nworkers      ::Integer                   = Sys.CPU_THREADS ,
-             output        ::AbstractString            = ""              )
+             output        ::AbstractString            = ""              ,
+             showprint     ::Bool                      = true            )
 
     # Initialize population
     N = length(population)
@@ -99,8 +100,8 @@ function ga( objfun        ::Function                                    ,
     end
 
     # result presentation
-    data_presentation( population[bestIndividual], iterations,
-                       bestFitness, isfit, elapsed_time, output )
+    data_presentation( population[bestIndividual], iterations, bestFitness,
+                       isfit, elapsed_time, showprint, output )
     
     return population[bestIndividual], bestFitness
 end
@@ -276,6 +277,7 @@ function data_presentation( individual   ::Individual ,
                             bestFitness  ::Float64    ,
                             isfit        ::Bool       ,
                             elapsed_time ::Float64    ,
+                            showprint    ::Bool       ,
                             output       ::String     )
 
     optim_time  = round(elapsed_time, digits=5)

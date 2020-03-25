@@ -22,7 +22,7 @@ abstract type AbstractGene end
 
 const Strategy = Dict{Symbol,Any}
 
-const Individual = Vector{<:AbstractGene}
+const Individual = Vector{AbstractGene}
 
 const GAVector = Union{T, BitVector} where T <: Vector
 

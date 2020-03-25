@@ -115,17 +115,24 @@ mutable struct FloatGene <: AbstractGene
     value ::Vector{Float64}
     range ::Vector{Float64}
     m     ::Int64
-    name  ::Vector{<:AbstractString}
+    name  ::Vector{AbstractString}
     
     function FloatGene( value ::Vector{Float64}          ,
                         range ::Vector{Float64}          ,
                         m     ::Int64                    ,
-                        name  ::Vector{<:AbstractString} )
+                        name  ::Vector{String}   )
         if length(value) != length(range)
             error("vectors must have the same length")
         end
         return new(value, range, m, name)
     end
+end
+
+function FloatGene( value ::Vector{Float64}          ,
+                    range ::Vector{Float64}          ,
+                    name  ::Vector{String} ;
+                    m     ::Int64 = 20               )
+    return FloatGene(value, range, m, name)
 end
 
 """
@@ -147,7 +154,7 @@ Creates a `FloatGene` structure. Handy for creating a vector of real numbers wit
 """
 function FloatGene( value ::Vector{Float64}          ,
                     range ::Float64                  ,
-                    name  ::Vector{<:AbstractString} ;
+                    name  ::Vector{String} ;
                     m     ::Int64 = 20               )
     vec = Float64[range for i in value]
     return FloatGene(value, vec, m, name)
@@ -159,7 +166,7 @@ end
 Creates a `FloatGene` structure. Handy for creating a vector of real numbers with a random range.
 """
 function FloatGene( value ::Vector{Float64}          ,
-                    name  ::Vector{<:AbstractString} ;
+                    name  ::Vector{String} ;
                     m     ::Int64 = 20               )
     range = rand(Float64, length(value))
     return FloatGene(value, range, m, name)
@@ -182,7 +189,7 @@ Creates a `FloatGene` structure. Creates a vector of length `n` with random vari
 function FloatGene(n ::Int64, name ::AbstractString)
     value = rand(Float64, n)
     range = rand(Float64, n)
-    vec_name = Vector{AbstractString}(undef, n)
+    vec_name = Vector{String}(undef, n)
     for i in 1:n
         vec_name[i] = string(name, i)
     end
