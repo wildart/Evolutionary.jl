@@ -387,9 +387,9 @@ mutable struct GAExternal
 
         # activate writing pipes for a big amount of time
         for (i,p) in enumerate(pipes["in"])
-            id  = 2*nworkers+1 + i
-            id1 = 3*nworkers+1 + i
-            @spawnat id  run(pipeline(`sleep 100000000`, p))
+            id  = 1*nworkers+1 + i
+            id1 = 2*nworkers+1 + i
+            @spawnat id  run(pipeline(`sleep 100000000`; stdout=p))
             @spawnat id1 run(pipeline(`$program`; stdin=p))
         end
 
@@ -401,7 +401,7 @@ mutable struct GAExternal
             return nothing
         end
         for (i,p) in enumerate(pipes["out"])
-            v = nworkers+1 + i
+            v = 3*nworkers+1 + i
             @spawnat v spawn_readpipes(p)
         end
 

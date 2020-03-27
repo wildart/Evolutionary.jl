@@ -5,6 +5,7 @@
 ####################################################################
 
 export ga
+const ch = Channel{Bool}(1)
 
 ####################################################################
 
@@ -50,7 +51,9 @@ function ga( objfun        ::Function                                    ,
              piping        ::Union{Nothing,GAExternal} = nothing         ,
              nworkers      ::Integer                   = Sys.CPU_THREADS ,
              output        ::AbstractString            = ""              ,
-             showprint     ::Bool                      = true            )
+             showprint     ::Bool                      = true            ,
+             isbackup      ::Bool                      = true            ,
+             backuptime    ::Float64                   = 0.5             )
 
     # Initialize population
     N = length(population)
@@ -71,22 +74,35 @@ function ga( objfun        ::Function                                    ,
     pars[:ϵ            ] = ϵ
     pars[:iterations   ] = iterations
     pars[:tol          ] = tol
+    pars[:backuptime   ] = isbackup ? backuptime : Inf
 
-    # Generate and evaluate offspring
+    # create folder for backup files
+    if !isdir("backup-files")
+        mkdir("backup-files")
+        println("folder created")
+    end
+
+    # choose run method depending if it's parallel
+    # or serial processing
     if parallel
         if piping == nothing
             works = workers()[1:nworkers]
         else
             works = piping.avail_workers
         end
+
+        # create distributed arrays for parallel processing
         population = distribute(population;procs=works)
         fitness    = distribute(fitness;procs=works)
+       
+        # run generations
         elapsed_time = @elapsed begin
             spmd(generations_parallel, func,
                  population, fitness, pars;
                  pids=works)
         end
     else
+        # run generations
         elapsed_time = @elapsed begin
             generations(func, population, N, fitness, pars)
         end
@@ -131,7 +147,7 @@ function generations( objfun     ::Function           ,
             full_pop[  1:  N] = population
             full_pop[N+1:2*N] = offspring
             full_fit          = objfun.(full_pop)
-            fitidx            = sortperm(full_fitness)
+            fitidx            = sortperm(full_fit)
         end
         for i in 1:N
             @inbounds begin
@@ -157,8 +173,17 @@ function generations( objfun     ::Function           ,
         elitism = elitism_false
     end
 
+
+    t_ref = time()
     # Generate and evaluate offspring
     for iter in 1:pars[:iterations]
+
+        # backup process
+        dt = time() - t_ref
+        if dt > pars[:backuptime]
+            backup(iter, population)
+            t_ref = time()
+        end
         
         # Select offspring
         selected = selection(fitness, N)
@@ -187,7 +212,7 @@ function generations( objfun     ::Function           ,
         end
         
         elitism()
-        
+
     end
 
     return nothing
@@ -199,7 +224,7 @@ function generations_parallel( objfun ::Function                                
                                popul  ::DArray{Individual,1,Vector{Individual}} ,
                                fit    ::DArray{Float64,1,Vector{Float64}}       ,
                                pars   ::Dict{Symbol,Any}                        )
-
+    println("made it here")
     # Variable initialization
     population     = popul[:L]
     fitness        =   fit[:L]
@@ -211,8 +236,17 @@ function generations_parallel( objfun ::Function                                
     full_pop       = Vector{Individual}(undef, 2*N)
     full_fit       = Vector{Float64   }(undef, 2*N)
 
+    t_ref = time()
     # Generate and evaluate offspring
     for iter in 1:pars[:iterations]
+
+        # backup process
+        dt = time() - t_ref
+        if dt > pars[:backuptime]
+            file = "Backup_GA_worker$(myid())"
+            backup(iter, population, file)
+            t_ref = time()
+        end
 
         # Select offspring
         selected = selection(fitness, N)

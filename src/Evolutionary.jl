@@ -88,6 +88,9 @@ include("selections.jl")
 include("es.jl")
 include("cmaes.jl")
 
+# Backup functions
+include("backup.jl")
+
 # Genetic Algorithms
 include("ga.jl")
 
