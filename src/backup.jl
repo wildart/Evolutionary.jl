@@ -37,14 +37,14 @@ function backup(f ::IOStream, gene ::BinaryGene)
     return nothing
 end
 
-function backup(ngens ::Int64, chrom ::Vector{Individual},
-                file ::AbstractString)
+function backup(ngens ::Int64, tgens ::Int64,
+                chrom ::Vector{Individual}, file ::AbstractString)
     file = "backup-files/$file"
     chromossome = chrom
     psize = length(chromossome   )
     gsize = length(chromossome[1])
     open(file, "w") do f
-        write(f, ngens, psize, gsize)
+        write(f, ngens, tgens, psize, gsize)
         for i in chromossome
             for j in i
                 backup(f, j)
@@ -60,6 +60,7 @@ function reverse_backup(filename ::AbstractString)
     f = open(filename, "r")
     
     ngens    = read(f, Int64)
+    tgens    = read(f, Int64)
     popsize  = read(f, Int64)
     genesize = read(f, Int64)
     population = Vector{Individual}(undef, popsize)    
@@ -103,5 +104,5 @@ function reverse_backup(filename ::AbstractString)
     end
     
     close(f)
-    return ngens, population
+    return ngens, tgens, population
 end

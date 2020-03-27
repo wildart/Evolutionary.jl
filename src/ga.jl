@@ -84,6 +84,14 @@ function ga( objfun        ::Function                                    ,
         else
             works = piping.avail_workers
         end
+        if isbackup
+            for w in works
+                if !remotecall_fetch(isdir, w, "backup-files")
+                    remotecall_fetch(mkdir, w, "backup-files")
+                    println("folder created")
+                end
+            end
+        end
 
         # create distributed arrays for parallel processing
         population = distribute(population;procs=works)
@@ -166,12 +174,6 @@ function generations( objfun     ::Function           ,
     else
         elitism = elitism_false
     end
-
-    # create folder for backup files
-    if !isdir("backup-files")
-        mkdir("backup-files")
-        println("folder created")
-    end
     
     t_ref = time()
     # Generate and evaluate offspring
@@ -223,7 +225,6 @@ function generations_parallel( objfun ::Function                                
                                popul  ::DArray{Individual,1,Vector{Individual}} ,
                                fit    ::DArray{Float64,1,Vector{Float64}}       ,
                                pars   ::Dict{Symbol,Any}                        )
-    println("made it here")
     # Variable initialization
     population     = popul[:L]
     fitness        =   fit[:L]
@@ -270,13 +271,6 @@ function generations_parallel( objfun ::Function                                
         elitism = elitism_false
     end
 
-    # create folder for backup files
-    println("trying to create backup folder...")
-    if !isdir("backup-files")
-        mkdir("backup-files")
-    end
-    println("created")
-
     t_ref = time()
     # Generate and evaluate offspring
     for iter in 1:pars[:iterations]
@@ -285,7 +279,7 @@ function generations_parallel( objfun ::Function                                
         dt = time() - t_ref
         if dt > pars[:backuptime]
             file = "Backup_GA_worker$(myid())"
-            backup(iter, population, file)
+            backup(iter, pars[:iterations], population, file)
             t_ref = time()
         end
 

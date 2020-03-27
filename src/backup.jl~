@@ -37,11 +37,12 @@ function backup(f ::IOStream, gene ::BinaryGene)
     return nothing
 end
 
-function backup(ngens ::Int64, chrom ::Vector{Individual})
-    chromossome = copy(chrom)
+function backup(ngens ::Int64, chrom ::Vector{Individual},
+                file ::AbstractString)
+    file = "backup-files/$file"
+    chromossome = chrom
     psize = length(chromossome   )
     gsize = length(chromossome[1])
-    file = "Backup_GA_$(now())"
     open(file, "w") do f
         write(f, ngens, psize, gsize)
         for i in chromossome
@@ -51,17 +52,6 @@ function backup(ngens ::Int64, chrom ::Vector{Individual})
         end
     end
     return nothing
-end
-
-function backup(ngens ::Vector{Int64}, chrom ::Vector{Individual})
-    return backup(ngens[1], chrom)
-end
-
-function backup( ngens ::DArray{Individual,1,Vector{Individual}} ,
-                 pop   ::DArray{Individual,1,Vector{Individual}} )
-    population = convert(Vector{Individual}, pop)
-    generations = findmin(ngens)[1]
-    return backup(generations, population)
 end
 
 ####################################################################
