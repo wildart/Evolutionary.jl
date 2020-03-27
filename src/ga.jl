@@ -76,12 +76,6 @@ function ga( objfun        ::Function                                    ,
     pars[:tol          ] = tol
     pars[:backuptime   ] = isbackup ? backuptime : Inf
 
-    # create folder for backup files
-    if !isdir("backup-files")
-        mkdir("backup-files")
-        println("folder created")
-    end
-
     # choose run method depending if it's parallel
     # or serial processing
     if parallel
@@ -173,7 +167,12 @@ function generations( objfun     ::Function           ,
         elitism = elitism_false
     end
 
-
+    # create folder for backup files
+    if !isdir("backup-files")
+        mkdir("backup-files")
+        println("folder created")
+    end
+    
     t_ref = time()
     # Generate and evaluate offspring
     for iter in 1:pars[:iterations]
@@ -236,6 +235,48 @@ function generations_parallel( objfun ::Function                                
     full_pop       = Vector{Individual}(undef, 2*N)
     full_fit       = Vector{Float64   }(undef, 2*N)
 
+    # Elitism
+    # When true, always picks N best individuals from the full population
+    # (parents+offspring), which is size 2*N.
+    # When false, does everything randomly
+    function elitism_true()
+        @inbounds begin
+            full_pop[  1:  N] = population
+            full_pop[N+1:2*N] = offspring
+            full_fit          = objfun.(full_pop)
+            fitidx            = sortperm(full_fit)
+        end
+        for i in 1:N
+            @inbounds begin
+                population[i] = full_pop[fitidx[i]]
+                   fitness[i] = full_fit[fitidx[i]]
+            end
+        end
+        return nothing
+    end
+    function elitism_false()
+        for i in 1:N
+            @inbounds begin
+                population[i] = offspring[i]
+                   fitness[i] = objfun(population[i])
+            end
+        end
+        return nothing
+    end
+
+    if pars[:ϵ]
+        elitism = elitism_true
+    else
+        elitism = elitism_false
+    end
+
+    # create folder for backup files
+    println("trying to create backup folder...")
+    if !isdir("backup-files")
+        mkdir("backup-files")
+    end
+    println("created")
+
     t_ref = time()
     # Generate and evaluate offspring
     for iter in 1:pars[:iterations]
@@ -274,31 +315,8 @@ function generations_parallel( objfun ::Function                                
              @inbounds mutate(offspring[i], pars[:mutationRate])
         end
         
-        # Elitism
-        # When true, always picks N best individuals from the
-        # full population (parents+offspring), which is size 2*N.
-        # When false, does everything randomly
-        if pars[:ϵ]
-            @inbounds begin
-                full_pop[1  :  N] = population
-                full_pop[1+N:2*N] = offspring
-                full_fit          = objfun.(full_pop)
-                fitidx            = sortperm(full_fit)
-            end
-            for i in 1:N
-                @inbounds begin
-                    population[i] = full_pop[fitidx[i]]
-                       fitness[i] = full_fit[fitidx[i]]
-                end
-            end
-        else
-            for i in 1:N
-                @inbounds begin
-                    population[i] = offspring[i]
-                       fitness[i] = objfun(population[i])
-                end
-            end
-        end
+        elitism()
+        
     end
 
     return nothing
