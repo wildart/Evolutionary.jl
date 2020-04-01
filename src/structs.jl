@@ -340,11 +340,12 @@ end
 ####################################################################
 
 """
-    function GAExternal( program  ::AbstractString ,
-                         pipename ::AbstractString ;
-                         parallel ::Bool = false   )
+    function GAExternal( program  ::AbstractString                   ,
+                         pipename ::AbstractString                   ;
+                         nworkers ::Int64          = Sys.CPU_THREADS ,
+                         parallel ::Bool           = false           )
 
-Creates communication pipes for the external program `program`. If `parallel` is `true`, then, considering N workers available, N pipes for reading and N pipes for writing will be created. `pipename` is just a handle for the name of the pipes. If `pipename` is `pipe`, then the pipe names will be `pipe_in` and `pipe_out` for `parallel` as false and `pipe_inn` and `pipe_outn` for `parallel` as true, such as `n` being one of the N workers.
+Creates communication pipes for the external program `program`. If `parallel` is `true`, then, considering N workers available, N pipes for reading and N pipes for writing will be created. `pipename` is just a handle for the name of the pipes. If `pipename` is `pipe`, then the pipe names will be `pipe_in` and `pipe_out` for `parallel` as false and `pipe_inn` and `pipe_outn` for `parallel` as true, with `n` being one of the N workers. `nworkers` is the number of cores to be used, including the number of cores of a remote computer. `parallel` sets the the external program to run in several workers.
 """
 mutable struct GAExternal
     program       ::AbstractString
@@ -423,6 +424,14 @@ end
 
 ####################################################################
 
+"""
+    distributed_ga( ;
+                    localcpu ::Int64           = Sys.CPU_THREADS ,
+                    cluster  ::Vector{<:Tuple} = [()]            ,
+                    dir      ::AbstractString  = pwd()           )
+
+Function to help set up the local computer or a cluster for parallel run of the Genetic Algorithm. `localcpu` is the number of cores to be used in your local computer. `cluster` is a vector of machine specifications. To know more about this, type `?addprocs` in the command prompt after importing the `Distributed` package. `dir` is the directory where you want julia to run in each remote computer.
+"""
 function distributed_ga( ;
                          localcpu ::Int64           = Sys.CPU_THREADS ,
                          cluster  ::Vector{<:Tuple} = [()]            ,

@@ -1,8 +1,19 @@
+##### backup.jl #####
+
+# In this file you'll find backup and reverse backup strategies for the
+# Genetic Algorithm. 
+
+####################################################################
 
 export backup, reverse_backup
 
 ####################################################################
 
+"""
+    backup(f ::IOStream, gene ::IntegerGene)
+
+Writes the current state of a `IntegerGene` structure to a buffer.
+"""
 function backup(f ::IOStream, gene ::IntegerGene)
     write(f, 'I')
     write(f, Int8(length(gene.value)))
@@ -13,6 +24,11 @@ function backup(f ::IOStream, gene ::IntegerGene)
     return nothing
 end
 
+"""
+    backup(f ::IOStream, gene ::FloatGene)
+
+Writes the current state of a `FloatGene` structure to a buffer.
+"""
 function backup(f ::IOStream, gene ::FloatGene)
     write(f, 'F')
     write(f, gene.m)
@@ -30,6 +46,11 @@ function backup(f ::IOStream, gene ::FloatGene)
     return nothing
 end
 
+"""
+    backup(f ::IOStream, gene ::BinaryGene)
+
+Writes the current state of a `BinaryGene` structure to a buffer.
+"""
 function backup(f ::IOStream, gene ::BinaryGene)
     write(f, 'B')
     write(f, gene.value)
@@ -37,8 +58,18 @@ function backup(f ::IOStream, gene ::BinaryGene)
     return nothing
 end
 
-function backup(ngens ::Int64, tgens ::Int64,
-                chrom ::Vector{Individual}, file ::AbstractString)
+"""
+    backup( ngens ::Int64              ,
+            tgens ::Int64              ,
+            chrom ::Vector{Individual} ,
+            file  ::AbstractString     )
+
+Writes number of generations `ngens`, total numberof generations `tgens` and the population `chrom` into file `file`. Always writes to folder `backup-files` that is created, if inexistent, inside the `ga` function.
+"""
+function backup( ngens ::Int64              ,
+                 tgens ::Int64              ,
+                 chrom ::Vector{Individual} ,
+                 file  ::AbstractString     )
     file = "backup-files/$file"
     chromossome = chrom
     psize = length(chromossome   )
@@ -56,6 +87,11 @@ end
 
 ####################################################################
 
+"""
+    reverse_backup(file ::AbstractString)
+
+Reads backup file `file` and saves the number of generations run, the total number of generations supposed to run and the population into variables for later continuing the Genetic Algorithm.
+"""
 function reverse_backup(file ::AbstractString)
     f = open(file, "r")
     
@@ -107,6 +143,13 @@ function reverse_backup(file ::AbstractString)
     return ngens, tgens, population
 end
 
+"""
+    reverse_backup(files ::Vector{<:AbstractString})
+
+This should be used only for backup files of a parallel run, since each worker writes its own backup file.
+
+Reads backup files `files` and returns the number of generations run in the slowest worker, the total number of generations supposed to be run and the entire population.
+"""
 function reverse_backup(files ::Vector{<:AbstractString})
     tgens = Vector{Int64     }(undef, length(files))
     gens  = Vector{Int64     }(undef, length(files)) 

@@ -5,7 +5,6 @@
 ####################################################################
 
 export ga
-const ch = Channel{Bool}(1)
 
 ####################################################################
 
@@ -22,23 +21,37 @@ const ch = Channel{Bool}(1)
 #              ϵ : Boolean to decide if the N best ones will surely survive or
 #                  it's all random
 """
-    ga( objfun         ::Function                          ,
-        initpopulation ::Vector{<:AbstractGene}            ,
-        populationSize ::Int64                             ;
-        lowerBounds    ::Union{Nothing, Vector } = nothing ,
-        upperBounds    ::Union{Nothing, Vector } = nothing ,
-        crossoverRate  ::Float64                 = 0.5     ,
-        mutationRate   ::Float64                 = 0.5     ,
-        ϵ              ::Real                    = 0       ,
-        iterations     ::Integer                 = 100     ,
-        tol            ::Real                    = 0.0     ,
-        tolIter        ::Int64                   = 10      ,
-        verbose        ::Bool                    = false   ,
-        debug          ::Bool                    = false   ,
-        interim        ::Bool                    = false   ,
-        parallel       ::Bool                    = false   )
+    ga( objfun        ::Function                                    ,
+        population    ::Vector{Individual}                          ;
+        crossoverRate ::Float64                   = 0.5             ,
+        mutationRate  ::Float64                   = 0.5             ,
+        ϵ             ::Bool                      = true            ,
+        iterations    ::Integer                   = 100             ,
+        tol           ::Real                      = 0.0             ,
+        parallel      ::Bool                      = false           ,
+        piping        ::Union{Nothing,GAExternal} = nothing         ,
+        nworkers      ::Integer                   = Sys.CPU_THREADS ,
+        output        ::AbstractString            = ""              ,
+        showprint     ::Bool                      = true            ,
+        isbackup      ::Bool                      = true            ,
+        backuptime    ::Float64                   = 1.0             )
 
-Runs the Genetic Algorithm using the objective function `objfun`, the initial population `initpopulation` and the population size `populationSize`. `objfun` is the function to MINIMIZE. 
+Runs the Genetic Algorithm using the objective function `objfun`, the initial population `initpopulation` and the population size `populationSize`. `objfun` is the function to MINIMIZE. The table below shows how the optional arguments behave:
+
+| Optional Argument | Behaviour |
+|-------------------|-----------|
+| crossoverRate     | rate in which the population mates |
+| mutationRate | rate in which a gene mutates |
+| ϵ | set elitism to true or false |
+| iterations | number of iterations to be run |
+| tol | objective function tolerance |
+| parallel | sets parallelization to true or false |
+| piping | if piping is different from `nothing`, uses external program |
+| nworkers | number of cores to be used. Only works if parallel is set to true |
+| output | writes optimization output to a file |
+| showprint | set screen output to true or false |
+| isbackup | sets backup to true or false |
+| backuptime | backup interval in seconds|
 """
 function ga( objfun        ::Function                                    ,
              population    ::Vector{Individual}                          ;
@@ -53,7 +66,7 @@ function ga( objfun        ::Function                                    ,
              output        ::AbstractString            = ""              ,
              showprint     ::Bool                      = true            ,
              isbackup      ::Bool                      = true            ,
-             backuptime    ::Float64                   = 0.5             )
+             backuptime    ::Float64                   = 1.0             )
 
     # Initialize population
     N = length(population)
