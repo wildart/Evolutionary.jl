@@ -56,8 +56,8 @@ end
 
 ####################################################################
 
-function reverse_backup(filename ::AbstractString)
-    f = open(filename, "r")
+function reverse_backup(file ::AbstractString)
+    f = open(file, "r")
     
     ngens    = read(f, Int64)
     tgens    = read(f, Int64)
@@ -105,4 +105,22 @@ function reverse_backup(filename ::AbstractString)
     
     close(f)
     return ngens, tgens, population
+end
+
+function reverse_backup(files ::Vector{<:AbstractString})
+    tgens = Vector{Int64     }(undef, length(files))
+    gens  = Vector{Int64     }(undef, length(files)) 
+    pop   = Vector{Individual}(undef, 0            )
+
+    for (i,f) in enumerate(files)
+        ngen, tgen, popul = reverse_backup(f)
+        gens[i] = ngen
+        tgens[i] = tgen
+        append!(pop, popul)
+    end
+
+    min_gens = findmin( gens)[1]
+    tot_gens = findmax(tgens)[1]
+ 
+    return min_gens, tot_gens, pop
 end

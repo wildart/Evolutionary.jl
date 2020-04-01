@@ -413,7 +413,6 @@ mutable struct GAExternal
                     remotecall_fetch(rm, id, p)
                 end
             end
-            
             return nothing
         end
         atexit(external_atexit)
