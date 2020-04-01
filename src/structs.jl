@@ -420,3 +420,35 @@ mutable struct GAExternal
         return new(program, pin, pout, avail_workers, parallel)
     end
 end
+
+####################################################################
+
+function distributed_ga( ;
+                         localcpu ::Int64           = Sys.CPU_THREADS ,
+                         cluster  ::Vector{<:Tuple} = [()]            ,
+                         dir      ::AbstractString  = pwd()           )
+
+    nworkers = localcpu
+    if cluster != [()]
+        for i in cluster
+            nworkers += i[2]
+        end
+    end
+        
+    @eval using Distributed
+    for i in 1:4
+        if localcpu != 0
+            addprocs(localcpu)
+        end
+        if cluster != [()]
+            addprocs(cluster, dir=dir)
+        end
+    end
+
+    @eval @everywhere using Distributed
+    @eval @everywhere using DistributedArrays
+    @eval @everywhere using DistributedArrays.SPMD
+    @eval @everywhere using Evolutionary
+
+    return nworkers
+end
