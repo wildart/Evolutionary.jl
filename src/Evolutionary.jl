@@ -43,7 +43,6 @@ using Random
             individual = init
         elseif isa(init, Matrix)
             @assert size(init, 1) == N "Dimensionality of initial population must be $(N)"
-            populationSize = size(init, 2)
             individual = init[:, 1]
         elseif isa(init, Function) # Creation function
             individual = init(N)
