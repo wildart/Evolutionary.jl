@@ -131,7 +131,7 @@ function ga( objfun        ::Function                                    ,
     end
 
     # result presentation
-    data_presentation( population[bestIndividual], iterations, bestFitness,
+    data_presentation( population[bestIndividual], N, iterations, bestFitness,
                        isfit, elapsed_time, showprint, output )
     
     return population[bestIndividual], bestFitness
@@ -153,21 +153,28 @@ function generations( objfun     ::Function           ,
     full_pop       = Vector{Individual}(undef, 2*N)
     full_fit       = Vector{Float64   }(undef, 2*N)
 
+    for i in 1:N
+         fitness[i] = objfun(population[i])
+        full_fit[i] = fitness[i]
+        full_pop[i] = population[i]
+    end
+
     # Elitism
     # When true, always picks N best individuals from the full population
     # (parents+offspring), which is size 2*N.
     # When false, does everything randomly
     function elitism_true()
         @inbounds begin
-            full_pop[  1:  N] = population
             full_pop[N+1:2*N] = offspring
-            full_fit          = objfun.(full_pop)
+            full_fit[N+1:2*N] = objfun.(offspring)
             fitidx            = sortperm(full_fit)
         end
         for i in 1:N
             @inbounds begin
                 population[i] = full_pop[fitidx[i]]
                    fitness[i] = full_fit[fitidx[i]]
+                  full_fit[i] = fitness[i]
+                  full_pop[i] = population[i]
             end
         end
         return nothing
@@ -249,22 +256,29 @@ function generations_parallel( objfun ::Function                                
     full_pop       = Vector{Individual}(undef, 2*N)
     full_fit       = Vector{Float64   }(undef, 2*N)
 
+     fitness      = objfun.(population)
+    full_fit[1:N] = fitness
+    full_pop[1:N] = population
+    
     # Elitism
     # When true, always picks N best individuals from the full population
     # (parents+offspring), which is size 2*N.
-    # When false, does everything randomly
+    # When false, only uses offspring
     function elitism_true()
         @inbounds begin
-            full_pop[  1:  N] = population
             full_pop[N+1:2*N] = offspring
-            full_fit          = objfun.(full_pop)
-            fitidx            = sortperm(full_fit)
+            full_fit[N+1:2*N] = objfun.(offspring)
+            fitidx = sortperm(full_fit)
         end
         for i in 1:N
             @inbounds begin
                 population[i] = full_pop[fitidx[i]]
                    fitness[i] = full_fit[fitidx[i]]
             end
+        end
+        @inbounds begin
+            full_fit[1:N] = copy(fitness)
+            full_pop[1:N] = deepcopy(population)
         end
         return nothing
     end
@@ -312,7 +326,8 @@ function generations_parallel( objfun ::Function                                
             else
                 @inbounds begin
                     offspring[i], offspring[j] =
-                        population[selected[i]], population[selected[j]]
+                        deepcopy(population[selected[i]]),
+                        deepcopy(population[selected[j]])
                 end
             end
         end
@@ -332,6 +347,7 @@ end
 ####################################################################
 
 function data_presentation( individual   ::Individual ,
+                            popsize      ::Integer    ,
                             generations  ::Integer    ,
                             bestFitness  ::Float64    ,
                             isfit        ::Bool       ,
@@ -385,24 +401,28 @@ function data_presentation( individual   ::Individual ,
         table *= @eval @sprintf($i_str, $j, $s_val)
     end
 
-    printstyled("\nRESULTS :\n", color=:bold)
-    println("number of generations = " * string(generations))
-    println("best Fitness          = " * string(bestFitness))
-    println("Run time              = $optim_time seconds")
-    println("")
-    printstyled("GENES OF BEST INDIVIDUAL :\n", color=:bold)
-    println(table)
-    println("")
-    if isfit
-        printstyled("OPTIMIZATION SUCCESSFUL\n"  , color=:bold)
-    else
-        printstyled("OPTIMIZATION UNSUCCESSFUL\n", color=:bold)
+    if showprint
+        printstyled("\nRESULTS :\n", color=:bold)
+        println("population size       = $popsize"           )
+        println("number of generations = $generations"       )
+        println("best Fitness          = $bestFitness"       )
+        println("Run time              = $optim_time seconds")
+        println("")
+        printstyled("GENES OF BEST INDIVIDUAL :\n", color=:bold)
+        println(table)
+        println("")
+        if isfit
+            printstyled("OPTIMIZATION SUCCESSFUL\n"  , color=:bold)
+        else
+            printstyled("OPTIMIZATION UNSUCCESSFUL\n", color=:bold)
+        end
     end
 
     if output != ""
         open(output, "w") do f
             write(f, "Result File of Genetic Algorithm, $(now())\n\n")
             write(f, "RESULTS :\n")
+            write(f, string("population size       = ", popsize    , "\n"))
             write(f, string("number of generations = ", generations, "\n"))
             write(f, string("best Fitness          = ", bestFitness, "\n"))
             write(f, "Run time              = $optim_time seconds\n")
