@@ -12,24 +12,28 @@
 #                 are guaranteed to survive to the next generation.
 #                 Floating number specifies fraction of population.
 #
-function ga(objfun::Function, N::Int;
-            initPopulation::Individual = ones(N),
-            lowerBounds::Union{Nothing, Vector} = nothing,
-            upperBounds::Union{Nothing, Vector} = nothing,
-            populationSize::Int = 50,
-            crossoverRate::Float64 = 0.8,
-            mutationRate::Float64 = 0.1,
-            ɛ::Real = 0,
-            selection::Function = ((x,n)->1:n),
-            crossover::Function = ((x,y)->(y,x)),
-            mutation::Function = (x->x),
-            iterations::Integer = 100*N,
-            tol = 0.0,
-            tolIter = 10,
-            verbose = false,
-            debug = false,
-            interim = false)
+@with_kw struct GA <: Optimizer
+    N::Int;
+    initPopulation::Individual = ones(N)
+    lowerBounds::Union{Nothing, Vector} = nothing
+    upperBounds::Union{Nothing, Vector} = nothing
+    populationSize::Int = 50
+    crossoverRate::Float64 = 0.8
+    mutationRate::Float64 = 0.1
+    ɛ::Real = 0
+    selection::Function = ((x,n)->1:n)
+    crossover::Function = ((x,y)->(y,x))
+    mutation::Function = (x->x)
+    tolIter = 10
+    interim = false
+end
 
+function optimize(objfun::Function, opt::GA;
+                    iterations::Integer = 100*opt.N,
+                    tol = 0.0,
+                    verbose = false,
+                    debug = false)
+    @unpack N,initPopulation,lowerBounds,upperBounds,populationSize,crossoverRate,mutationRate,ɛ,selection,crossover,mutation,tolIter,interim = opt
     store = Dict{Symbol,Any}()
 
     # Setup parameters

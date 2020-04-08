@@ -14,7 +14,7 @@
     N = 30
 
     # Testing: CMA-ES
-    result, fitness, cnt = cmaes(schwefel, N; μ = 3, λ = 12, iterations = 1000)
+    result, fitness, cnt = optimize(schwefel, CMAES(N; μ = 3, λ = 12, iterations = 1000))
     println("(3/3,12)-CMA-ES (Schwefel) => F: $(fitness), C: $(cnt)")
 
     @test ≈(result, zeros(N), atol=1e-5)

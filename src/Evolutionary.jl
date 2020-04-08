@@ -1,5 +1,6 @@
 module Evolutionary
-using Random
+    using Random, LinearAlgebra, Statistics
+    using Parameters: @unpack, @with_kw
     export Strategy, strategy, inverse, mutationwrapper,
            # ES mutations
            isotropic, anisotropic, isotropicSigma, anisotropicSigma,
@@ -14,7 +15,7 @@ using Random
            # GA selections
            ranklinear, uniformranking, roulette, sus, tournament, truncation,
            # Optimization methods
-           es, cmaes, ga, optimize, ES, CMAES, GA
+           optimize, ES, CMAES, GA
 
     const Strategy = Dict{Symbol,Any}
     const Individual = Union{Vector, Matrix, Function, Nothing}
@@ -62,6 +63,7 @@ using Random
         end
     end
 
+    abstract type Optimizer end
 
     # ES & GA recombination functions
     include("recombinations.jl")
@@ -79,20 +81,5 @@ using Random
     # Genetic Algorithms
     include("ga.jl")
 
-    abstract type Optimizer end
-
-    struct ES <: Optimizer end 
-    struct CMAES <: Optimizer end 
-    struct GA <: Optimizer end 
-
-    function optimize(objfun::Function, N::Int, opt::Optimizer, args...; kwargs...)
-        if opt == ES()
-            es(objfun, N, args...; kwargs...)
-        elseif opt == CMAES()
-            cmaes(objfun, N, args...; kwargs...)
-        elseif opt == GA()
-            ga(objfun, N, args...; kwargs...)
-        end
-    end
 
 end
