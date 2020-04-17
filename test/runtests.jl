@@ -11,6 +11,7 @@ for tests in [
             "rastrigin.jl",
             "n-queens.jl",
             "knapsack.jl",
+            "onemax.jl",
             "selections.jl"
 ]
     include(tests)
