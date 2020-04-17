@@ -6,17 +6,19 @@
 # μ is the number of parents
 # λ is the number of offspring.
 #
-using LinearAlgebra
-using Statistics
-function cmaes( objfun::Function, N::Int;
-                initPopulation::Individual = ones(N),
-                initStrategy::Strategy = strategy(τ = sqrt(N), τ_c = N^2, τ_σ = sqrt(N)),
-                μ::Integer = 1,
-                λ::Integer = 1,
-                iterations::Integer = 1_000,
-                tol::Float64 = 1e-10,
-                verbose = false)
+@with_kw struct CMAES <: Optimizer
+    N::Int
+    initPopulation::Individual = ones(N)
+    initStrategy::Strategy = strategy(τ = sqrt(N), τ_c = N^2, τ_σ = sqrt(N))
+    μ::Integer = 1
+    λ::Integer = 1
+end
 
+function optimize(objfun::Function, opt::CMAES;   
+                    iterations::Integer = 1_000,
+                    tol::Float64 = 1e-10,
+                    verbose = false)
+    @unpack N,initPopulation,initStrategy,μ,λ = opt
     @assert μ < λ "Offspring population must be larger then parent population"
 
     # Initialize parent population

@@ -9,9 +9,10 @@
 
     initpop = collect(rand(Bool,length(mass)))
 
-    best, invbestfit, generations, tolerance, history = ga(
-        x -> 1 / fitness(x),                    # Function to MINIMISE
-        length(initpop),                        # Length of chromosome
+    best, invbestfit, generations, tolerance, history = optimize(
+        x -> 1 / fitness(x),
+        GA(                    # Function to MINIMISE
+        N=length(initpop),                        # Length of chromosome
         initPopulation = initpop,
         selection = roulette,                   # Options: sus
         mutation = inversion,                   # Options:
@@ -19,10 +20,9 @@
         mutationRate = 0.2,
         crossoverRate = 0.5,
         ɛ = 0.1,                                # Elitism
-        iterations = 20,
         tolIter = 20,
         populationSize = 10,
-        interim = true);
+        interim = true),iterations = 20);
 
     @test fitness(best) == 21.
     @test 1. /invbestfit == 21.
