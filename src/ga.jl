@@ -12,7 +12,7 @@
 #                 are guaranteed to survive to the next generation.
 #                 Floating number specifies fraction of population.
 #
-@with_kw struct GA <: Optimizer
+@kwdef struct GA <: Optimizer
     N::Int;
     initPopulation::Individual = ones(N)
     lowerBounds::Union{Nothing, Vector} = nothing
@@ -29,10 +29,10 @@
 end
 
 function optimize(objfun::Function, opt::GA;
-                    iterations::Integer = 100*opt.N,
-                    tol = 0.0,
-                    verbose = false,
-                    debug = false)
+                  iterations::Integer = 100*opt.N,
+                  tol = 0.0,
+                  verbose = false,
+                  debug = false)
     @unpack N,initPopulation,lowerBounds,upperBounds,populationSize,crossoverRate,mutationRate,ɛ,selection,crossover,mutation,tolIter,interim = opt
     store = Dict{Symbol,Any}()
 

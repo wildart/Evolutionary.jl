@@ -11,7 +11,7 @@
 # Plus-selection: parents are deterministically selected from the set of both the parents and offspring
 #
 
-@with_kw struct ES <: Optimizer
+@kwdef struct ES <: Optimizer
     N::Int
     initPopulation::Individual = ones(N)
     initStrategy::Strategy = strategy()
@@ -29,7 +29,7 @@ end
 
 function optimize(objfun::Function, opt::ES;
                     iterations::Integer = opt.N*100,
-                    verbose = false, 
+                    verbose = false,
                     debug = false)
     @unpack N,initPopulation,initStrategy,recombination,srecombination,mutation,smutation,termination,μ,ρ,λ,selection,interim = opt
     @assert ρ <= μ "Number of parents involved in the procreation of an offspring should be no more then total number of parents"

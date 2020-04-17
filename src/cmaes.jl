@@ -6,7 +6,7 @@
 # μ is the number of parents
 # λ is the number of offspring.
 #
-@with_kw struct CMAES <: Optimizer
+@kwdef struct CMAES <: Optimizer
     N::Int
     initPopulation::Individual = ones(N)
     initStrategy::Strategy = strategy(τ = sqrt(N), τ_c = N^2, τ_σ = sqrt(N))
@@ -14,7 +14,7 @@
     λ::Integer = 1
 end
 
-function optimize(objfun::Function, opt::CMAES;   
+function optimize(objfun::Function, opt::CMAES;
                     iterations::Integer = 1_000,
                     tol::Float64 = 1e-10,
                     verbose = false)
