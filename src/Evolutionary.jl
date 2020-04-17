@@ -1,6 +1,7 @@
 module Evolutionary
     using Random, LinearAlgebra, Statistics
-    using Parameters: @unpack, @with_kw
+    import Base.@kwdef
+    import UnPack.@unpack
     export Strategy, strategy, inverse, mutationwrapper,
            # ES mutations
            isotropic, anisotropic, isotropicSigma, anisotropicSigma,
@@ -19,7 +20,7 @@ module Evolutionary
            es, cmaes, ga
 
     const Strategy = Dict{Symbol,Any}
-    const Individual = Union{Vector, Matrix, Function, Nothing}
+    const Individual = Union{AbstractArray, Function, Nothing}
 
     # Wrapping function for strategy
     function strategy(; kwargs...)
@@ -32,7 +33,7 @@ module Evolutionary
 
     # Inverse function for reversing optimization direction
     function inverseFunc(f::Function)
-        function fitnessFunc(x::T) where {T <: Vector}
+        function fitnessFunc(x::T) where {T <: AbstractVector}
             return 1.0/(f(x)+eps())
         end
         return fitnessFunc
