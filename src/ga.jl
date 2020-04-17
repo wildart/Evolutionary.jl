@@ -12,28 +12,33 @@
 #                 are guaranteed to survive to the next generation.
 #                 Floating number specifies fraction of population.
 #
-function ga(objfun::Function, N::Int;
-            initPopulation::Individual = ones(N),
-            lowerBounds::Union{Nothing, Vector} = nothing,
-            upperBounds::Union{Nothing, Vector} = nothing,
-            populationSize::Int = 50,
-            crossoverRate::Float64 = 0.8,
-            mutationRate::Float64 = 0.1,
-            ɛ::Real = 0,
-            selection::Function = ((x,n)->1:n),
-            crossover::Function = ((x,y)->(y,x)),
-            mutation::Function = (x->x),
-            iterations::Integer = 100*N,
-            tol = 0.0,
-            tolIter = 10,
-            verbose = false,
-            debug = false,
-            interim = false)
+@with_kw struct GA <: Optimizer
+    N::Int;
+    initPopulation::Individual = ones(N)
+    lowerBounds::Union{Nothing, Vector} = nothing
+    upperBounds::Union{Nothing, Vector} = nothing
+    populationSize::Int = 50
+    crossoverRate::Float64 = 0.8
+    mutationRate::Float64 = 0.1
+    ɛ::Real = 0
+    selection::Function = ((x,n)->1:n)
+    crossover::Function = ((x,y)->(y,x))
+    mutation::Function = (x->x)
+    tolIter = 10
+    interim = false
+end
 
+function optimize(objfun::Function, opt::GA;
+                    iterations::Integer = 100*opt.N,
+                    tol = 0.0,
+                    verbose = false,
+                    debug = false)
+    @unpack N,initPopulation,lowerBounds,upperBounds,populationSize,crossoverRate,mutationRate,ɛ,selection,crossover,mutation,tolIter,interim = opt
     store = Dict{Symbol,Any}()
 
     # Setup parameters
-    elite = isa(ɛ, Int) ? ɛ : round(Int, ɛ * populationSize)
+    eliteSize = isa(ɛ, Int) ? ɛ : round(Int, ɛ * populationSize)
+    debug && println("Elite Size: $eliteSize")
     fitFunc = inverseFunc(objfun)
 
     # Initialize population
@@ -41,6 +46,7 @@ function ga(objfun::Function, N::Int;
     fitness = zeros(populationSize)
     population = Array{typeof(individual)}(undef, populationSize)
     offspring = similar(population)
+    debug && println("Offspring Size: $(length(offspring))")
 
     # Generate population
     for i in 1:populationSize
@@ -67,14 +73,16 @@ function ga(objfun::Function, N::Int;
     fittolitr = 1
     while true
         debug && println("BEST: $(fitidx)")
+        debug && println("POP: $(population)")
 
         # Select offspring
         selected = selection(fitness, populationSize)
 
         # Perform mating
         offidx = randperm(populationSize)
-        for i in 1:2:populationSize
-            j = (i == populationSize) ? i-1 : i+1
+        offspringSize = populationSize-eliteSize
+        for i in 1:2:offspringSize
+            j = (i == offspringSize) ? i-1 : i+1
             if rand() < crossoverRate
                 debug && println("MATE $(offidx[i])+$(offidx[j])>: $(population[selected[offidx[i]]]) : $(population[selected[offidx[j]]])")
                 offspring[i], offspring[j] = crossover(population[selected[offidx[i]]], population[selected[offidx[j]]])
@@ -84,8 +92,15 @@ function ga(objfun::Function, N::Int;
             end
         end
 
+        # Elitism (copy population individuals before they pass to the offspring & get mutated)
+        for i in 1:eliteSize
+            subs = offspringSize+i
+            debug && println("ELITE $(fitidx[i])=>$(subs): $(population[fitidx[i]])")
+            offspring[subs] = copy(population[fitidx[i]])
+        end
+
         # Perform mutation
-        for i in 1:populationSize
+        for i in 1:offspringSize
             if rand() < mutationRate
                 debug && println("MUTATED $(i)>: $(offspring[i])")
                 mutation(offspring[i])
@@ -93,14 +108,7 @@ function ga(objfun::Function, N::Int;
             end
         end
 
-        # Elitism
-        if elite > 0
-            for i in 1:elite
-                subs = rand(1:populationSize)
-                debug && println("ELITE $(fitidx[i])=>$(subs): $(population[fitidx[i]]) => $(offspring[subs])")
-                offspring[subs] = population[fitidx[i]]
-            end
-        end
+        debug && println("OFF: $(offspring)")
 
         # New generation
         for i in 1:populationSize
@@ -118,11 +126,11 @@ function ga(objfun::Function, N::Int;
         keep(interim, :bestFitness, bestFitness, store)
 
         # Verbose step
-        verbose &&  println("BEST: $(bestFitness): $(population[bestIndividual]), G: $(itr)")
+        verbose && println("BEST: $(bestFitness): $(population[bestIndividual]), G: $(itr)")
 
         # Terminate:
         #  if fitness tolerance is met for specified number of steps
-        if fittol < tol
+        if fittol <= tol
             if fittolitr > tolIter
                 break
             else

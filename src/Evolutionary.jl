@@ -1,5 +1,6 @@
 module Evolutionary
-using Random
+    using Random, LinearAlgebra, Statistics
+    using Parameters: @unpack, @with_kw
     export Strategy, strategy, inverse, mutationwrapper,
            # ES mutations
            isotropic, anisotropic, isotropicSigma, anisotropicSigma,
@@ -12,8 +13,9 @@ using Random
            discrete, waverage, intermediate, line,
            pmx, ox1, cx, ox2, pos,
            # GA selections
-           ranklinear, uniformranking, roulette, sus, tournament, #truncation
+           ranklinear, uniformranking, roulette, sus, tournament, truncation,
            # Optimization methods
+           optimize, ES, CMAES, GA,
            es, cmaes, ga
 
     const Strategy = Dict{Symbol,Any}
@@ -43,7 +45,6 @@ using Random
             individual = init
         elseif isa(init, Matrix)
             @assert size(init, 1) == N "Dimensionality of initial population must be $(N)"
-            populationSize = size(init, 2)
             individual = init[:, 1]
         elseif isa(init, Function) # Creation function
             individual = init(N)
@@ -63,6 +64,7 @@ using Random
         end
     end
 
+    abstract type Optimizer end
 
     # ES & GA recombination functions
     include("recombinations.jl")
@@ -80,4 +82,7 @@ using Random
     # Genetic Algorithms
     include("ga.jl")
 
+    ga(f,N;iterations::Integer = 100*N,tol = 0.0,verbose = false,debug = false,kwargs...) = optimize(f,GA(N=N,kwargs...), iterations = iterations, tol = tol, verbose = verbose, debug = debug)
+    es(f,N;iterations::Integer = N*100,verbose = false, debug = false, kwargs...) = optimize(f, ES(N=N,kwargs...), iterations = iterations, verbose = verbose, debug = debug)
+    cmaes(f,N;iterations::Integer = 1_000,tol::Float64 = 1e-10,verbose = false) = optimize(f, CAMES(N=N,kwargs...), iterations = iterations, tol = tol, verbose = verbose)
 end
