@@ -24,16 +24,16 @@
     selection::Function = ((x,n)->1:n)
     crossover::Function = ((x,y)->(y,x))
     mutation::Function = (x->x)
-    tolIter = 10
-    interim = false
 end
 
 function optimize(objfun::Function, opt::GA;
                   iterations::Integer = 100*opt.N,
                   tol = 0.0,
+                  tolIter = 10,
+                  interim = false,
                   verbose = false,
                   debug = false)
-    @unpack N,initPopulation,lowerBounds,upperBounds,populationSize,crossoverRate,mutationRate,ɛ,selection,crossover,mutation,tolIter,interim = opt
+    @unpack N,initPopulation,lowerBounds,upperBounds,populationSize,crossoverRate,mutationRate,ɛ,selection,crossover,mutation = opt
     store = Dict{Symbol,Any}()
 
     # Setup parameters

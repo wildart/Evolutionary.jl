@@ -24,14 +24,14 @@
     ρ::Integer = μ
     λ::Integer = 1
     selection::Symbol = :plus
-    interim = false
 end
 
 function optimize(objfun::Function, opt::ES;
                     iterations::Integer = opt.N*100,
+                    interim = false,
                     verbose = false,
                     debug = false)
-    @unpack N,initPopulation,initStrategy,recombination,srecombination,mutation,smutation,termination,μ,ρ,λ,selection,interim = opt
+    @unpack N,initPopulation,initStrategy,recombination,srecombination,mutation,smutation,termination,μ,ρ,λ,selection = opt
     @assert ρ <= μ "Number of parents involved in the procreation of an offspring should be no more then total number of parents"
     if selection == :comma
         @assert μ < λ "Offspring population must be larger then parent population"

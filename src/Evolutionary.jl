@@ -83,7 +83,8 @@ module Evolutionary
     # Genetic Algorithms
     include("ga.jl")
 
-    ga(f,N;iterations::Integer = 100*N,tol = 0.0,verbose = false,debug = false,kwargs...) = optimize(f,GA(N=N,kwargs...), iterations = iterations, tol = tol, verbose = verbose, debug = debug)
-    es(f,N;iterations::Integer = N*100,verbose = false, debug = false, kwargs...) = optimize(f, ES(N=N,kwargs...), iterations = iterations, verbose = verbose, debug = debug)
-    cmaes(f,N;iterations::Integer = 1_000,tol::Float64 = 1e-10,verbose = false) = optimize(f, CAMES(N=N,kwargs...), iterations = iterations, tol = tol, verbose = verbose)
+    # deprecations
+    @deprecate ga(f, N; initPopulation::Individual=ones(N), lowerBounds=nothing, upperBounds=nothing, populationSize=50, crossoverRate=0.8, mutationRate=0.1, ɛ=0, selection=((x,n)->1:n), crossover=((x,y)->(y,x)), mutation=(x->x), iterations=100*N, tol=0.0, tolIter=10, verbose=false, debug=false, interim=false) optimize(f, GA(N=N, initPopulation=initPopulation, lowerBounds=lowerBounds, upperBounds=upperBounds, populationSize=populationSize, crossoverRate=crossoverRate, mutationRate=mutationRate, ɛ=ɛ, selection=selection, crossover=crossover, mutation=mutation), iterations=iterations, tol=tol, tolIter=tolIter, interim=interim, verbose=verbose, debug=debug)
+    @deprecate es(f, N; iterations=N*100, initPopulation::Individual=ones(N), initStrategy::Strategy=strategy(), recombination=(rs->rs[1]), srecombination= (ss->ss[1]), mutation=((r,m)->r), smutation=(s->s), termination=(x->false), μ=1, ρ=μ, λ=1, selection=:plus, interim=false, verbose=false, debug=false) optimize(f, ES(N=N, initPopulation=initPopulation, initStrategy=initStrategy, recombination=recombination, srecombination=srecombination, mutation=mutation, smutation=smutation, termination=termination, μ=μ, ρ=ρ, λ=λ, selection=selection), iterations=iterations, interim=interim, verbose=verbose, debug=debug)
+    @deprecate cmaes(f,N; initPopulation::Individual=ones(N), initStrategy=strategy(τ=sqrt(N), τ_c=N^2, τ_σ=sqrt(N)), μ=1, λ=1, iterations=1000, tol=1e-10, verbose=false) optimize(f, CMAES(N=N, initPopulation=initPopulation, initStrategy=initStrategy, μ=μ, λ=λ), iterations=iterations, tol=tol, verbose=verbose)
 end
