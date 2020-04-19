@@ -1,5 +1,10 @@
 # Recombinations
 # ==============
+"""
+    average(population)
+
+Returns an offspring of a multi-parent recombination by averaging `population`.
+"""
 function average(population::Vector{T}) where {T <: AbstractVector}
     obj = zeros(eltype(T), length(population[1]))
     l = length(population)
@@ -9,6 +14,11 @@ function average(population::Vector{T}) where {T <: AbstractVector}
     return obj./l
 end
 
+"""
+    marriage(population)
+
+Returns an offspring of a multi-parent recombination by random copying from `population`.
+"""
 function marriage(population::Vector{T}) where {T <: AbstractVector}
     s = length(population)
     l = length(population[1])
@@ -21,25 +31,13 @@ end
 
 # Strategy recombinations
 # =======================
-function averageSigma1(ss::Vector{S}) where {S <: Strategy}
-    s = copy(ss[1])
-    σ = 0.0
-    l = length(ss)
-    for i in 1:l
-        σ += ss[i][:σ]
-    end
-    s[:σ] = σ/l
-    return s
-end
 
-function averageSigmaN(ss::Vector{S}) where {S <: Strategy}
-    s = copy(ss[1])
-    σ = zeros(length(ss[1][:σ]))
-    l = length(ss)
-    for i in 1:l
-        σ += ss[i][:σ]
-    end
-    s[:σ] = σ./l
+"""Average σ recombination"""
+function averageSigma(ss::Vector{S}) where {S <: Strategy}
+    s = copy(first(ss))
+    idxs = findall(s->haskey(s,:σ), ss)
+    l = length(idxs)
+    s[:σ] = mapreduce(s->s[:σ]/l, +, ss[idxs])
     return s
 end
 
@@ -47,10 +45,16 @@ end
 # Genetic algorithms
 # ==================
 
+identity(v1::T, v2::T) where {T <: AbstractVector} = (v1,v2)
+
 # Binary crossovers
 # -----------------
 
-# Single point crossover
+"""
+    singlepoint(v1, v2)
+
+Single point crossover between `v1` and `v2`
+"""
 function singlepoint(v1::T, v2::T) where {T <: AbstractVector}
     l = length(v1)
     c1 = copy(v1)
@@ -62,7 +66,11 @@ function singlepoint(v1::T, v2::T) where {T <: AbstractVector}
     return c1, c2
 end
 
-# Two point crossover
+"""
+    twopoint(v1, v2)
+
+Two point crossover between `v1` and `v2`
+"""
 function twopoint(v1::T, v2::T) where {T <: AbstractVector}
     l = length(v1)
     c1 = copy(v1)
@@ -75,7 +83,11 @@ function twopoint(v1::T, v2::T) where {T <: AbstractVector}
     return c1, c2
 end
 
-# Uniform crossover
+"""
+    uniform(v1, v2)
+
+Uniform crossover between `v1` and `v2`
+"""
 function uniform(v1::T, v2::T) where {T <: AbstractVector}
     l = length(v1)
     c1 = copy(v1)
@@ -93,6 +105,7 @@ end
 # Real valued crossovers
 # ----------------------
 
+"""Discrete recombination"""
 function discrete(v1::T, v2::T) where {T <: AbstractVector}
     l = length(v1)
     c1 = similar(v1)
@@ -105,7 +118,7 @@ function discrete(v1::T, v2::T) where {T <: AbstractVector}
     return c1, c2
 end
 
-# Weighted arithmetic mean
+"""Weighted arithmetic mean recombination"""
 function waverage(w::Vector{Float64})
     function wavexvr(v1::T, v2::T) where {T <: AbstractVector}
         c1 = (v1+v2)./w
@@ -114,7 +127,7 @@ function waverage(w::Vector{Float64})
     return wavexvr
 end
 
-# Intermediate recombination
+"""Intermediate recombination"""
 function intermediate(d::Float64 = 0.0)
     function intermxvr(v1::T, v2::T) where {T <: AbstractVector}
         l = length(v1)
@@ -127,7 +140,7 @@ function intermediate(d::Float64 = 0.0)
     return intermxvr
 end
 
-# Line recombination
+"""Line recombination"""
 function line(d::Float64 = 0.0)
     function linexvr(v1::T, v2::T) where {T <: AbstractVector}
         α1, α2 = (1.0+2d) * rand(2) .- d
@@ -142,7 +155,7 @@ end
 # Permutation crossovers
 # ----------------------
 
-# Partially mapped crossover
+"""Partially mapped crossover"""
 function pmx(v1::T, v2::T) where {T <: AbstractVector}
     s = length(v1)
     from, to = rand(1:s, 2)
@@ -184,13 +197,13 @@ function pmx(v1::T, v2::T) where {T <: AbstractVector}
     return c1, c2
 end
 
-# Order crossover
+"""Order crossover"""
 function ox1(v1::T, v2::T) where {T <: AbstractVector}
     s = length(v1)
     from, to = rand(1:s, 2)
     from, to = from > to ? (to, from)  : (from, to)
-    c1 = zeros(v1)
-    c2 = zeros(v2)
+    c1 = zero(v1)
+    c2 = zero(v2)
     # Swap
     c1[from:to] = v2[from:to]
     c2[from:to] = v1[from:to]
@@ -210,11 +223,14 @@ function ox1(v1::T, v2::T) where {T <: AbstractVector}
     return c1, c2
 end
 
-# Cycle crossover
+"""Cycle crossover"""
 function cx(v1::T, v2::T) where {T <: AbstractVector}
     s = length(v1)
-    c1 = zeros(v1)
-    c2 = zeros(v2)
+    c1 = zero(v1)
+    c2 = zero(v2)
+    c1i = fill(true, length(v1))
+    c2i = fill(true, length(v2))
+    Z = zero(eltype(T))
 
     f1 = true #switch
     k = 1
@@ -222,58 +238,64 @@ function cx(v1::T, v2::T) where {T <: AbstractVector}
         idx = k
         if f1
             #cycle from v1
-            while c1[idx] == zero(T)
-            c1[idx] = v1[idx]
-            c2[idx] = v2[idx]
-            idx = inmap(v2[idx],v1,1,s)
+            while c1i[idx]
+                c1[idx] = v1[idx]
+                c2[idx] = v2[idx]
+                c1i[idx] = false
+                c2i[idx] = false
+                idx = inmap(v2[idx],v1,1,s)
             end
         else
             #cycle from v2
-            while c2[idx] == zero(T)
-            c1[idx] = v2[idx]
-            c2[idx] = v1[idx]
-            idx = inmap(v1[idx],v2,1,s)
+            while c2i[idx]
+                c1[idx] = v2[idx]
+                c2[idx] = v1[idx]
+                c1i[idx] = false
+                c2i[idx] = false
+                idx = inmap(v1[idx],v2,1,s)
             end
         end
-        f1 $= true
-        k = inmap(zero(T),c2,1,s)
+        f1 ⊻= true
+        k = inmap(true,c2i,1,s)
     end
     return c1,c2
 end
 
-# Order-based crossover
+"""Order-based crossover"""
 function ox2(v1::T, v2::T) where {T <: AbstractVector}
     s = length(v1)
     c1 = copy(v1)
     c2 = copy(v2)
+    Z = zero(eltype(T))
 
     for i in 1:s
         if rand(Bool)
             idx1 = inmap(v2[i],v1,1,s)
             idx2 = inmap(v1[i],v2,1,s)
-            c1[idx1] = zero(T)
-            c2[idx2] = zero(T)
+            c1[idx1] = Z
+            c2[idx2] = Z
         end
     end
 
     for i in 1:s
         if !in(v2[i],c1)
-            tmpin = inmap(zero(T),c1,1,s)
+            tmpin = inmap(Z,c1,1,s)
             c1[tmpin] = v2[i]
         end
         if !in(v1[i],c2)
-            tmpin = inmap(zero(T),c2,1,s)
+            tmpin = inmap(Z,c2,1,s)
             c2[tmpin] = v1[i]
         end
     end
     return c1,c2
 end
 
-# Position-based crossover
+"""Position-based crossover"""
 function pos(v1::T, v2::T) where {T <: AbstractVector}
     s = length(v1)
-    c1 = zeros(v1)
-    c2 = zeros(v2)
+    c1 = zero(v1)
+    c2 = zero(v2)
+    Z = zero(eltype(T))
 
     for i in 1:s
         if rand(Bool)
@@ -284,11 +306,11 @@ function pos(v1::T, v2::T) where {T <: AbstractVector}
 
     for i in 1:s
         if !in(v1[i],c1)
-            tmpin = inmap(zero(T),c1,1,s)
+            tmpin = inmap(Z,c1,1,s)
             c1[tmpin] = v1[i]
         end
         if !in(v2[i],c2)
-            tmpin = inmap(zero(T),c2,1,s)
+            tmpin = inmap(Z,c2,1,s)
             c2[tmpin] = v2[i]
         end
     end

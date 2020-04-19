@@ -2,17 +2,19 @@ using Evolutionary
 using Test
 using Random
 using LinearAlgebra
-Random.seed!(9874984737484)
+Random.seed!(9874984737486)
 
 for tests in [
-            "sphere.jl",
-            "rosenbrock.jl",
-            "schwefel.jl",
-            "rastrigin.jl",
-            "n-queens.jl",
-            "knapsack.jl",
-            "onemax.jl",
-            "selections.jl"
+    "interface.jl",
+    "selections.jl",
+    "recombinations.jl",
+    "sphere.jl",
+    "rosenbrock.jl",
+    "schwefel.jl",
+    "rastrigin.jl",
+    "n-queens.jl",
+    "knapsack.jl",
+    "onemax.jl"
 ]
     include(tests)
 end

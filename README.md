@@ -60,18 +60,10 @@ pkg> add Evolutionary
 - Selections
 	- rank-based fitness assignment
 	- (μ, λ)-uniform ranking
-	- roulette
+	- roulette (fitness proportionate selection, FSP)
 	- stochastic universal sampling (SUS)
 	- tournament
 	- truncation
-
-
-## TODO
-* Documentation
-* Concurrent implementation
-
-## Resources
-- **Documentation:** <http://evolutionaryjl.readthedocs.org/en/latest/index.html>
 
 [docs-dev-img]: https://img.shields.io/badge/docs-dev-blue.svg
 [docs-dev-url]: https://wildart.github.io/Evolutionary.jl/dev
