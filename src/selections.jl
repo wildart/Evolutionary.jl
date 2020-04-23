@@ -1,4 +1,4 @@
-# GA seclections
+# GA selections
 # ==============
 
 # Rank-based fitness assignment
@@ -7,29 +7,29 @@ function ranklinear(sp::Float64)
     @assert 1.0 <= sp <= 2.0 "Selective pressure has to be in range [1.0, 2.0]."
     function rank(fitness::Vector{<:Real}, N::Int)
         λ = length(fitness)
-        idx = sortperm(fitness)
-        ranks = zeros(λ)
+        rank = sortperm(fitness)
+        
+        prob = Vector{Float64}(undef, λ)
         for i in 1:λ
-            ranks[i] = ( 2 - sp + 2*(sp - 1)*(idx[i] - 1) / (λ - 1) ) / λ
+            prob[i] = ( 2.0- sp + 2.0*(sp - 1.0)*(rank[i] - 1.0) / (λ - 1.0) ) / λ
         end
-        return pselection(ranks, N)
+
+        return pselection(prob, N)
     end
     return rank
 end
 
 # (μ, λ)-uniform ranking selection
-function uniformranking(μ::Int)
-    function uniformrank(fitness::Vector{<:Real}, N::Int)
-        λ = length(fitness)
-        idx = sortperm(fitness, rev=true)
-        @assert μ < λ "μ should be less then $(λ)"
-        ranks = similar(fitness, Float64)
-        for i in 1:μ
-            ranks[idx[i]] = 1/μ
-        end
-        return pselection(ranks, N)
-    end
-    return uniformrank
+function rankuniform(fitness::Vector{<:Real}, N::Int)
+    μ = N
+    λ = length(fitness)
+    @assert μ <= λ "μ must be ≤ λ = $(λ)"
+    
+    prob = zeros(λ)
+    rank = sortperm(fitness, rev=true)
+    prob[rank[1:μ]] .= 1/μ
+
+    return pselection(prob, N)
 end
 
 # Roulette wheel (proportionate selection) selection
@@ -40,11 +40,13 @@ end
 
 # Stochastic universal sampling (SUS)
 function sus(fitness::Vector{<:Real}, N::Int)
+    selected = Vector{Int}(undef, N)
+    
     F = sum(fitness)
     P = F/N
+    
     start = P*rand()
     pointers = [start+P*i for i = 0:(N-1)]
-    selected = Array{Int}(undef, N)
     i = c = 1
     for P in pointers
         while sum(fitness[1:i]) < P
@@ -53,6 +55,7 @@ function sus(fitness::Vector{<:Real}, N::Int)
         selected[c] = i
         c += 1
     end
+
     return selected
 end
 
@@ -65,10 +68,10 @@ function truncation(fitness::Vector{<:Real}, N::Int)
 end
 
 # Tournament selection
-function tournament(groupSize :: Int)
+function tournament(groupSize::Int)
     @assert groupSize > 0 "Group size must be positive"
     function tournamentN(fitness::Vector{<:Real}, N::Int)
-        selection = fill(0,N)
+        selection = Vector{Int}(undef, N)
 
         nFitness = length(fitness)
 
@@ -98,16 +101,24 @@ end
 
 # Utils: selection
 function pselection(prob::Vector{<:Real}, N::Int)
+    selected = Vector{Int}(undef, N)
+
     cp = cumsum(prob)
-    selected = Array{Int}(undef, N)
+    @assert cp[end] ≈ 1 "Sum of probability vector must equal 1"
+
     for i in 1:N
-        j = 1
-        r = rand()
-        while cp[j] < r
-            j += 1
-        end
-        selected[i] = j
+        selected[i] = vlookup(cp, rand())
     end
     return selected
 end
 
+# Utils: vlookup
+function vlookup(range::Vector{<:Number}, value::Number)
+    for i in eachindex(range)
+        if range[i] >= value
+            return i
+        end
+    end
+
+    return -1
+end

@@ -37,7 +37,7 @@
     test_result(result, fitness, N, 1e-1)
 
     # Testing: GA
-    selections = [roulette, sus, ranklinear(1.5)]
+    selections = [roulette, sus, ranklinear(1.5), rankuniform, tournament(4)]
     crossovers = [discrete, intermediate(0.), intermediate(0.25), line(0.2)]
     mutations = [domainrange(fill(0.5,N)), domainrange(fill(1.0,N))]
 
