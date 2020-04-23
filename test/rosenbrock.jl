@@ -15,7 +15,7 @@
 
 	# Testing: (15/5+100)-ES
 	# with isotropic mutation operator y' := y + σ(N_1(0, 1), ..., N_N(0, 1))
-	result, fitness, cnt = optimize(rosenbrock, ES(N=N;
+	result, fitness, cnt = Evolutionary.optimize(rosenbrock, ES(N=N;
         initStrategy = strategy(σ = 1.0),
         recombination = average, mutation = isotropic,
         μ = 15, ρ = 5, λ = 100),iterations = 1000)
@@ -24,7 +24,7 @@
 
 	# Testing: (15/15+100)-σ-Self-Adaptation-ES
 	# with isotropic mutation operator y' := y + σ(N_1(0, 1), ..., N_N(0, 1))
-	result, fitness, cnt = optimize(rosenbrock, ES(N=N;
+	result, fitness, cnt = Evolutionary.optimize(rosenbrock, ES(N=N;
 		initPopulation = [.5, .5],
         initStrategy = strategy(σ = 1.0, τ = 1/sqrt(2*N)),
 		recombination = average, srecombination = averageSigma1,
@@ -35,29 +35,48 @@
 
 	# Testing: (15/15+100)-σ-Self-Adaptation-ES
 	# with non-isotropic mutation operator y' := y + (σ_1 N_1(0, 1), ..., σ_N N_N(0, 1))
-	result, fitness, cnt = optimize(rosenbrock, ES(N=N;
+	result, fitness, cnt = es(rosenbrock, N; # old api
 		initPopulation = rand(N,25),
-        initStrategy = strategy(σ = .5ones(N), τ = 1/sqrt(2*N), τ0 = 1/sqrt(N)),
+		initStrategy = strategy(σ = .5ones(N), τ = 1/sqrt(2*N), τ0 = 1/sqrt(N)),
 		recombination = average, srecombination = averageSigmaN,
 		mutation = anisotropic, smutation = anisotropicSigma,
-		μ = 15, λ = 100),iterations = 1000)
+		μ = 15, λ = 100, iterations = 1000)
+	result, fitness, cnt = Evolutionary.optimize(rosenbrock, # new api
+		ES(N=N;
+			initPopulation = rand(N,25),
+			initStrategy = strategy(σ = .5ones(N), τ = 1/sqrt(2*N), τ0 = 1/sqrt(N)),
+			recombination = average, srecombination = averageSigmaN,
+			mutation = anisotropic, smutation = anisotropicSigma,
+			μ = 15, λ = 100
+		), iterations = 1000)
 	println("(15/15+100)-σ-SA-ES-AS => F: $(fitness), C: $(cnt), OBJ: $(result)")
 	test_result(result, fitness, N, 1e-1)
 
 	# Testing: CMA-ES
-	result, fitness, cnt = optimize(rosenbrock, CMAES(N=N;
-    	μ = 3, λ = 12), tol = 1e-3, iterations = 100_000)
+	result, fitness, cnt = cmaes(rosenbrock, N; μ = 3, λ = 12, # old api
+		iterations = 100_000, tol = 1e-3)
+	result, fitness, cnt = Evolutionary.optimize(rosenbrock, # new api
+		CMAES(N=N; μ = 3, λ = 12), tol = 1e-3, iterations = 100_000)
     println("(3/3,12)-CMA-ES => F: $(fitness), C: $(cnt), OBJ: $(result)")
     test_result(result, fitness, N, 1e-1)
 
-    # Testing: GA
-    result, fitness, cnt = optimize(rosenbrock, GA(N=N;
-    	initPopulation = (n -> rand(n)),
-    	populationSize = 100,
-    	ɛ = 0.1,
-        selection = sus,
-        crossover = intermediate(0.25),
-        mutation = domainrange(fill(0.5,N))))
+	# Testing: GA
+	result, fitness, cnt = ga(rosenbrock, N; # old api
+		initPopulation = (n -> rand(n)),
+		populationSize = 100,
+		ɛ = 0.1,
+		selection = sus,
+		crossover = intermediate(0.25),
+		mutation = domainrange(fill(0.5,N)))
+	result, fitness, cnt = Evolutionary.optimize(rosenbrock,  # new api
+		GA(N=N;
+	    	initPopulation = (n -> rand(n)),
+    		populationSize = 100,
+    		ɛ = 0.1,
+        	selection = sus,
+        	crossover = intermediate(0.25),
+			mutation = domainrange(fill(0.5,N))
+		))
     println("GA(p=50,x=0.8,μ=0.1) => F: $(fitness), C: $(cnt), OBJ: $(result)")
     test_result(result, fitness, N, 3e-1)
 

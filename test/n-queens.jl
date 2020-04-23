@@ -24,7 +24,7 @@
 
     # Testing: GA solution with various mutations
     for muts in [inversion, insertion, swap2, scramble, shifting]
-        result, fitness, cnt = optimize(nqueens, GA(N=N;
+        result, fitness, cnt = Evolutionary.optimize(nqueens, GA(N=N;
             initPopulation = generatePositions,
             populationSize = P,
             selection = sus,
@@ -37,7 +37,7 @@
 
     # Testing: ES
     for muts in [inversion, insertion, swap2, scramble, shifting]
-        result, fitness, cnt = optimize(nqueens, ES(N=N;
+        result, fitness, cnt = Evolutionary.optimize(nqueens, ES(N=N;
             initPopulation = generatePositions,
             mutation = mutationwrapper(muts),
             μ = 15, ρ = 1, λ = P))

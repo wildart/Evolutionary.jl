@@ -9,20 +9,19 @@
 
     initpop = collect(rand(Bool,length(mass)))
 
-    best, invbestfit, generations, tolerance, history = optimize(
+    best, invbestfit, generations, tolerance, history = Evolutionary.optimize(
         x -> 1 / fitness(x),
         GA(                    # Function to MINIMISE
-        N=length(initpop),                        # Length of chromosome
-        initPopulation = initpop,
-        selection = roulette,                   # Options: sus
-        mutation = inversion,                   # Options:
-        crossover = singlepoint,                # Options:
-        mutationRate = 0.2,
-        crossoverRate = 0.5,
-        ɛ = 0.1,                                # Elitism
-        tolIter = 20,
-        populationSize = 10,
-        interim = true),iterations = 20);
+            N=length(initpop),                        # Length of chromosome
+            initPopulation = initpop,
+            selection = roulette,                   # Options: sus
+            mutation = inversion,                   # Options:
+            crossover = singlepoint,                # Options:
+            mutationRate = 0.2,
+            crossoverRate = 0.5,
+            ɛ = 0.1,                                # Elitism
+            populationSize = 10,
+        ),tolIter = 20, interim = true, iterations = 20);
 
     @test fitness(best) == 21.
     @test 1. /invbestfit == 21.
