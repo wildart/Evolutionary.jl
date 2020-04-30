@@ -30,8 +30,8 @@ end
 function anisotropicSigma(s::S) where {S <: Strategy}
     @assert :σ ∈ keys(s) && :τ ∈ keys(s) && :τ0 ∈ keys(s) "Strategy must have parameters: σ, τ0, τ"
     @assert isa(s[:σ], Vector) "Sigma must be a vector of parameters"
-    #σ = exp(s[:τ0]*randn())*exp(s[:τ]*randn(length(s[:σ])))
-    σ = exp.(s[:τ]*randn(length(s[:σ])))
+    σ = exp.(s[:τ0]*randn())*exp.(s[:τ]*randn(length(s[:σ])))
+    # σ = exp.(s[:τ]*randn(length(s[:σ])))
     return strategy(σ = σ, τ = s[:τ], τ0 = s[:τ0])
 end
 
@@ -39,8 +39,11 @@ end
 # Genetic mutations
 # =================
 
-# Binary mutations
-# ----------------
+"""
+    flip(recombinant)
+
+Returns a binary `recombinant` with a bit flips at random positions.
+"""
 function flip(recombinant::T) where {T <: BitVector}
     s = length(recombinant)
     pos = rand(1:s)
@@ -48,9 +51,19 @@ function flip(recombinant::T) where {T <: BitVector}
     return recombinant
 end
 
-# Real valued mutation
-# Mühlenbein, H. and Schlierkamp-Voosen, D.: Predictive Models for the Breeder Genetic Algorithm: I. Continuous Parameter Optimization. Evolutionary Computation, 1 (1), pp. 25-49, 1993.
-# --------------------
+"""
+    bitinversion(recombinant)
+
+Returns a binary `recombinant` with its bits inverted.
+"""
+bitinversion(recombinant::T) where {T <: BitVector} = map(!, recombinant)
+
+
+"""
+    domainrange(valrange, m = 20)
+
+Returns a real valued mutation function with the mutation range `valrange` and the mutation probability `1/m` [^1].
+"""
 function domainrange(valrange::Vector, m::Int = 20)
     prob = 1.0 / m
     function mutation(recombinant::T) where {T <: AbstractVector}
