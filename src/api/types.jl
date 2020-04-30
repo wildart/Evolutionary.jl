@@ -118,8 +118,6 @@ function NonDifferentiable(f, x::BitArray)
     xs = BitArray(zero(eltype(x)) for i = 1:length(x))
     NonDifferentiable{Real,typeof(xs)}(f, f(xs), xs, [0,])
 end
-length(d::NonDifferentiable) = length(d.x_f)
-
 
 const Strategy = Dict{Symbol,Any}
 const Individual = Union{AbstractArray, Function, Nothing}

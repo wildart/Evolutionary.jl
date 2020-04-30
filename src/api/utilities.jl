@@ -1,12 +1,3 @@
-# Inverse function for reversing optimization direction
-function inverseFunc(f::Function)
-    function fitnessFunc(x::T) where {T <: AbstractVector}
-        return 1.0/(f(x)+eps())
-    end
-    return fitnessFunc
-end
-
-
 #########
 # TRACE #
 #########
