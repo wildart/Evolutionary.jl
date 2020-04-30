@@ -2,21 +2,18 @@
 
 A Julia package for [evolutionary](http://www.scholarpedia.org/article/Evolution_strategies) & [genetic](http://en.wikipedia.org/wiki/Genetic_algorithm) algorithms.
 
-[![Build Status](https://travis-ci.org/wildart/Evolutionary.jl.svg?branch=master)](https://travis-ci.org/wildart/Evolutionary.jl)
-[![Coverage Status](https://img.shields.io/coveralls/wildart/Evolutionary.jl.svg)](https://coveralls.io/r/wildart/Evolutionary.jl?branch=master)
-[![Documentation Status](https://readthedocs.org/projects/evolutionaryjl/badge/?version=latest)](https://readthedocs.org/projects/evolutionaryjl/?badge=latest)
+| **Documentation**                                                               | **Build Status**                                                                                |
+|:-------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------:|
+| [![][docs-stable-img]][docs-stable-url] [![][docs-dev-img]][docs-dev-url] | [![][travis-img]][travis-url] [![][coverage-img]][coverage-url] |
+
 
 ## Installation
 
-For julia 0.6 and lower, run following command
+The package can be installed with the Julia package manager.
+From the Julia REPL, type `]` to enter the Pkg REPL mode and run:
 
-```julia
-Pkg.add("Evolutionary")
 ```
-
-For julia 0.7 and higher, run in the package manager mode
-```
-pkg> add https://github.com/wildart/Evolutionary.jl.git#v0.2.0
+pkg> add Evolutionary
 ```
 
 ## Functionalities
@@ -75,3 +72,17 @@ pkg> add https://github.com/wildart/Evolutionary.jl.git#v0.2.0
 
 ## Resources
 - **Documentation:** <http://evolutionaryjl.readthedocs.org/en/latest/index.html>
+
+[docs-dev-img]: https://img.shields.io/badge/docs-dev-blue.svg
+[docs-dev-url]: https://wildart.github.io/Evolutionary.jl/dev
+
+[docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
+[docs-stable-url]: https://wildart.github.io/Evolutionary.jl/stable
+
+[travis-img]: https://travis-ci.org/wildart/Evolutionary.jl.svg?branch=master
+[travis-url]: https://travis-ci.org/wildart/Evolutionary.jl
+
+[coverage-img]: https://img.shields.io/coveralls/wildart/Evolutionary.jl.svg
+[coverage-url]: https://coveralls.io/r/wildart/Evolutionary.jl?branch=master
+
+[issues-url]: https://github.com/wildart/Evolutionary.jl/issues
