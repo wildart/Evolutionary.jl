@@ -23,8 +23,9 @@
     @test Evolutionary.minimizer(result) ≈ zeros(N) atol=1e-5
     @test minimum(result) ≈ 0.0 atol=1e-5
 
+    bounds = Evolutionary.ConstraintBounds(fill(-1.0f0,N),fill(1.0f0,N),[],[])
     opts = Evolutionary.Options(store_trace=true, iterations=10)
-    result = Evolutionary.optimize(schwefel, rand(Float32, N), CMAES(μ = 3, λ = 12), opts)
+    result = Evolutionary.optimize(schwefel, bounds, CMAES(μ = 3, λ = 12), opts)
     @test Evolutionary.iterations(result) == 10
     @test !Evolutionary.converged(result)
     @test haskey(Evolutionary.trace(result)[end].metadata, "σ")

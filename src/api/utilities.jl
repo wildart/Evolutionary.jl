@@ -106,3 +106,32 @@ function initial_population(method::M, individuals::I) where {M<:AbstractOptimiz
     @assert size(individuals,2) >= n "Size of initial population must be no smaller then $n"
     return [individuals[:,i] for i in 1:n]
 end
+
+"""
+    initial_population(method, bounds::ConstraintBounds)
+
+Initialize a random population within the individual `bounds`.
+"""
+function initial_population(method::M, bounds::ConstraintBounds) where {M<:AbstractOptimizer}
+    n = population_size(method)
+    cn = nconstraints_x(bounds)
+    indv = rand(cn, n)
+    if length(bounds.eqx) > 0
+        indv[bounds.eqx,:] .= bounds.valx
+    end
+    T = eltype(bounds)
+    rngs = Dict(i=>zeros(T,2) for i in bounds.ineqx)
+    for (j,v,s) in zip(bounds.ineqx, bounds.bx, bounds.σx)
+        rngs[j][1] -= s*v
+        if s > 0
+            rngs[j][2] += v
+        end
+    end
+    for i in 1:n
+        for (j,(r,l)) in rngs
+            indv[j,i] *= r
+            indv[j,i] += l
+        end
+    end
+    initial_population(method, indv)
+end

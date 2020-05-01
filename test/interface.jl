@@ -119,6 +119,16 @@
     pop = Evolutionary.initial_population(mthd, (()->rand(Bool,dimension)))
     @test length(pop) == population_size(mthd)
 
+    lb = [0,1,2,-1]
+    ub = [0,3,2,1]
+    cb = Evolutionary.ConstraintBounds(lb,ub,[],[])
+    pop = Evolutionary.initial_population(mthd, cb)
+    @test length(pop) == population_size(mthd)
+    @test map(i->i[1],pop) == fill(ub[1], population_size(mthd))
+    @test all(map(i->lb[2] <= i[2] <= ub[2],pop))
+    @test map(i->i[3],pop) == fill(ub[3], population_size(mthd))
+    @test all(map(i->lb[4] <= i[4] <= ub[4],pop))
+
     ###########
     # OPTIONS #
     ###########

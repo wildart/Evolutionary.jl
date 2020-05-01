@@ -16,15 +16,13 @@ From the Julia REPL, type `]` to enter the Pkg REPL mode and run:
 pkg> add Evolutionary
 ```
 
-## Functionalities
-
-#### Algorithms
+## Algorithms
 
 - (μ/ρ(+/,)λ)-SA-ES
-- (μ/μ_I,λ)-CMA-ES
+- (μ/μ<sub>I</sub>,λ)-CMA-ES
 - Genetic Algorithms (GA)
 
-#### Operators
+## Operators
 
 - Mutations
   - ES
@@ -72,6 +70,7 @@ pkg> add Evolutionary
   - stochastic universal sampling (SUS)
   - tournament
   - truncation
+
 
 [docs-dev-img]: https://img.shields.io/badge/docs-dev-blue.svg
 [docs-dev-url]: https://wildart.github.io/Evolutionary.jl/dev

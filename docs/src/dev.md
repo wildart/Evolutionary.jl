@@ -47,7 +47,5 @@ The `initial_population` must accept two parameters:
 Following population initialization strategies are available:
 
 ```@docs
-initial_population(::M, ::I) where {M<:AbstractOptimizer, I<:AbstractVector}
-initial_population(::M, ::Function) where {M<:AbstractOptimizer}
-initial_population(::M, ::I) where {M<:AbstractOptimizer, I<:AbstractMatrix}
+initial_population
 ```
