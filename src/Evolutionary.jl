@@ -7,7 +7,7 @@ module Evolutionary
     export AbstractStrategy, strategy, mutationwrapper,
            IsotropicStrategy, AnisotropicStrategy, NoStrategy,
            # ES mutations
-           gaussian,
+           gaussian, cauchy,
            # GA mutations
            flip, bitinversion, domainrange, inversion, insertion, swap2, scramble, shifting,
            # ES recombinations

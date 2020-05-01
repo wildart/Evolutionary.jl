@@ -29,6 +29,7 @@ pkg> add Evolutionary
 - Mutations
   - ES
     - (an)isotropic Gaussian
+    - (an)isotropic Cauchy
   - GA
     - binary flip
     - real valued

@@ -14,7 +14,7 @@ List of ES mutation operations:
 ```@docs
 gaussian(::AbstractVector, ::IsotropicStrategy)
 gaussian(::AbstractVector, ::AnisotropicStrategy)
-cauchy(::AbstractVector, ::AbstractStrategy)
+cauchy(::AbstractVector, ::IsotropicStrategy)
 ```
 
 List of ES strategy mutation operations:
@@ -54,3 +54,5 @@ shifting
 ## References
 
 [^1]: Mühlenbein, H. and Schlierkamp-Voosen, D.: Predictive Models for the Breeder Genetic Algorithm: I. Continuous Parameter Optimization. Evolutionary Computation, 1 (1), pp. 25-49, 1993.
+
+[^2]: Yao, Xin, and Yong Liu. "Fast evolution strategies." In International Conference on Evolutionary Programming, pp. 149-161. Springer, Berlin, Heidelberg, 1997.

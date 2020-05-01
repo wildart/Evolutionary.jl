@@ -25,6 +25,7 @@
 
     settings = [
         :isotropic=>(gaussian, gaussian, IsotropicStrategy(N)),
+        :isotropic=>(cauchy, gaussian, IsotropicStrategy(N)),
         :anisotropic=>(gaussian, gaussian, AnisotropicStrategy(N))
     ]
     selections = [:plus, :comma]
