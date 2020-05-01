@@ -1,17 +1,31 @@
 # Mutation operators
 # ==================
 
-# Isotropic mutation operator y' := y + σ(N_1(0, 1), ..., N_N(0, 1))
-function isotropic(recombinant::T, s::S) where {T <: AbstractVector, S <: Strategy}
-    vals = randn(length(recombinant)) * s[:σ]
+"""
+    gaussian(x, s::IsotropicStrategy)
+
+Performs Gaussian isotropic mutation of the recombinant `x` given the strategy `s`  by adding Gaussian noise as follows:
+
+``x_i^\\prime = x_i + s.\\sigma \\mathcal{N}_i(0,1)``
+
+"""
+function gaussian(recombinant::AbstractVector, s::IsotropicStrategy)
+    vals = randn(length(recombinant)) * s.σ
     recombinant += vals
     return recombinant
 end
 
-# Anisotropic mutation operator y' := y + σ(N_1(0, 1), ..., N_N(0, 1))
-function anisotropic(recombinant::T, s::S) where {T <: AbstractVector, S <: Strategy}
-    @assert length(s[:σ]) == length(recombinant) "Sigma parameters must be defined for every dimension of objective parameter"
-    vals = randn(length(recombinant)) .* s[:σ]
+"""
+    gaussian(x, s::AnisotropicStrategy)
+
+Performs Gaussian anisotropic mutation of the recombinant `x` given the strategy `s`  by adding Gaussian noise as follows:
+
+``x_i^\\prime = x_i + s.\\sigma_i \\mathcal{N}_i(0,1)``
+
+"""
+function gaussian(recombinant::AbstractVector, s::AnisotropicStrategy)
+    @assert length(s.σ) == length(recombinant) "Parameter `σ` must be defined for every dimension of objective parameter"
+    vals = randn(length(recombinant)) .* s.σ
     recombinant += vals
     return recombinant
 end
@@ -21,18 +35,32 @@ end
 # ===========================
 
 # Isotropic strategy mutation σ' := σ exp(τ N(0, 1))
-function isotropicSigma(s::S) where {S <: Strategy}
-    @assert :σ ∈ keys(s) && :τ ∈ keys(s) "Strategy must have parameters: σ, τ"
-    return strategy(σ = s[:σ] * exp(s[:τ]*randn()), τ = s[:τ])
+
+"""
+    gaussian(s::IsotropicStrategy)
+
+Performs in-place mutation of the isotropic strategy `s` modifying its mutated strategy parameter ``\\sigma`` with Gaussian noise as follows:
+
+``\\sigma^\\prime = \\sigma \\exp(\\tau_0 \\mathcal{N}(0,1))``
+
+"""
+function gaussian(s::IsotropicStrategy)
+    s.σ *= exp(s.τ₀*randn())
+    return s
 end
 
 # Anisotropic strategy mutation σ' := exp(τ0 N_0(0, 1))(σ_1 exp(τ N_1(0, 1)), ..., σ_N exp(τ N_N(0, 1)))
-function anisotropicSigma(s::S) where {S <: Strategy}
-    @assert :σ ∈ keys(s) && :τ ∈ keys(s) && :τ0 ∈ keys(s) "Strategy must have parameters: σ, τ0, τ"
-    @assert isa(s[:σ], Vector) "Sigma must be a vector of parameters"
-    σ = exp.(s[:τ0]*randn())*exp.(s[:τ]*randn(length(s[:σ])))
-    # σ = exp.(s[:τ]*randn(length(s[:σ])))
-    return strategy(σ = σ, τ = s[:τ], τ0 = s[:τ0])
+"""
+    gaussian(s::AnisotropicStrategy)
+
+Performs in-place mutation of the anisotropic strategy `s` modifying its mutated strategy parameter ``\\sigma`` with Gaussian noise as follows:
+
+``\\sigma_i^\\prime = \\sigma_i \\exp(\\tau_0 \\mathcal{N}(0,1) + \\tau_i \\mathcal{N}(0,1))``
+
+"""
+function gaussian(s::AnisotropicStrategy)
+    s.σ .*= exp.(s.τ₀*randn())*exp.(s.τ*randn(length(s.σ)))
+    return s
 end
 
 
@@ -159,6 +187,6 @@ function swap!(v::T, from::Int, to::Int) where {T <: AbstractVector}
 end
 
 function mutationwrapper(gamutation::Function)
-    wrapper(recombinant::T, s::S) where {T <: AbstractVector, S <: Strategy} =  gamutation(recombinant)
+    wrapper(recombinant::T, s::S) where {T <: AbstractVector, S <: AbstractStrategy} =  gamutation(recombinant)
     return wrapper
 end

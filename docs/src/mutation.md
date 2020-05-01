@@ -3,19 +3,29 @@
 In genetic algorithms and evolutionary computation, **mutation** is a genetic operator used to maintain a diversity from one generation of a population to the next. It is analogous to biological mutation. Mutation alters one or more gene values in a chromosome from its initial state.
 The purpose of mutation is to introduce diversity into the sampled population.
 
-List of the evolutionary strategy strategy mutation operations:
+**Note:** All mutations are in-place operations, i.e. they modify a parameter object.
+
+## Evolutionary Strategy
+
+See [Strategies](@ref) section for detailed description of ES strategies.
+
+List of ES mutation operations:
 
 ```@docs
-isotropicSigma
-anisotropicSigma
+gaussian(::AbstractVector, ::IsotropicStrategy)
+gaussian(::AbstractVector, ::AnisotropicStrategy)
+cauchy(::AbstractVector, ::AbstractStrategy)
 ```
 
-List of the evolutionary strategy population mutation operations:
+List of ES strategy mutation operations:
 
 ```@docs
-isotropic
-anisotropic
+gaussian(::IsotropicStrategy)
+gaussian(::AnisotropicStrategy)
 ```
+
+
+## Genetic Algorithm
 
 List of the binary mutation operations:
 

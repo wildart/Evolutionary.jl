@@ -10,11 +10,11 @@
 
     function Evolutionary.trace!(record::Dict{String,Any}, objfun, state, population, method::ES, options)
         record["fitpop"] = state.fitness
-        record["σ"] = strategy(state)[:σ]
+        record["σ"] = strategy(state).σ
     end
 
     function Evolutionary.terminate(state::Evolutionary.ESState)
-        strategy(state)[:σ] < 1e-10
+        strategy(state).σ < 1e-10
     end
 
     # Testing: (μ/μ_I, λ)-σ-Self-Adaptation-ES
@@ -23,9 +23,9 @@
         sphere,
         initial,
         ES(
-            initStrategy = strategy(σ = 1.0, τ = 1/sqrt(2*N)),
-            recombination = average, srecombination = averageSigma1,
-            mutation = isotropic, smutation = isotropicSigma,
+            initStrategy = IsotropicStrategy(N),
+            recombination = average, srecombination = average,
+            mutation = gaussian, smutation = gaussian,
             selection=:comma,
             μ = 3, λ = P
         ), Evolutionary.Options(show_trace=false,iterations=1000));

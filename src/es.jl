@@ -14,7 +14,7 @@ The constructor takes following keyword arguments:
 - `selection`: the selection strategy `:plus` or `:comma` (default: `:plus`)
 """
 @kwdef struct ES <: AbstractOptimizer
-    initStrategy::Strategy = strategy()
+    initStrategy::AbstractStrategy = NoStrategy()
     recombination::Function = first
     srecombination::Function = first
     mutation::Function = ((r,s) -> r)
@@ -43,12 +43,15 @@ function initial_state(method::ES, options, objfun, population)
     individual = first(population)
     N = length(individual)
 
-    # Evaluate population fitness
-    # fitness = zeros(T, population_size(method))
+    # Populate fitness and strategies
     fitness = map(i -> value(objfun, i), population)
+    strategies = Array{AbstractStrategy}(undef, method.μ)
+    for i in 1:method.μ
+        strategies[i] = copy(method.initStrategy)
+    end
 
     # setup initial state
-    return ESState(N, fitness, fill(method.initStrategy, method.μ), copy(individual))
+    return ESState(N, fitness, strategies, copy(individual))
 end
 
 function update_state!(objfun, state, population::AbstractVector{IT}, method::ES) where {IT}
@@ -60,7 +63,7 @@ function update_state!(objfun, state, population::AbstractVector{IT}, method::ES
     end
     offspring = Array{IT}(undef, λ)
     fitoff = fill(Inf, λ)
-    stgoff = Array{Strategy}(undef, λ)
+    stgoff = Array{AbstractStrategy}(undef, λ)
 
     for i in 1:λ
         # Recombine the ρ selected parents to form a recombinant individual

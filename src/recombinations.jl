@@ -32,12 +32,15 @@ end
 # Strategy recombinations
 # =======================
 
-"""Average σ recombination"""
-function averageSigma(ss::Vector{S}) where {S <: Strategy}
+"""
+    average(ss::Vector{<:AbstractStrategy})
+
+Returns the average value of the mutation parameter ``\\sigma`` of strategies `ss`.
+"""
+function average(ss::Vector{<:AbstractStrategy})
     s = copy(first(ss))
-    idxs = findall(s->haskey(s,:σ), ss)
-    l = length(idxs)
-    s[:σ] = mapreduce(s->s[:σ]/l, +, ss[idxs])
+    l = length(ss)
+    s.σ = mapreduce(s->s.σ/l, +, ss)
     return s
 end
 

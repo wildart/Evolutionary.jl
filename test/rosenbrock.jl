@@ -17,22 +17,22 @@
     # with isotropic mutation operator y' := y + σ(N_1(0, 1), ..., N_N(0, 1))
     result = es(rosenbrock, N; # old api
         initPopulation = rand(N,25),
-        initStrategy = strategy(σ = 1.0), srecombination = averageSigma1,
-        recombination = average, mutation = isotropic,
+        initStrategy = IsotropicStrategy(N), srecombination = average,
+        recombination = average, mutation = gaussian,
         μ = 15, ρ = 3, λ = 100, iterations = 1000, tolIter=30)
     println("(15/3+100)-ES => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
     test_result(result, N, 1e-1)
 
     settings = [
-        :isotropic=>(isotropic, isotropicSigma, strategy(σ = 1.0, τ = 1/sqrt(2*N)))
-        :anisotropic=>(anisotropic, anisotropicSigma, strategy(σ = .5ones(N), τ = 1/sqrt(2*N), τ0 = 1/sqrt(N)))
+        :isotropic=>(gaussian, gaussian, IsotropicStrategy(N)),
+        :anisotropic=>(gaussian, gaussian, AnisotropicStrategy(N))
     ]
     selections = [:plus, :comma]
     @testset "ES settings" for (sn,ss) in settings, sel in selections
         result = Evolutionary.optimize( rosenbrock, (() -> rand(N)),
             ES(
                 initStrategy = ss[3],
-                recombination = average, srecombination = averageSigma,
+                recombination = average, srecombination = average,
                 mutation = ss[1], smutation = ss[2],
                 μ = 10, ρ = 3, λ = 100, selection=sel
             ), Evolutionary.Options(iterations=1000, successive_f_tol=25)

@@ -5,7 +5,7 @@ The constructor takes following keyword arguments:
 
 - `μ` is the number of parents
 - `λ` is the number of offspring
-- `τ` is a time constant for a derection vector `s`
+- `τ` is a time constant for a direction vector `s`
 - `τ_c` is a time constant for a covariance matrix `C`
 - `τ_σ` is a time constant for a global step size `σ`
 """

@@ -119,14 +119,55 @@ function NonDifferentiable(f, x::BitArray)
     NonDifferentiable{Real,typeof(xs)}(f, f(xs), xs, [0,])
 end
 
-const Strategy = Dict{Symbol,Any}
 const Individual = Union{AbstractArray, Function, Nothing}
 
-# Wrapping function for strategy
-function strategy(; kwargs...)
-    result = Dict{Symbol,Any}()
-    for (k, v) in kwargs
-        result[k] = v
-    end
-    return result
+
+# Evolution strategies
+
+"""Abstract evolution strategy
+
+All evolution strategies must be derived from this type.
+"""
+abstract type AbstractStrategy end
+
+"""Empty evolution strategy"""
+struct NoStrategy <: AbstractStrategy end
+copy(s::NoStrategy) = NoStrategy()
+
+"""
+Isotropic evolution strategy
+
+This strategy has one mutation parameter for all object parameter components.
+"""
+mutable struct IsotropicStrategy{T <: Real} <: AbstractStrategy
+    σ::T
+    τ₀::T
+    τ::T
 end
+
+"""
+    IsotropicStrategy(N)
+
+Returns an isotropic strategy object, which has an one mutation parameter for all object parameter components, with ``\\sigma = 1.0``, ``\\tau_0 = \\sqrt{2N}^{-1}``, ``\\tau = \\sqrt{2\\sqrt{N}}^{-1}``
+"""
+IsotropicStrategy(N::Integer) = IsotropicStrategy{Float64}(1.0, 1.0/sqrt(2N), 1.0/sqrt(2*sqrt(N)))
+copy(s::IsotropicStrategy) = IsotropicStrategy{typeof(s.σ)}(s.σ, s.τ₀, s.τ)
+
+"""
+Anisotropic evolution strategy
+
+This strategy has a mutation parameter for each object parameter component.
+"""
+mutable struct AnisotropicStrategy{T} <: AbstractStrategy
+    σ::Vector{T}
+    τ₀::T
+    τ::T
+end
+
+"""
+    AnisotropicStrategy(N)
+
+Returns an anisotropic strategy object, which has an one mutation parameter for each object parameter component, with ``\\sigma = [1, \\ldots, 1]^N``, ``\\tau_0 = \\sqrt{2N}^{-1}``, ``\\tau = \\sqrt{2\\sqrt{N}}^{-1}``
+"""
+AnisotropicStrategy(N::Integer) = AnisotropicStrategy(ones(N), 1/sqrt(2N), 1/sqrt(2*sqrt(N)))
+copy(s::AnisotropicStrategy) = AnisotropicStrategy{typeof(s.τ)}(copy(s.σ), s.τ₀, s.τ)

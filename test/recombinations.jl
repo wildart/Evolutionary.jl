@@ -13,10 +13,17 @@
     end
 
     @testset "ES Strategies" begin
-        @test averageSigma([strategy(σ = 1.0), strategy(σ = 2.0), strategy(σ = 3.0)]) == strategy(σ = 2.0)
-        @test averageSigma([strategy(σ = 1.0), strategy(), strategy(σ = 3.0)]) == strategy(σ = 2.0)
-        @test averageSigma([strategy(σ = fill(1.0,3)), strategy(σ =fill(2.0,3)), strategy(σ = fill(3.0,3))]) == strategy(σ = fill(2.0,3))
-        @test averageSigma([strategy(σ = fill(1.0,3)), strategy(), strategy(σ = fill(3.0,3))]) == strategy(σ = fill(2.0,3))
+        ss = [IsotropicStrategy{Float64}(1.0,1,0),
+              IsotropicStrategy{Float64}(2.0,0,0), IsotropicStrategy{Float64}(3.0,0,0)]
+        @test average(ss).σ == ss[2].σ
+        @test gaussian(ss[1]).σ == ss[1].σ
+        @test ss[1].σ != 1.0
+        ss = [AnisotropicStrategy{Float64}(fill(1.0,3),1,1),
+              AnisotropicStrategy{Float64}(fill(2.0,3),0,0),
+              AnisotropicStrategy{Float64}(fill(3.0,3),0,0)]
+        @test average(ss).σ == ss[2].σ
+        @test gaussian(ss[1]).σ == ss[1].σ
+        @test ss[1].σ != fill(1.0,3)
     end
 
     @testset "GA" begin

@@ -38,6 +38,7 @@
 
     # options
     opts = Evolutionary.Options(store_trace=true; default_options(mthd)...)
+    show(IOBuffer(), opts)
 
     # population
     ppl_size = 7

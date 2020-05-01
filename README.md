@@ -27,7 +27,9 @@ pkg> add Evolutionary
 #### Operators
 
 - Mutations
-    - (an)isotropic mutation (for ES)
+  - ES
+    - (an)isotropic Gaussian
+  - GA
     - binary flip
     - real valued
     - combinatorial

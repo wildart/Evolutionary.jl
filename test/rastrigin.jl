@@ -28,9 +28,9 @@
     result = Evolutionary.optimize( rastrigin,
         initState,
         ES(
-            initStrategy = strategy(σ = .5ones(N), τ = 1/sqrt(2*N), τ0 = 1/sqrt(N)),
-            recombination = average, srecombination = averageSigmaN,
-            mutation = anisotropic, smutation = anisotropicSigma,
+            initStrategy = AnisotropicStrategy(N),
+            recombination = average, srecombination = average,
+            mutation = gaussian, smutation = gaussian,
             selection=:comma,
             μ = 15, λ = P
         ),Evolutionary.Options(iterations=1000, show_trace=false)
