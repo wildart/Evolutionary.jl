@@ -1,14 +1,12 @@
 # Selection
 
-
 **Selection** is a genetic operator used in EAs for selecting potentially useful solutions from a population for later breeding.
 The EAs are stochastic search methods using the concepts of Mendelian genetics and Darwinian evolution.
 According to Darwin's evolution theory the best ones should survive and create new offspring.
 There are many methods how to select the best individuals, for example roulette wheel selection, Boltzman selection,
 tournament selection, rank selection, steady state selection and some others.
 
-
-## Interface
+## Selection Interface
 
 All selection algorithms have following call interface `selection(fintess, N)` where `fintess` is the vector of population fitness values, of size ``M``, and ``N`` is the number of selected individuals. The selection function returns a vector of integer indexes of selected individuals, of size ``N`` with indexes in range ``[1,M]``.
 

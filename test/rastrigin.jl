@@ -45,10 +45,11 @@
 
     # Testing: GA
     selections = [:roulette=>rouletteinv, :sus=>susinv, :rank=>ranklinear(1.5)]
-    crossovers = [:discrete=>discrete, :intermediate0=>intermediate(0.), :intermediate0_25=>intermediate(0.25), :line=>line(0.2)]
-    mutations = [:domrng0_5=>domainrange(fill(0.5,N)), :domrng1=>domainrange(fill(1.0,N))]
+    crossovers = [:discrete=>discrete, :intermediate0=>intermediate(0.), :intermediate0_25=>intermediate(0.5), :line=>line(0.2)]
+    mutations = [:domrng0_5=>domainrange(fill(0.5,N)), :uniform=>uniform(3.0), :gaussian=>gaussian(0.6)]
 
     @testset "GA settings" for (sn,ss) in selections, (xn,xovr) in crossovers, (mn,ms) in mutations
+        xn == :discrete && (mn == :uniform || mn == :gaussian) && continue # bad combination
         result = Evolutionary.optimize( rastrigin, initState,
             GA(
                 populationSize = P,

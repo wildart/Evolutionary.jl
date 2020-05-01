@@ -4,7 +4,7 @@
 """
     ranklinear(sp::Real)
 
-Returns a rank-based fitness selection function, see [Interface](@ref) with the selective pressure value `sp`.
+Returns a rank-based fitness selection function, see [Selection Interface](@ref), with the selective pressure value `sp`.
 
 In rank-based fitness selection, the population is sorted according to the objective values. The fitness assigned to each individual depends only on its position in the individuals rank and not on the actual objective value [^1].
 
@@ -32,7 +32,7 @@ end
 """
     uniformranking(μ)
 
-Returns a (μ, λ)-uniform ranking selection function, see [Interface](@ref) with the best individuals parameter `μ`.
+Returns a (μ, λ)-uniform ranking selection function, see [Selection Interface](@ref) with the best individuals parameter `μ`.
 
 In uniform ranking, the best ``\\mu`` individuals are assigned a selection probability of ``1/\\mu`` while the rest them are discarded [^2].
 """

@@ -3,7 +3,7 @@
 """
     average(population)
 
-Returns an offspring of a multi-parent recombination by averaging `population`.
+Returns an *one* offspring individual of a multi-parent recombination by averaging `population`.
 """
 function average(population::Vector{T}) where {T <: AbstractVector}
     obj = zeros(eltype(T), length(population[1]))
@@ -17,7 +17,7 @@ end
 """
     marriage(population)
 
-Returns an offspring of a multi-parent recombination by random copying from `population`.
+Returns an *one* offspring individual of a multi-parent recombination by random copying from `population`.
 """
 function marriage(population::Vector{T}) where {T <: AbstractVector}
     s = length(population)
@@ -48,6 +48,11 @@ end
 # Genetic algorithms
 # ==================
 
+"""
+    identity(v1, v2)
+
+Returns the same parameter individuals `v1` and `v2` as an offspring pair.
+"""
 identity(v1::T, v2::T) where {T <: AbstractVector} = (v1,v2)
 
 # Binary crossovers
@@ -56,7 +61,7 @@ identity(v1::T, v2::T) where {T <: AbstractVector} = (v1,v2)
 """
     singlepoint(v1, v2)
 
-Single point crossover between `v1` and `v2`
+Single point crossover between `v1` and `v2` individuals.
 """
 function singlepoint(v1::T, v2::T) where {T <: AbstractVector}
     l = length(v1)
@@ -72,7 +77,7 @@ end
 """
     twopoint(v1, v2)
 
-Two point crossover between `v1` and `v2`
+Two point crossover between `v1` and `v2` individuals.
 """
 function twopoint(v1::T, v2::T) where {T <: AbstractVector}
     l = length(v1)
@@ -89,7 +94,7 @@ end
 """
     uniform(v1, v2)
 
-Uniform crossover between `v1` and `v2`
+Uniform crossover between `v1` and `v2` individuals.
 """
 function uniform(v1::T, v2::T) where {T <: AbstractVector}
     l = length(v1)
@@ -130,8 +135,18 @@ function waverage(w::Vector{Float64})
     return wavexvr
 end
 
-"""Intermediate recombination"""
-function intermediate(d::Float64 = 0.0)
+"""
+    intermediate(d::Real=0.0)
+
+Returns an extended intermediate recombination operation, see [Recombination Interface](@ref), which generates offspring `u` and `v` as
+
+- ``u_i = x_i + \\alpha_i (y_i - x_i)``
+- ``v_i = y_i + \\alpha_i (x_i - y_i)``
+
+where ``\\alpha_i`` is chosen uniform randomly in the interval ``[-d;d+1]``.
+
+"""
+function intermediate(d::Real = 0.0)
     function intermxvr(v1::T, v2::T) where {T <: AbstractVector}
         l = length(v1)
         α = (1.0+2d) * rand(l) .- d
@@ -143,8 +158,18 @@ function intermediate(d::Float64 = 0.0)
     return intermxvr
 end
 
-"""Line recombination"""
-function line(d::Float64 = 0.0)
+"""
+    line(d::Real=0.0)
+
+Returns a extended line recombination operation, see [Recombination Interface](@ref), which generates offspring `u` and `v` as
+
+- ``u_i = x_i + \\alpha (y_i - x_i)``
+- ``v_i = y_i + \\alpha (x_i - y_i)``
+
+where ``\\alpha`` is chosen uniform randomly in the interval ``[-d;d+1]``.
+
+"""
+function line(d::Real = 0.0)
     function linexvr(v1::T, v2::T) where {T <: AbstractVector}
         α1, α2 = (1.0+2d) * rand(2) .- d
         c1 = v2 .+ α2 * (v1 - v2)

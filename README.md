@@ -31,42 +31,47 @@ pkg> add Evolutionary
     - (an)isotropic Gaussian
     - (an)isotropic Cauchy
   - GA
-    - binary flip
+    - binary
+      - flip
+      - inversion
     - real valued
+      - uniform
+      - gaussian
+      - BGA
     - combinatorial
-        - inversion
-        - insertion
-        - swap2
-        - scramble
-        - shifting
+      - inversion
+      - insertion
+      - swap2
+      - scramble
+      - shifting
 
 - Recombinations
-	- average
-	- marriage
+  - average
+  - marriage
 
 - Crossovers
-	- binary
-		- N-point
-		- uniform
-	- real valued
-		- discrete
-		- weighted average
-		- intermediate
-		- line
-	- permutation
-		- PMX
-		- OX1
-		- OX2
-		- CX
-		- POS
+  - binary
+    - N-point
+    - uniform
+  - real valued
+    - discrete
+    - weighted average
+    - intermediate
+    - line
+  - permutation
+    - PMX
+    - OX1
+    - OX2
+    - CX
+    - POS
 
 - Selections
-	- rank-based fitness assignment
-	- (μ, λ)-uniform ranking
-	- roulette (fitness proportionate selection, FSP)
-	- stochastic universal sampling (SUS)
-	- tournament
-	- truncation
+  - rank-based fitness assignment
+  - (μ, λ)-uniform ranking
+  - roulette (fitness proportionate selection, FSP)
+  - stochastic universal sampling (SUS)
+  - tournament
+  - truncation
 
 [docs-dev-img]: https://img.shields.io/badge/docs-dev-blue.svg
 [docs-dev-url]: https://wildart.github.io/Evolutionary.jl/dev

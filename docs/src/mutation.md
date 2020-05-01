@@ -3,7 +3,9 @@
 In genetic algorithms and evolutionary computation, **mutation** is a genetic operator used to maintain a diversity from one generation of a population to the next. It is analogous to biological mutation. Mutation alters one or more gene values in a chromosome from its initial state.
 The purpose of mutation is to introduce diversity into the sampled population.
 
-**Note:** All mutations are in-place operations, i.e. they modify a parameter object.
+## Mutation Interface
+
+All mutation operations have following call interface `mutation(individual)` where `individual` is the member of population. The `mutation` function returns an **in-place mutated** individual.
 
 ## Evolutionary Strategy
 
@@ -38,6 +40,8 @@ bitinversion
 List of the real valued mutation operations:
 
 ```@docs
+uniform(::Real)
+gaussian(::Real)
 domainrange
 ```
 

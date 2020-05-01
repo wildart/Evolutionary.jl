@@ -1,12 +1,15 @@
 # Mutation operators
 # ==================
 
+# Evolutionary mutations
+# ======================
+
 """
     gaussian(x, s::IsotropicStrategy)
 
 Performs Gaussian isotropic mutation of the recombinant `x` given the strategy `s`  by adding Gaussian noise as follows:
 
-``x_i^\\prime = x_i + s.\\sigma \\mathcal{N}_i(0,1)``
+- ``x_i^\\prime = x_i + s.\\sigma \\mathcal{N}_i(0,1)``
 
 """
 function gaussian(recombinant::AbstractVector, s::IsotropicStrategy)
@@ -20,7 +23,7 @@ end
 
 Performs Gaussian anisotropic mutation of the recombinant `x` given the strategy `s`  by adding Gaussian noise as follows:
 
-``x_i^\\prime = x_i + s.\\sigma_i \\mathcal{N}_i(0,1)``
+- ``x_i^\\prime = x_i + s.\\sigma_i \\mathcal{N}_i(0,1)``
 
 """
 function gaussian(recombinant::AbstractVector, s::AnisotropicStrategy)
@@ -35,7 +38,7 @@ end
 
 Performs isotropic mutation of the recombinant `x` given the strategy `s`  by adding a noise from the Cauchy distribution as follows:
 
-``x_i^\\prime = x_i + s.\\sigma_i \\delta_i``
+- ``x_i^\\prime = x_i + s.\\sigma_i \\delta_i``
 
 where ``\\delta`` is a Cauchy random variable with the scale parameter ``t = 1`` [^2].
 
@@ -51,14 +54,12 @@ end
 # Strategy mutation operators
 # ===========================
 
-# Isotropic strategy mutation σ' := σ exp(τ N(0, 1))
-
 """
     gaussian(s::IsotropicStrategy)
 
 Performs in-place mutation of the isotropic strategy `s` modifying its mutated strategy parameter ``\\sigma`` with Gaussian noise as follows:
 
-``\\sigma^\\prime = \\sigma \\exp(\\tau_0 \\mathcal{N}(0,1))``
+- ``\\sigma^\\prime = \\sigma \\exp(\\tau_0 \\mathcal{N}(0,1))``
 
 """
 function gaussian(s::IsotropicStrategy)
@@ -66,13 +67,13 @@ function gaussian(s::IsotropicStrategy)
     return s
 end
 
-# Anisotropic strategy mutation σ' := exp(τ0 N_0(0, 1))(σ_1 exp(τ N_1(0, 1)), ..., σ_N exp(τ N_N(0, 1)))
+
 """
     gaussian(s::AnisotropicStrategy)
 
 Performs in-place mutation of the anisotropic strategy `s` modifying its mutated strategy parameter ``\\sigma`` with Gaussian noise as follows:
 
-``\\sigma_i^\\prime = \\sigma_i \\exp(\\tau_0 \\mathcal{N}(0,1) + \\tau_i \\mathcal{N}(0,1))``
+- ``\\sigma_i^\\prime = \\sigma_i \\exp(\\tau_0 \\mathcal{N}(0,1) + \\tau_i \\mathcal{N}(0,1))``
 
 """
 function gaussian(s::AnisotropicStrategy)
@@ -84,10 +85,13 @@ end
 # Genetic mutations
 # =================
 
+# Binary mutations
+# ---------------------
+
 """
     flip(recombinant)
 
-Returns a binary `recombinant` with a bit flips at random positions.
+Returns an in-place mutated binary `recombinant` with a bit flips at random positions.
 """
 function flip(recombinant::T) where {T <: BitVector}
     s = length(recombinant)
@@ -99,15 +103,58 @@ end
 """
     bitinversion(recombinant)
 
-Returns a binary `recombinant` with its bits inverted.
+Returns an in-place mutated binary `recombinant` with its bits inverted.
 """
-bitinversion(recombinant::T) where {T <: BitVector} = map(!, recombinant)
+bitinversion(recombinant::T) where {T <: BitVector} = map!(!, recombinant, recombinant)
 
+
+# Real-valued mutations
+# ---------------------
+
+"""
+    uniform(r = 1.0)
+
+Returns an in-place real valued mutation function that performs the uniform distributed mutation [^1].
+
+The mutation operator randomly chooses a number ``z`` in from the uniform distribution on the interval ``[-r,r]``, the mutation range.
+The mutated individual is given by
+
+- ``x_i^\\prime = x_i + z_i``
+
+"""
+function uniform(r::Real = 1.0)
+    function mutation(recombinant::T) where {T <: AbstractVector}
+        d = length(recombinant)
+        recombinant += 2r.*rand(d).-r
+        return recombinant
+    end
+    return mutation
+end
+
+"""
+    gaussian(σ = 1.0)
+
+Returns an in-place real valued mutation function that performs the normal distributed mutation [^1].
+
+The mutation operator randomly chooses a number ``z`` in from the normal distribution ``\\mathcal{N}(0,\\sigma)`` with standard deviation ``\\sigma``.
+The mutated individual is given by
+
+- ``x_i^\\prime = x_i + z_i``
+
+"""
+function gaussian(σ::Real = 1.0)
+    function mutation(recombinant::T) where {T <: AbstractVector}
+        d = length(recombinant)
+        recombinant += σ.*randn(d)
+        return recombinant
+    end
+    return mutation
+end
 
 """
     domainrange(valrange, m = 20)
 
-Returns a real valued mutation function with the mutation range `valrange` and the mutation probability `1/m` [^1].
+Returns an in-place real valued mutation function that performs the BGA mutation scheme with the mutation range `valrange` and the mutation probability `1/m` [^1].
 """
 function domainrange(valrange::Vector, m::Int = 20)
     prob = 1.0 / m
@@ -130,9 +177,14 @@ function domainrange(valrange::Vector, m::Int = 20)
     return mutation
 end
 
-
 # Combinatorial mutations (applicable to binary vectors)
 # ------------------------------------------------------
+
+"""
+    inversion(recombinant)
+
+Returns an in-place mutated individual with a random arbitrary length segment of the genome in the reverse order.
+"""
 function inversion(recombinant::T) where {T <: AbstractVector}
     l = length(recombinant)
     from, to = rand(1:l, 2)
@@ -152,6 +204,11 @@ function insertion(recombinant::T) where {T <: AbstractVector}
     return insert!(recombinant, to, val)
 end
 
+"""
+    swap2(recombinant)
+
+Returns an in-place mutated individual with a two random elements of the genome are swapped.
+"""
 function swap2(recombinant::T) where {T <: AbstractVector}
     l = length(recombinant)
     from, to = rand(1:l, 2)
@@ -159,6 +216,11 @@ function swap2(recombinant::T) where {T <: AbstractVector}
     return recombinant
 end
 
+"""
+    scramble(recombinant)
+
+Returns an in-place mutated individual with elements, on a random arbitrary length segment of the genome, been scrambled.
+"""
 function scramble(recombinant::T) where {T <: AbstractVector}
     l = length(recombinant)
     from, to = rand(1:l, 2)
@@ -175,6 +237,11 @@ function scramble(recombinant::T) where {T <: AbstractVector}
     return recombinant
 end
 
+"""
+    shifting(recombinant)
+
+Returns an in-place mutated individual with a random arbitrary length segment of the genome been shifted to an arbitrary position.
+"""
 function shifting(recombinant::T) where {T <: AbstractVector}
     l = length(recombinant)
     from, to, where = sort(rand(1:l, 3))
