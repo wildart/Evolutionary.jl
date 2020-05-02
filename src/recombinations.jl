@@ -109,6 +109,57 @@ function uniform(v1::T, v2::T) where {T <: AbstractVector}
     return c1, c2
 end
 
+"""
+    uniformbin(Cr::Real=0.5)
+
+Returns a uniform (binomial) crossover function, see [Recombination Interface](@ref), function with the propbabilty `Cr` [^2].
+
+The crossover probability value must be in unit interval, ``Cr \\in [0,1]``.
+"""
+function uniformbin(Cr::Real = 0.5)
+    function binxvr(v1::T, v2::T) where {T <: AbstractVector}
+        l = length(v1)
+        c1 = copy(v1)
+        c2 = copy(v2)
+        j = rand(1:l)
+        for i in (((1:l).+j.-2).%l).+1
+            if rand() <= Cr
+                vswap!(c1, c2, i)
+            end
+        end
+        return c1, c2
+    end
+    return binxvr
+end
+
+"""
+    exponential(Cr::Real=0.5)
+
+Returns an exponential crossover function, see [Recombination Interface](@ref), function with the propbabilty `Cr` [^2].
+
+The crossover probability value must be in unit interval, ``Cr \\in [0,1]``.
+"""
+function exponential(Cr::Real = 0.5)
+    function expxvr(v1::T, v2::T) where {T <: AbstractVector}
+        l = length(v1)
+        c1 = copy(v1)
+        c2 = copy(v2)
+        j = rand(1:l)
+        switch = true
+        for i in (((1:l).+j.-2).%l).+1
+            i == j && continue
+            if switch && rand() <= Cr
+                c1[i] = v1[i]
+            else
+                switch = false
+                c1[i] = v2[i]
+            end
+        end
+        return c1, copy(c1)
+    end
+    return expxvr
+end
+
 
 # Real valued crossovers
 # ----------------------

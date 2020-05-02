@@ -13,16 +13,7 @@
     # Parameters
     N = 2
 
-    # Testing: (15,3+100)-ES
-    # with isotropic mutation operator y' := y + σ(N_1(0, 1), ..., N_N(0, 1))
-    result = es(rosenbrock, N; # old api
-        initPopulation = rand(N,25),
-        initStrategy = IsotropicStrategy(N), srecombination = average,
-        recombination = average, mutation = gaussian,
-        μ = 15, ρ = 3, λ = 100, iterations = 1000, tolIter=30)
-    println("(15/3+100)-ES => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
-    test_result(result, N, 1e-1)
-
+    # Testing: (15,3/(+,)100)-ES
     settings = [
         :isotropic=>(gaussian, gaussian, IsotropicStrategy(N)),
         :isotropic=>(cauchy, gaussian, IsotropicStrategy(N)),
@@ -57,6 +48,11 @@
             mutation = domainrange(fill(0.5,N))
         ))
     println("GA(p=100,x=0.8,μ=0.1,ɛ=0.1) => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
+    test_result(result, N, 1e-1)
+
+    # Testing: DE
+    result = Evolutionary.optimize(rosenbrock, (() -> rand(N)), DE(populationSize = 100))
+    println("DE/rand/1/bin(F=1.0,Cr=0.5) => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
     test_result(result, N, 1e-1)
 
 end

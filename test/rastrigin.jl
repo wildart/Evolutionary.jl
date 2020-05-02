@@ -50,6 +50,7 @@
 
     @testset "GA settings" for (sn,ss) in selections, (xn,xovr) in crossovers, (mn,ms) in mutations
         xn == :discrete && (mn == :uniform || mn == :gaussian) && continue # bad combination
+        xn == :line && mn == :gaussian && continue # bad combination
         result = Evolutionary.optimize( rastrigin, initState,
             GA(
                 populationSize = P,
@@ -62,4 +63,23 @@
         println("GA:$(sn):$(xn):$(mn)(N=$(N),P=$(P),x=.8,μ=.1,ɛ=0.1) => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
         test_result(result, N, 1e-1)
     end
+
+    # Testing: DE
+    selections = [:rand=>random, :perm=>permutation, :rndoff=>randomoffset, :best=>best]
+    mutations = [:exp=>exponential(0.5), :bin=>uniformbin(0.5)]
+ 
+    @testset "DE settings" for (sn,ss) in selections, (mn,ms) in mutations, n in 1:2
+        result = Evolutionary.optimize( rastrigin, initState,
+            DE(
+                populationSize = P,
+                n=n,
+                selection = ss,
+                recombination = ms,
+                F = 0.9
+            )
+        )
+        println("DE/$sn/$n/$mn(F=0.9,Cr=0.5) => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
+        test_result(result, N, 1e-2)
+    end
+
 end

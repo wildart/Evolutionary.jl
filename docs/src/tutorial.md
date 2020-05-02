@@ -38,6 +38,7 @@ There are different algorithms available in `Evolutionary`, and they are all lis
 - [`GA()`](@ref)
 - [`ES()`](@ref)
 - [`CMAES()`](@ref)
+- [`DE()`](@ref)
 
 ### General options
 

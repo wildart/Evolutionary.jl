@@ -203,3 +203,12 @@ function pselection(prob::Vector{<:Real}, N::Int)
     return selected
 end
 
+function randexcl(itr, exclude, dims)
+    idxs = Int[]
+    while length(idxs) < dims
+        j = rand(itr)
+        (j ∈ exclude || j ∈ idxs) && continue
+        push!(idxs, j)
+    end
+    return idxs
+end

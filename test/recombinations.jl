@@ -48,4 +48,24 @@
         @test cx([8,4,7,3,6,2,5,1,9,0],collect(0:9)) == ([8,1,2,3,4,5,6,7,9,0],[0,4,7,3,6,2,5,1,8,9])
     end
 
+    @testset "DE" begin
+        v1 = collect(1:10)
+        v2 = fill(0,10)
+
+        xvr = uniformbin(0.0)
+        @test first( xvr(v1, v2) )== v1
+        xvr = uniformbin(1.0)
+        @test last( xvr(v1, v2) )== v1
+        xvr = uniformbin(0.5)
+        m1, m2 = xvr(v1, v2)
+        @test m1.+m2 == v1
+
+        xvr = exponential(0.0)
+        @test sum(first( xvr(v1, v2) )) <= 10
+        xvr = exponential(1.0)
+        @test first( xvr(v1, v2) )== v1
+        xvr = exponential(0.05)
+        @test sum(first( xvr(v1, v2) )) <= 19
+    end
+
 end

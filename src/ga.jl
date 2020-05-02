@@ -3,7 +3,7 @@ Implementation of Genetic Algorithm
 
 The constructor takes following keyword arguments:
 
-- `populationSize`: Size of the population
+- `populationSize`: The size of the population
 - `crossoverRate`: The fraction of the population at the next generation, not including elite children, that is created by the crossover function.
 - `mutationRate`: Probability of chromosome to be mutated
 - `ɛ`: Positive integer specifies how many individuals in the current generation are guaranteed to survive to the next generation. Floating number specifies fraction of population.

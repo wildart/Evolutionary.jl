@@ -30,6 +30,8 @@ Binary crossovers:
 singlepoint
 twopoint
 uniform
+uniformbin
+exponential
 ```
 
 Real valued crossovers:
@@ -53,3 +55,5 @@ pos
 ## References
 
 [^1]: Mühlenbein, H. and Schlierkamp-Voosen, D.: Predictive Models for the Breeder Genetic Algorithm: I. Continuous Parameter Optimization. Evolutionary Computation, 1 (1), pp. 25-49, 1993.
+
+[^2]: K. V. Price and R. M. Storn and J. A. Lampinen, "Differential evolution: A practical approach to global optimization", Springer, 2005.

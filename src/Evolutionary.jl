@@ -21,6 +21,8 @@ module Evolutionary
            ranklinear, uniformranking, roulette, rouletteinv, sus, susinv, tournament, truncation,
            # DE selections
            random, permutation, randomoffset, best,
+           # DE recombinations
+           uniformbin, exponential,
            # Optimization methods
            ES, CMAES, GA, DE,
            es, cmaes, ga,
@@ -47,6 +49,9 @@ module Evolutionary
 
     # Genetic Algorithms
     include("ga.jl")
+
+    # Differential Evolution
+    include("de.jl")
 
     # deprecations
     @deprecate ga(f, N; initPopulation::Individual=ones(N), populationSize=50, crossoverRate=0.8, mutationRate=0.1, ɛ=0, selection=((x,n)->1:n), crossover=((x,y)->(y,x)), mutation=(x->x), iterations=100*N, tol=1e-10, tolIter=10, verbose=false, debug=false, interim=false) Evolutionary.optimize(f, initPopulation, GA(populationSize=populationSize, crossoverRate=crossoverRate, mutationRate=mutationRate, ɛ=ɛ, selection=selection, crossover=crossover, mutation=mutation), Evolutionary.Options(iterations=iterations,abstol=tol,successive_f_tol=tolIter,store_trace=interim,show_trace=verbose))

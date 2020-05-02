@@ -51,11 +51,6 @@
         @test all(i-> i ∈ rng, idxs)
         @test !all(length(unique(random(rng, N))) == N for i in 1:100)
 
-        idxs = permutation(rng, N)
-        @test length(idxs) == N
-        @test all(i-> i ∈ rng, idxs)
-        @test all(length(unique(permutation(rng, N))) == N for i in 1:100)
-
         idxs = randomoffset(rng, N)
         @test length(idxs) == N
         @test all(i-> i ∈ rng, idxs)
@@ -65,6 +60,16 @@
         @test length(idxs) == N
         @test all(i-> i ∈ rng, idxs)
         @test idxs == fill(10, N)
+
+        idxs = permutation(rng, N)
+        @test length(idxs) == N
+        @test all(i-> i ∈ rng, idxs)
+        @test all(length(unique(permutation(rng, N))) == N for i in 1:100)
+
+        @testset "Mutually Exclusive Indices" for i in idxs
+            targets = Evolutionary.randexcl(rng, [i], 4)
+            @test length(unique(push!(targets, i))) == N
+        end
     end
 
 end

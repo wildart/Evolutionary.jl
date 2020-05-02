@@ -262,6 +262,26 @@ function shifting(recombinant::T) where {T <: AbstractVector}
     return recombinant
 end
 
+# Differential Evolution
+# ======================
+
+"""
+    differentiation(recombinant, mutators; F = 1.0)
+
+Returns an in-place differentially mutated individual ``x^\\prime`` from `recombinant` ``x``  by `mutators` ``\\{\\xi_1, \\ldots, \\xi_n \\}`` as follows
+
+- ``x^\\prime = x + \\sum_{i=1}^{n/2} F (\\xi_{2i-1} - \\xi_{2i})``
+
+"""
+function differentiation(recombinant::T, mutators::AbstractVector{T}; F::Real = 1.0) where {T <: AbstractVector}
+    m = length(mutators)
+    @assert m%2 == 0 "Must be even number of target mutators"
+    for i in 1:2:m
+        recombinant .+= F.*(mutators[i] .- mutators[i+1])
+    end
+    return recombinant
+end
+
 # Utils
 # =====
 function swap!(v::T, from::Int, to::Int) where {T <: AbstractVector}
