@@ -150,6 +150,43 @@ function tournament(groupSize :: Int)
     return tournamentN
 end
 
+"""
+    random(fitness, N)
+
+Returns a colection on size `N` of uniformly selected individuals from the population.
+"""
+random(fitness::Vector{<:Real}, N::Int) = rand(1:length(fitness),N)
+
+"""
+    permutation(fitness, N)
+
+Returns a permutation on size `N` of the individuals from the population.
+"""
+function permutation(fitness::Vector{<:Real}, N::Int)
+    λ = length(fitness)
+    @assert λ >= N "Cannot select more then $(λ) elements"
+    return randperm(λ)[1:N]
+end
+
+"""
+    randomoffset(fitness, N)
+
+Returns a cycle selection on size `N` from an arbitrary position.
+"""
+function randomoffset(fitness::Vector{<:Real}, N::Int)
+    λ = length(fitness)
+    @assert λ >= N "Cannot select more then $(λ) elements"
+    rg = rand(1:λ)
+    return [(i+rg)%λ+1 for i in 1:N]
+end
+
+"""
+    best(fitness, N)
+
+Returns a collection of best individuals of size `N`.
+"""
+best(fitness::Vector{<:Real}, N::Int) = fill(last(findmin(fitness)),N)
+
 
 # Utils: selection
 function pselection(prob::Vector{<:Real}, N::Int)

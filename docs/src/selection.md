@@ -12,9 +12,7 @@ All selection algorithms have following call interface `selection(fintess, N)` w
 
 **Note:** Some of the selection algorithms implemented as function closures, in order to provide additional parameters to the specified above selection interface.
 
-## Operations
-
-List of the selection operations:
+## Genetic Algorithm
 
 ```@docs
 ranklinear
@@ -25,6 +23,15 @@ sus
 susinv
 truncation
 tournament
+```
+
+## Differential Evolution
+
+```@docs
+random
+permutation
+randomoffset
+best
 ```
 
 ## References

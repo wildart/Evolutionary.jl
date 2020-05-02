@@ -43,4 +43,28 @@
         @test sort(unique(sus([0,1,2], 5))) == [2,3]
     end
 
+    @testset "DE" begin
+        N = 5
+        rng = collect(1:10)
+        idxs = random(rng, N)
+        @test length(idxs) == N
+        @test all(i-> i ∈ rng, idxs)
+        @test !all(length(unique(random(rng, N))) == N for i in 1:100)
+
+        idxs = permutation(rng, N)
+        @test length(idxs) == N
+        @test all(i-> i ∈ rng, idxs)
+        @test all(length(unique(permutation(rng, N))) == N for i in 1:100)
+
+        idxs = randomoffset(rng, N)
+        @test length(idxs) == N
+        @test all(i-> i ∈ rng, idxs)
+        @test all( let idxs = randomoffset(rng, N); let l = (idxs[1] - 1 + N)%10; idxs[N] == (l == 0 ? 10 : l) end end for i in 1:100 )
+
+        idxs = best(reverse(rng), N)
+        @test length(idxs) == N
+        @test all(i-> i ∈ rng, idxs)
+        @test idxs == fill(10, N)
+    end
+
 end

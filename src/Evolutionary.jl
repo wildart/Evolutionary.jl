@@ -19,8 +19,10 @@ module Evolutionary
            pmx, ox1, cx, ox2, pos,
            # GA selections
            ranklinear, uniformranking, roulette, rouletteinv, sus, susinv, tournament, truncation,
+           # DE selections
+           random, permutation, randomoffset, best,
            # Optimization methods
-           ES, CMAES, GA,
+           ES, CMAES, GA, DE,
            es, cmaes, ga,
            NonDifferentiable
 
