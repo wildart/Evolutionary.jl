@@ -6,26 +6,6 @@
 
     initpop = collect(rand(Bool,length(mass)))
 
-    # old api
-    result = ga(
-        x -> 1 / fitnessFun(x),  # Function to MINIMISE
-        length(initpop),         # Length of chromosome
-        initPopulation = initpop,
-        selection = rouletteinv,
-        mutation = inversion,
-        crossover = singlepoint,
-        mutationRate = 0.2,
-        crossoverRate = 0.5,
-        ɛ = 0.1,                 # Elitism
-        iterations = 20,
-        tolIter = 20,
-        populationSize = 50,
-        interim = true);
-    println("GA:RLT:INV:SP (1/objfun) => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
-    @test 1. /Evolutionary.minimum(result) == 21.
-    @test sum(mass .* Evolutionary.minimizer(result)) <= 20
-
-    # new api
     result = Evolutionary.optimize(
         x -> -fitnessFun(x),
         rand(Bool,length(mass)),

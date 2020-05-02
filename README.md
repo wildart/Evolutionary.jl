@@ -21,6 +21,7 @@ pkg> add Evolutionary
 - (μ/ρ(+/,)λ)-SA-ES
 - (μ/μ<sub>I</sub>,λ)-CMA-ES
 - Genetic Algorithms (GA)
+- Differential Evolution (DE)
 
 ## Operators
 

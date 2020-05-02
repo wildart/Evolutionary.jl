@@ -54,9 +54,6 @@ module Evolutionary
     include("de.jl")
 
     # deprecations
-    @deprecate ga(f, N; initPopulation::Individual=ones(N), populationSize=50, crossoverRate=0.8, mutationRate=0.1, ɛ=0, selection=((x,n)->1:n), crossover=((x,y)->(y,x)), mutation=(x->x), iterations=100*N, tol=1e-10, tolIter=10, verbose=false, debug=false, interim=false) Evolutionary.optimize(f, initPopulation, GA(populationSize=populationSize, crossoverRate=crossoverRate, mutationRate=mutationRate, ɛ=ɛ, selection=selection, crossover=crossover, mutation=mutation), Evolutionary.Options(iterations=iterations,abstol=tol,successive_f_tol=tolIter,store_trace=interim,show_trace=verbose))
-    @deprecate es(f, N; iterations=N*100, initPopulation::Individual=ones(N), initStrategy=NoStrategy(), recombination=(rs->rs[1]), srecombination= (ss->ss[1]), mutation=((r,m)->r), smutation=(s->s), μ=1, ρ=μ, λ=1, selection=:plus, tol=1e-10, tolIter=10, interim=false, verbose=false, debug=false) Evolutionary.optimize(f, initPopulation, ES(initStrategy=initStrategy, recombination=recombination, srecombination=srecombination, mutation=mutation, smutation=smutation, μ=μ, ρ=ρ, λ=λ, selection=selection), Evolutionary.Options(iterations=iterations,abstol=tol,successive_f_tol=tolIter,store_trace=interim, show_trace=verbose))
-    @deprecate cmaes(f,N; initPopulation::Individual=ones(N), τ=sqrt(N), τ_c=N^2, τ_σ=sqrt(N), μ=1, λ=1, iterations=1000, tol=1e-10, verbose=false) Evolutionary.optimize(f, initPopulation, CMAES(μ=μ, λ=λ, τ=τ, τ_c=τ_c, τ_σ=τ_σ), Evolutionary.Options(iterations=iterations, abstol=tol, show_trace=verbose))
     @deprecate isotropic(recombinant, strategy) gaussian(recombinant, strategy)
     @deprecate anisotropic(recombinant, strategy) gaussian(recombinant, strategy)
     @deprecate isotropicSigma(strategy) gaussian(strategy)

@@ -17,7 +17,7 @@
     end
 
     # Testing: CMA-ES
-    result = cmaes(schwefel, N; μ = 3, λ = 12, iterations = 1500) # old api
+    result = Evolutionary.optimize(schwefel, ()->rand(N), CMAES(μ = 3, λ = 12))
     println("(3/3,12)-CMA-ES (Schwefel) => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
     @test Evolutionary.converged(result)
     @test Evolutionary.minimizer(result) ≈ zeros(N) atol=1e-5
