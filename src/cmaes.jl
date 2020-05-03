@@ -33,8 +33,8 @@ mutable struct CMAESState{T, TI, TT} <: AbstractOptimizerState
     fittest::TI
     function CMAESState(N::Int, τ::T1, τ_c::T2, τ_σ::T3, fitpop::Vector{T}, C::Matrix{T},
         s::Vector{T}, s_σ::Vector{T}, σ::T, parent::TI, fittest::TI) where {T, TI, T1, T2, T3}
-        T = promote_type(T1,T2,T3)
-        new{T,TI,T}(N, T(τ), T(τ_c), T(τ_σ), fitpop, C,
+        TP = promote_type(T1,T2,T3)
+        new{T,TI,TP}(N, TP(τ), TP(τ_c), TP(τ_σ), fitpop, C,
             s, s_σ, σ, parent, fittest)
     end
 end
