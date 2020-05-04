@@ -9,21 +9,21 @@ The constructor takes following keyword arguments:
 - `τ_c` is a time constant for a covariance matrix `C`
 - `τ_σ` is a time constant for a global step size `σ`
 """
-@kwdef struct CMAES <: AbstractOptimizer
-    μ::Integer = 1
-    λ::Integer = μ+1
-    τ::Real    = NaN
-    τ_c::Real  = NaN
-    τ_σ::Real  = NaN
+@kwdef struct CMAES{TT} <: AbstractOptimizer
+    μ::Int = 1
+    λ::Int = μ+1
+    τ::TT    = NaN
+    τ_c::TT  = NaN
+    τ_σ::TT  = NaN
 end
 population_size(method::CMAES) = method.μ
-default_options(method::CMAES) = Dict(:iterations=>1500, :abstol=>1e-10)
+default_options(method::CMAES) = (iterations=1500, abstol=1e-10)
 
-mutable struct CMAESState{T, TI} <: AbstractOptimizerState
+mutable struct CMAESState{T, TI, TT} <: AbstractOptimizerState
     N::Int
-    τ::Real
-    τ_c::Real
-    τ_σ::Real
+    τ::TT
+    τ_c::TT
+    τ_σ::TT
     fitpop::Vector{T}
     C::Matrix{T}
     s::Vector{T}
@@ -31,6 +31,12 @@ mutable struct CMAESState{T, TI} <: AbstractOptimizerState
     σ::T
     parent::TI
     fittest::TI
+    function CMAESState(N::Int, τ::T1, τ_c::T2, τ_σ::T3, fitpop::Vector{T}, C::Matrix{T},
+        s::Vector{T}, s_σ::Vector{T}, σ::T, parent::TI, fittest::TI) where {T, TI, T1, T2, T3}
+        TP = promote_type(T1,T2,T3)
+        new{T,TI,TP}(N, TP(τ), TP(τ_c), TP(τ_σ), fitpop, C,
+            s, s_σ, σ, parent, fittest)
+    end
 end
 value(s::CMAESState) = first(s.fitpop)
 minimizer(s::CMAESState) = s.fittest
