@@ -8,6 +8,7 @@ The constructor takes following keyword arguments:
 - `τ` is a time constant for a direction vector `s`
 - `τ_c` is a time constant for a covariance matrix `C`
 - `τ_σ` is a time constant for a global step size `σ`
+- `σ0` is the initial step size `σ`
 """
 @kwdef struct CMAES{TT} <: AbstractOptimizer
     μ::Int = 1
@@ -15,6 +16,7 @@ The constructor takes following keyword arguments:
     τ::TT    = NaN
     τ_c::TT  = NaN
     τ_σ::TT  = NaN
+    σ0::TT  = 1.0
 end
 population_size(method::CMAES) = method.μ
 default_options(method::CMAES) = (iterations=1500, abstol=1e-10)
@@ -59,7 +61,7 @@ function initial_state(method::CMAES, options, objfun, population)
     return CMAESState(N, τ, τ_c, τ_σ,
             fill(convert(T, Inf), μ),
             diagm(0=>ones(T,N)),
-            zeros(T, N), zeros(T, N), one(T),
+            zeros(T, N), zeros(T, N), T(method.σ0),
             copy(individual), copy(individual) )
 end
 
