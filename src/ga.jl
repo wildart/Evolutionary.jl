@@ -6,19 +6,25 @@ The constructor takes following keyword arguments:
 - `populationSize`: The size of the population
 - `crossoverRate`: The fraction of the population at the next generation, not including elite children, that is created by the crossover function.
 - `mutationRate`: Probability of chromosome to be mutated
-- `ɛ`: Positive integer specifies how many individuals in the current generation are guaranteed to survive to the next generation. Floating number specifies fraction of population.
+- `ɛ`/`epsilon`: Positive integer specifies how many individuals in the current generation are guaranteed to survive to the next generation. Floating number specifies fraction of population.
 - `selection`: [Selection](@ref) function
 - `crossover`: [Crossover](@ref) function (default: `identity`)
 - `mutation`: [Mutation](@ref) function (default: `identity`)
 """
-@kwdef struct GA <: AbstractOptimizer
-    populationSize::Int = 50
-    crossoverRate::Float64 = 0.8
-    mutationRate::Float64 = 0.1
-    ɛ::Real = 0
-    selection::Function = ((x,n)->1:n)
-    crossover::Function = identity
-    mutation::Function = identity
+struct GA <: AbstractOptimizer
+    populationSize::Int
+    crossoverRate::Float64
+    mutationRate::Float64
+    ɛ::Real
+    selection::Function
+    crossover::Function
+    mutation::Function
+
+    GA(; populationSize::Int=50, crossoverRate::Float64=0.8, mutationRate::Float64=0.1,
+        ɛ::Real=0, epsilon::Real=ɛ,
+        selection::Function = ((x,n)->1:n),
+        crossover::Function = identity, mutation::Function = identity) =
+        new(populationSize, crossoverRate, mutationRate, epsilon, selection, crossover, mutation)
 end
 population_size(method::GA) = method.populationSize
 default_options(method::GA) = Dict(:iterations=>1000, :abstol=>1e-10)

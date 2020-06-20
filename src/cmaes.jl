@@ -3,21 +3,26 @@ Covariance Matrix Adaptation Evolution Strategy Implementation: (μ/μ_I,λ)-CMA
 
 The constructor takes following keyword arguments:
 
-- `μ` is the number of parents
-- `λ` is the number of offspring
-- `τ` is a time constant for a direction vector `s`
-- `τ_c` is a time constant for a covariance matrix `C`
-- `τ_σ` is a time constant for a global step size `σ`
-- `σ0` is the initial step size `σ`
+- `μ`/`mu` is the number of parents
+- `λ`/`lambda` is the number of offspring
+- `τ`/`tau` is a time constant for a direction vector `s`
+- `τ_c`/`tau_c` is a time constant for a covariance matrix `C`
+- `τ_σ`/`tau_sigma` is a time constant for a global step size `σ`
+- `σ0`/`sigma0` is the initial step size `σ`
 """
-@kwdef struct CMAES{TT} <: AbstractOptimizer
-    μ::Int = 1
-    λ::Int = μ+1
-    τ::TT    = NaN
-    τ_c::TT  = NaN
-    τ_σ::TT  = NaN
-    σ0::TT  = 1.0
+struct CMAES{TT} <: AbstractOptimizer
+    μ::Int
+    λ::Int
+    τ::TT
+    τ_c::TT
+    τ_σ::TT
+    σ0::TT
+
+    CMAES(; μ::Int=10, mu::Int=μ, λ::Int=mu+1, lambda::Int=λ, τ::TT=NaN, tau::TT=τ,
+            τ_c::TT=NaN, tau_c::TT=τ_c, τ_σ::TT=NaN, tau_sigma=τ_σ, σ0::TT=1.0, sigma0=σ0) where {TT} =
+        new{TT}(mu, lambda, tau, tau_c, tau_sigma, sigma0)
 end
+
 population_size(method::CMAES) = method.μ
 default_options(method::CMAES) = (iterations=1500, abstol=1e-10)
 

@@ -25,6 +25,9 @@
 
     # Testing: (μ/μ_I,λ)-σ-Self-Adaptation-ES
     # with non-isotropic mutation operator y' := y + (σ_1 N_1(0, 1), ..., σ_N N_N(0, 1))
+    m = ES(mu = 15, lambda = P)
+    @test m.μ == 15
+    @test m.λ == P
     result = Evolutionary.optimize( rastrigin,
         initState,
         ES(
@@ -39,11 +42,17 @@
     test_result(result, N, 1e-1)
 
     # Testing: CMA-ES
+    m = CMAES(mu = 15, lambda = P) # call with different parameters
+    @test m.μ == 15
+    @test m.λ == P
     result = Evolutionary.optimize(rastrigin, initState, CMAES(μ = 15, λ = P))
     println("(15/15,$(P))-CMA-ES => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
     test_result(result, N, 1e-1)
 
     # Testing: GA
+    m = GA(epsilon = 10.0)
+    @test m.ɛ == 10
+
     selections = [:roulette=>rouletteinv, :sus=>susinv, :rank=>ranklinear(1.5)]
     crossovers = [:discrete=>discrete, :intermediate0=>intermediate(0.), :intermediate0_25=>intermediate(0.5), :line=>line(0.2)]
     mutations = [:domrng0_5=>domainrange(fill(0.5,N)), :uniform=>uniform(3.0), :gaussian=>gaussian(0.6)]

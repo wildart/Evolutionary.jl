@@ -8,21 +8,36 @@ The constructor takes following keyword arguments:
 - `srecombination`: ES recombination function for strategies (default: `first`), see [Crossover](@ref)
 - `mutation`: [Mutation](@ref) function for population (default: `first`)
 - `smutation`: [Mutation](@ref) function for strategies (default: `identity`)
-- `μ`: the number of parents
-- `ρ`: the mixing number, ρ ≤ μ, (i.e., the number of parents involved in the procreation of an offspring)
-- `λ`: the number of offspring
+- `μ`/`mu`: the number of parents
+- `ρ`/`rho`: the mixing number, ρ ≤ μ, (i.e., the number of parents involved in the procreation of an offspring)
+- `λ`/`lambda`: the number of offspring
 - `selection`: the selection strategy `:plus` or `:comma` (default: `:plus`)
 """
-@kwdef struct ES <: AbstractOptimizer
-    initStrategy::AbstractStrategy = NoStrategy()
-    recombination::Function = first
-    srecombination::Function = first
-    mutation::Function = ((r,s) -> r)
-    smutation::Function = identity
-    μ::Integer = 1
-    ρ::Integer = μ
-    λ::Integer = 1
-    selection::Symbol = :plus
+struct ES <: AbstractOptimizer
+    initStrategy::AbstractStrategy
+    recombination::Function
+    srecombination::Function
+    mutation::Function
+    smutation::Function
+    μ::Integer
+    ρ::Integer
+    λ::Integer
+    selection::Symbol
+
+    ES(; initStrategy::AbstractStrategy = NoStrategy(),
+        recombination::Function = first,
+        srecombination::Function = first,
+        mutation::Function = ((r,s) -> r),
+        smutation::Function = identity,
+        μ::Integer = 1,
+        mu::Integer = μ,
+        ρ::Integer = μ,
+        rho::Integer = ρ,
+        λ::Integer = 1,
+        lambda::Integer = λ,
+        selection::Symbol = :plus) =
+        new(initStrategy, recombination, srecombination, mutation, smutation,
+            mu, rho, lambda, selection)
 end
 population_size(method::ES) = method.μ
 default_options(method::ES) = Dict(:iterations=>1000, :abstol=>1e-10)
