@@ -8,7 +8,7 @@ abstract type OptimizationResults end
 
 Shows the optimization algorithm that produced this `result`.
 """
-Base.summary(or::OptimizationResults) = summary(or.method)
+summary(or::OptimizationResults) = summary(or.method)
 
 """
     minimizer(result)
@@ -22,7 +22,7 @@ minimizer(r::OptimizationResults) = r.minimizer
 
 A minimum value from the optimization `result`.
 """
-Base.minimum(r::OptimizationResults) = r.minimum
+minimum(r::OptimizationResults) = r.minimum
 
 """
     iterations(result)
@@ -83,7 +83,7 @@ converged(r::EvolutionaryOptimizationResults) = r.converged
 
 tol(r::EvolutionaryOptimizationResults) = r.abstol
 
-function Base.show(io::IO, r::EvolutionaryOptimizationResults)
+function show(io::IO, r::EvolutionaryOptimizationResults)
     failure_string = "failure"
     if iteration_limit_reached(r)
         failure_string *= " (reached maximum number of iterations)"

@@ -1,10 +1,13 @@
 module Evolutionary
     using Random, LinearAlgebra, Statistics
+    using Base: @kwdef
+    using UnPack: @unpack
     import NLSolversBase: AbstractObjective, NonDifferentiable, ConstraintBounds,
            value, value!, nconstraints_x
-    import Base: length, push!, show, @kwdef, minimum, copy, identity
-    import UnPack.@unpack
     import NLSolversBase: NonDifferentiable, f_calls
+
+    import Base: show, copy, minimum, summary, identity
+
     export AbstractStrategy, strategy, mutationwrapper,
            IsotropicStrategy, AnisotropicStrategy, NoStrategy,
            # ES mutations

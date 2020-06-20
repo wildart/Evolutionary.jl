@@ -33,7 +33,7 @@ callback::TCallback = nothing
     show_every::Integer = 1
     callback::TCallback = nothing
 end
-function Base.show(io::IO, o::Options)
+function show(io::IO, o::Options)
     for k in fieldnames(typeof(o))
         v = getfield(o, k)
         if v === nothing
@@ -84,7 +84,7 @@ struct OptimizationTraceRecord{T, O <: AbstractOptimizer}
     metadata::Dict{String,Any}
 end
 
-function Base.show(io::IO, t::OptimizationTraceRecord)
+function show(io::IO, t::OptimizationTraceRecord)
     print(io, lpad("$(t.iteration)",6))
     print(io, "   ")
     print(io, lpad("$(t.value)",14))
@@ -96,7 +96,7 @@ end
 
 const OptimizationTrace{T,O} = Vector{OptimizationTraceRecord{T,O}}
 
-function Base.show(io::IO, tr::OptimizationTrace)
+function show(io::IO, tr::OptimizationTrace)
     print(io, "Iter     Function value\n")
     print(io, "------   --------------\n")
     for rec in tr
