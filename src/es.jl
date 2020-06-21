@@ -69,7 +69,7 @@ function initial_state(method::ES, options, objfun, population)
     return ESState(N, fitness, strategies, copy(individual))
 end
 
-function update_state!(objfun, state, population::AbstractVector{IT}, method::ES) where {IT}
+function update_state!(objfun, state, population::AbstractVector{IT}, method::ES, itr) where {IT}
     @unpack initStrategy,recombination,srecombination,mutation,smutation,μ,ρ,λ,selection = method
 
     @assert ρ <= μ "Number of parents involved in the procreation of an offspring should be no more then total number of parents"

@@ -56,7 +56,7 @@ function initial_state(method::GA, options, objfun, population)
     return GAState(N, eliteSize, minfit, fitness, copy(population[fitidx]))
 end
 
-function update_state!(objfun, state, population::AbstractVector{IT}, method::GA) where {IT}
+function update_state!(objfun, state, population::AbstractVector{IT}, method::GA, itr) where {IT}
     @unpack populationSize,crossoverRate,mutationRate,ɛ,selection,crossover,mutation = method
 
     offspring = similar(population)

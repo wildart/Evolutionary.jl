@@ -34,7 +34,7 @@
     end
 
     # Testing: CMA-ES
-    result = Evolutionary.optimize(rosenbrock, (() -> rand(Float32,N)), CMAES(μ = 5, λ = 100))
+    result = Evolutionary.optimize(rosenbrock, (() -> rand(Float32,N)), CMAES(mu = 5, lambda = 100))
     println("(5/5,100)-CMA-ES => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
     test_result(result, N, 1e-2)
 

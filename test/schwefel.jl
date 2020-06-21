@@ -17,7 +17,7 @@
     end
 
     # Testing: CMA-ES
-    result = Evolutionary.optimize(schwefel, ()->rand(N), CMAES(μ = 3, λ = 12))
+    result = Evolutionary.optimize(schwefel, ()->rand(N), CMAES(mu = 3, lambda = 12, c_1=0.05, weights=[ones(6)./6; -ones(6)./6]))
     println("(3/3,12)-CMA-ES (Schwefel) => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
     @test Evolutionary.converged(result)
     @test Evolutionary.minimizer(result) ≈ zeros(N) atol=1e-5
@@ -25,7 +25,7 @@
 
     bounds = Evolutionary.ConstraintBounds(fill(-1.0f0,N),fill(1.0f0,N),[],[])
     opts = Evolutionary.Options(store_trace=true, iterations=10)
-    result = Evolutionary.optimize(schwefel, bounds, CMAES(μ = 3, λ = 12), opts)
+    result = Evolutionary.optimize(schwefel, bounds, CMAES(mu = 3, lambda = 12), opts)
     @test Evolutionary.iterations(result) == 10
     @test !Evolutionary.converged(result)
     @test haskey(Evolutionary.trace(result)[end].metadata, "σ")

@@ -42,10 +42,7 @@
     test_result(result, N, 1e-1)
 
     # Testing: CMA-ES
-    m = CMAES(mu = 15, lambda = P) # call with different parameters
-    @test m.μ == 15
-    @test m.λ == P
-    result = Evolutionary.optimize(rastrigin, initState, CMAES(μ = 15, λ = P))
+    result = Evolutionary.optimize(rastrigin, initState, CMAES(mu = 15, lambda = P))
     println("(15/15,$(P))-CMA-ES => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
     test_result(result, N, 1e-1)
 
