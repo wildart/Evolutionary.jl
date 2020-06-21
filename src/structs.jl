@@ -8,7 +8,7 @@
 export BinaryGene, IntegerGene, FloatGene
 export Crossover, Selection
 export selection, crossover, bin
-export GAExternal
+export GAExternal, distributed_ga
 
 ####################################################################
 
@@ -349,8 +349,8 @@ Creates communication pipes for the external program `program`. If `parallel` is
 """
 mutable struct GAExternal
     program       ::AbstractString
-    pipes_in      ::DArray{String,1,Vector{String}}
-    pipes_out     ::DArray{String,1,Vector{String}}
+    pipes_in      ::Union{Vector{<:AbstractString},DArray{String,1,Vector{String}}}
+    pipes_out     ::Union{Vector{<:AbstractString},DArray{String,1,Vector{String}}}
     avail_workers ::Vector{Int64}
     parallel      ::Bool
 
@@ -373,6 +373,8 @@ mutable struct GAExternal
                     remotecall_fetch(run, p, `mkfifo $f`)
                 end
             end
+            pin  = distribute(pipes["in" ]; procs=avail_workers)
+            pout = distribute(pipes["out"]; procs=avail_workers)
         else
             # create one pipe for reading and another for writing
             for i in ["in","out"]
@@ -381,13 +383,15 @@ mutable struct GAExternal
                 rm(f, force=true)
                 run(`mkfifo $f`)
             end
+            pin = pipes["in"]
+            pout = pipes["out"]
         end
 
-        pin  = distribute(pipes["in" ]; procs=avail_workers)
-        pout = distribute(pipes["out"]; procs=avail_workers)
+        #pin  = distribute(pipes["in" ]; procs=avail_workers)
+        #pout = distribute(pipes["out"]; procs=avail_workers)
 
         # activate writing pipes for a big amount of time
-        for (i,p) in enumerate(pipes["in"])
+        for (i,p) in enumerate(pin)
             id  = 1*nworkers+1 + i
             id1 = 2*nworkers+1 + i
             @spawnat id  run(pipeline(`sleep 100000000`; stdout=p))
@@ -401,7 +405,7 @@ mutable struct GAExternal
             f = open(pipe, "r")
             return nothing
         end
-        for (i,p) in enumerate(pipes["out"])
+        for (i,p) in enumerate(pout)
             v = 3*nworkers+1 + i
             @spawnat v spawn_readpipes(p)
         end
