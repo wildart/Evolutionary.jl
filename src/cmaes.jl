@@ -24,7 +24,7 @@ struct CMAES{T} <: AbstractOptimizer
     cₘ::T
     wᵢ::Vector{T}
 
-    function CMAES(; mu::Int=15, lambda::Int=2*mu, weights::Vector{T}=zeros(lambda),
+    function CMAES(; μ::Int=15, λ::Int=2μ, mu::Int=μ, lambda::Int=λ, weights::Vector{T}=zeros(lambda),
                      c_1::Real=NaN, c_c::Real=NaN, c_mu::Real=NaN, c_sigma::Real=NaN,
                      sigma0::Real=1, c_m::Real=1) where {T}
         @assert c_m ≤ 1 "cₘ > 1"
