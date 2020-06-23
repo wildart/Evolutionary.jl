@@ -8,7 +8,7 @@ tournament selection, rank selection, steady state selection and some others.
 
 ## Selection Interface
 
-All selection algorithms have following call interface `selection(fintess, N)` where `fintess` is the vector of population fitness values, of size ``M``, and ``N`` is the number of selected individuals. The selection function returns a vector of integer indexes of selected individuals, of size ``N`` with indexes in range ``[1,M]``.
+All selection algorithms have following call interface `selection(fitness, N)` where `fitness` is the vector of population fitness values, of size ``M``, and ``N`` is the number of selected individuals. The selection function returns a vector of integer indexes of selected individuals, of size ``N`` with indexes in range ``[1,M]``.
 
 **Note:** Some of the selection algorithms implemented as function closures, in order to provide additional parameters to the specified above selection interface.
 

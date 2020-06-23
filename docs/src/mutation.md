@@ -29,15 +29,15 @@ gaussian(::AnisotropicStrategy)
 
 ## Genetic Algorithm
 
-List of the binary mutation operations:
-
+### Binary Mutations
 
 ```@docs
 flip
 bitinversion
 ```
 
-List of the real valued mutation operations:
+### Real-valued Mutations
+
 
 ```@docs
 uniform(::Real)
@@ -45,7 +45,9 @@ gaussian(::Real)
 domainrange
 ```
 
-List of the combinatorial mutation operations (applicable to binary vectors):
+### Combinatorial Mutations
+
+*Note: The combinatorial mutation operations are applicable to binary vectors.*
 
 ```@docs
 inversion
