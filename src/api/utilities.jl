@@ -86,7 +86,18 @@ end
 Initialize population by replicating the `inividual` vector.
 """
 initial_population(method::M, individual::I) where {M<:AbstractOptimizer, I<:AbstractVector} =
-    return [copy(individual) for i in 1:population_size(method)]
+    [copy(individual) for i in 1:population_size(method)]
+
+"""
+    initial_population(method, individuals::AbstractVector{<:AbstractVector})
+
+Initialize population from the collection of `inividuals` vectors.
+"""
+function initial_population(method::M, individuals::AbstractVector{I}) where {M<:AbstractOptimizer, I<:AbstractVector}
+    n = population_size(method)
+    @assert length(individuals) ==  n "Size of initial population must be $n"
+    individuals
+end
 
 """
     initial_population(method, individual::Function)
@@ -97,14 +108,12 @@ initial_population(method::M, individualFunc::Function) where {M<:AbstractOptimi
     [individualFunc() for i in 1:population_size(method)]
 
 """
-    initial_population(method, individuals::AbstractMatrix)
+    initial_population(method, individual::AbstractMatrix)
 
-Initialize population from the `inividuals` matrix where each individual is a column.
+Initialize population by replicating the `inividual` matrix.
 """
-function initial_population(method::M, individuals::I) where {M<:AbstractOptimizer, I<:AbstractMatrix}
-    n = population_size(method)
-    @assert size(individuals,2) >= n "Size of initial population must be no smaller then $n"
-    return [individuals[:,i] for i in 1:n]
+function initial_population(method::M, individual::I) where {M<:AbstractOptimizer, I<:AbstractMatrix}
+    [copy(individual) for i in 1:population_size(method)]
 end
 
 """
@@ -133,5 +142,5 @@ function initial_population(method::M, bounds::ConstraintBounds) where {M<:Abstr
             indv[j,i] += l
         end
     end
-    initial_population(method, indv)
+    initial_population(method,  [collect(i) for i in  eachcol(indv)])
 end

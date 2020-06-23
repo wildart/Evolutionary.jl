@@ -113,10 +113,13 @@ function update_state!(objfun, state::CMAESState{T,TI}, population::AbstractVect
     weights = view(w, 1:μ)
     E_NormN = sqrt(N)*(1-1/(4*N)+1/(21*N*N))
 
+    parent = reshape(state.parent,N)
+    parentshape = size(state.parent)
+
     z = zeros(T, N, λ)
     # y = zeros(T, N, λ)
     ȳ = zeros(T, N)
-    offspring = Array{TI}(undef, λ)
+    offspring = Array{Vector{T}}(undef, λ)
     fitoff = fill(Inf, λ)
 
     B, D = try
@@ -141,23 +144,23 @@ function update_state!(objfun, state::CMAESState{T,TI}, population::AbstractVect
         # y[:,i] =  B * D * z[:,i]
         # y[:,i] =  SqrtC * z[:,i]
         # offspring[i] = state.parent + σ * y[:,i]
-        offspring[i] = state.parent + σ * B * D * z[:,i]
-        fitoff[i] = value(objfun, offspring[i]) # Evaluate fitness
+        offspring[i] = parent + σ * B * D * z[:,i]
+        fitoff[i] = value(objfun, reshape(offspring[i],parentshape...)) # Evaluate fitness
     end
 
     # Select new parent population
     idx = sortperm(fitoff)
     for i in 1:μ
         o = offspring[idx[i]]
-        population[i] = o
-        ȳ .+=(o.-state.parent).*(w[i]/σ)
+        population[i] = reshape(o,parentshape...)
+        ȳ .+=(o.-parent).*(w[i]/σ)
         state.fitpop[i] = fitoff[idx[i]]
     end
 
     # y_λ = view(y,:,idx)
     z_λ = view(z,:,idx)
     z̄ = vec(sum(z_λ[:,1:μ].*weights', dims=2))
-    state.parent += (cₘ*σ).*ȳ  #  forming recombinant perent for next generation
+    parent += (cₘ*σ).*ȳ  #  forming recombinant perent for next generation
     state.s_σ = (1 - c_σ)*state.s_σ + sqrt(μ_eff*c_σ*(2 - c_σ))*(B*z̄)
     # state.s_σ = (1 - c_σ)*state.s_σ + sqrt(μ_eff*c_σ*(2 - c_σ))*(SqrtC*ȳ)
     state.σ = σ * exp((c_σ/d_σ)*(norm(state.s_σ)/E_NormN - 1))
@@ -175,6 +178,7 @@ function update_state!(objfun, state::CMAESState{T,TI}, population::AbstractVect
     state.C = (1 - c_1 - c_μ*sum(w)).*state.C + rank_1 + rank_μ
 
     state.fittest = population[1]
+    state.parent = reshape(parent,parentshape...)
 
     return false
 end

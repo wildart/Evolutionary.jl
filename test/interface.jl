@@ -111,13 +111,20 @@
     ##############
     pop = Evolutionary.initial_population(mthd, BitVector(ones(dimension)))
     @test length(pop) == population_size(mthd)
+    @test size(first(pop)) == (dimension,)
 
-    @test_throws AssertionError Evolutionary.initial_population(mthd, BitMatrix(ones(dimension,4)))
+    @test_throws AssertionError Evolutionary.initial_population(mthd, fill(BitVector(ones(dimension)),4))
+    pop = Evolutionary.initial_population(mthd, fill(BitVector(ones(dimension)),5))
+    @test length(pop) == population_size(mthd)
+    @test size(first(pop)) == (dimension,)
+
     pop = Evolutionary.initial_population(mthd, BitMatrix(ones(dimension,6)))
     @test length(pop) == population_size(mthd)
+    @test size(first(pop)) == (dimension,6)
 
     pop = Evolutionary.initial_population(mthd, (()->rand(Bool,dimension)))
     @test length(pop) == population_size(mthd)
+    @test size(first(pop)) == (dimension,)
 
     lb = [0,1,2,-1]
     ub = [0,3,2,1]
