@@ -56,3 +56,43 @@
     test_result(result, N, 1e-1)
 
 end
+
+
+@testset "clip bounds" begin
+    function test_result(result::Evolutionary.EvolutionaryOptimizationResults, N::Int, tol::Float64)
+        fitness = minimum(result)
+        extremum = Evolutionary.minimizer(result)
+        @test sum(abs2,extremum.-ones(N)) ≈ 0.0 atol=tol
+        @test fitness ≈ 0.0 atol=tol
+    end
+
+    N = 2
+    lb, ub = -1., 2.
+
+    # Objective function
+    function rosenbrock1(x::AbstractVector)
+        if any(xi -> (xi < lb || xi > ub), x)
+            error("bounds error!")
+        end
+        (1.0 - x[1])^2 + 100 * (x[2] - x[1]^2)^2
+    end
+
+    # Testing: CMA-ES-No Bounds
+    @test_throws ErrorException Evolutionary.ClipBounds(2.2, -0.9)
+    @test_throws ErrorException Evolutionary.optimize(rosenbrock1, [1.1, 0.93], CMAES(mu = 5, lambda = 100))
+
+
+    # Testing: CMA-ES-Scalar Bounds
+    bounds = ClipBounds(lb, ub)
+
+    result = Evolutionary.optimize(rosenbrock1, [1.1, 0.93], CMAES(mu = 5, lambda = 100), Evolutionary.Options(bounds=bounds))
+    println("(5/5,100)-CMA-ES => F: $(minimum(result)), C: $(Evolutionary.iterations(result)), miminimzer = $(result.minimizer)")
+    test_result(result, N, 1e-2)
+
+    # Testing: CMA-ES-Scalar Vector Bounds
+    bounds = ClipBounds([lb, lb], [ub, ub])
+
+    result = Evolutionary.optimize(rosenbrock1, [1.1, 0.93], CMAES(mu = 5, lambda = 100), Evolutionary.Options(bounds=bounds))
+    println("(5/5,100)-CMA-ES => F: $(minimum(result)), C: $(Evolutionary.iterations(result)), miminimzer = $(result.minimizer)")
+    test_result(result, N, 1e-2)
+end

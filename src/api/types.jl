@@ -9,6 +9,47 @@ end
 population_size(method::AbstractOptimizer) = error("`population_size` is not implemented for $(summary(method)).")
 
 
+# Bounds
+abstract type AbstractPopulationBounds end
+
+struct NoBounds <: AbstractPopulationBounds end
+
+"""
+    ClipBounds{T} <: AbstractPopulationBounds
+    ClipBounds(lower_bounds, upper_bounds)
+
+Clip on bounds,
+* if `lower_bounds` and `upper_bounds` are scalars, all parameters are treated on equal footing.
+* if `lower_bounds` and `upper_bounds` are vectors, they should have same length as parameters.
+"""
+struct ClipBounds{T} <: AbstractPopulationBounds
+    lb::T
+    ub::T
+    function ClipBounds(a::T, b::T) where T
+        if b < a
+            error("lower bound $a should not be larger than upper bound $b.")
+        end
+        new{T}(a, b)
+    end
+end
+
+clip!(x, bounds::NoBounds) = x
+
+_get_bounds_i(x::Real, i) = x
+_get_bounds_i(x::AbstractVector, i) = x[i]
+function clip!(x::AbstractVector{<:Real}, bounds::ClipBounds)
+    for i=1:length(x)
+        lbi = _get_bounds_i(bounds.lb, i)
+        ubi = _get_bounds_i(bounds.ub, i)
+        if x[i] < lbi
+            x[i] = lbi
+        elseif x[i] > ubi
+            x[i] = ubi
+        end
+    end
+    return x
+end
+
 # Options
 """
 Configurable options with defaults:
@@ -23,7 +64,7 @@ show_every::Integer = 1
 callback::TCallback = nothing
 ```
 """
-@kwdef struct Options{TCallback <: Union{Nothing, Function}}
+@kwdef struct Options{TCallback <: Union{Nothing, Function}, BT<:AbstractPopulationBounds}
     abstol::Float64 = 1e-32
     reltol::Float64 = 1e-32
     successive_f_tol::Integer = 10
@@ -32,6 +73,7 @@ callback::TCallback = nothing
     show_trace::Bool  = false
     show_every::Integer = 1
     callback::TCallback = nothing
+    bounds::BT = NoBounds()
 end
 function show(io::IO, o::Options)
     for k in fieldnames(typeof(o))

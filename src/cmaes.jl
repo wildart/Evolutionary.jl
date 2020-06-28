@@ -10,7 +10,7 @@ The constructor takes following keyword arguments:
 - `c_mu` is a learning rate for the rank-``\\mu`` update of the covariance matrix update
 - `c_sigma` is a learning rate for the cumulation for the step-size control
 - `c_m` is the learning rate for the mean update, ``c_m \\leq 1``
-- `σ0`/`sigma0` is the initial step size `σ`
+- `sigma0` is the initial step size `σ`
 - `weights` are recombination weights, if the weights are set to ```1/\\mu`` then the *intermediate* recombination is activated.
 """
 struct CMAES{T} <: AbstractOptimizer
@@ -36,7 +36,7 @@ end
 population_size(method::CMAES) = method.μ
 default_options(method::CMAES) = (iterations=1500, abstol=1e-15)
 
-mutable struct CMAESState{T,TI} <: AbstractOptimizerState
+mutable struct CMAESState{T,TI,BT<:AbstractPopulationBounds} <: AbstractOptimizerState
     N::Int
     μ_eff::T
     c_1::T
@@ -52,12 +52,13 @@ mutable struct CMAESState{T,TI} <: AbstractOptimizerState
     d_σ::T
     parent::TI
     fittest::TI
+    bounds::BT
 end
 value(s::CMAESState) = first(s.fitpop)
 minimizer(s::CMAESState) = s.fittest
 
 """Initialization of CMA-ES algorithm state"""
-function initial_state(method::CMAES, options, objfun, population)
+function initial_state(method::CMAES, options::Options{<:Any, BT}, objfun, population) where BT
     @unpack μ,λ,c_1,c_c,c_μ,c_σ,σ₀,cₘ,wᵢ = method
     @assert μ < λ "Offspring population must be larger then parent population"
 
@@ -98,11 +99,13 @@ function initial_state(method::CMAES, options, objfun, population)
     d_σ = 1 + 2 * max(0, sqrt((μ_eff-1)/(n+1))-1) + c_σ
 
     # setup initial state
-    return CMAESState{T,TI}(n, μ_eff, c_1, c_c, c_μ, c_σ,
+    return CMAESState{T,TI,BT}(n, μ_eff, c_1, c_c, c_μ, c_σ,
             fill(convert(T, Inf), μ),
             diagm(0=>ones(T,n)),
             zeros(T, n), zeros(T, n), method.σ₀, wᵢ, d_σ,
-            copy(individual), copy(individual) )
+            copy(individual), copy(individual),
+            options.bounds,
+            )
 end
 
 function update_state!(objfun, state::CMAESState{T,TI}, population::AbstractVector{TI},
@@ -144,7 +147,7 @@ function update_state!(objfun, state::CMAESState{T,TI}, population::AbstractVect
         # y[:,i] =  B * D * z[:,i]
         # y[:,i] =  SqrtC * z[:,i]
         # offspring[i] = state.parent + σ * y[:,i]
-        offspring[i] = parent + σ * B * D * z[:,i]
+        offspring[i] = clip!(parent + σ * B * D * z[:,i], state.bounds)
         fitoff[i] = value(objfun, reshape(offspring[i],parentshape...)) # Evaluate fitness
     end
 

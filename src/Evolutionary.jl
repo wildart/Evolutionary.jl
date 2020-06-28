@@ -29,7 +29,9 @@ module Evolutionary
            # Optimization methods
            ES, CMAES, GA, DE,
            es, cmaes, ga,
-           NonDifferentiable
+           NonDifferentiable,
+           # Bounds 
+           ClipBounds, NoBounds
 
     # optimize API
     include("api/types.jl")
