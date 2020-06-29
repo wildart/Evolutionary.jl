@@ -171,3 +171,14 @@ Returns an anisotropic strategy object, which has an one mutation parameter for 
 """
 AnisotropicStrategy(N::Integer) = AnisotropicStrategy(ones(N), 1/sqrt(2N), 1/sqrt(2*sqrt(N)))
 copy(s::AnisotropicStrategy) = AnisotropicStrategy{typeof(s.τ)}(copy(s.σ), s.τ₀, s.τ)
+
+
+struct NonDifferentiableConstraints{F,T} <: AbstractConstraints
+    c!::F # c!(storage, x) stores the value of the constraint-functions at x
+    bounds::ConstraintBounds{T}
+end
+NonDifferentiableConstraints(bounds::ConstraintBounds) =
+    NonDifferentiableConstraints((c, x)->nothing, bounds)
+NonDifferentiableConstraints(lx::AbstractArray, ux::AbstractArray) =
+    NonDifferentiableConstraints(ConstraintBounds(lx, ux, [], []))
+NonDifferentiableConstraints() = NonDifferentiableConstraints(Float64[], Float64[])

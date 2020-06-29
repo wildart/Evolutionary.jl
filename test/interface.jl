@@ -4,7 +4,8 @@
     # SETUP #
     #########
 
-    using Evolutionary: AbstractOptimizer, AbstractOptimizerState, Options, value!, f_calls, NonDifferentiable
+    using Evolutionary: AbstractOptimizer, AbstractOptimizerState, Options, value!,
+                        f_calls, NonDifferentiable, NonDifferentiableConstraints
     import Evolutionary: value, population_size, default_options, initial_state, update_state!
 
     # objectvive function
@@ -15,7 +16,7 @@
     objfun = NonDifferentiable(func, individual)
 
     # state
-    mutable struct TestOptimizerState <: Evolutionary.AbstractOptimizerState
+    mutable struct TestOptimizerState <: AbstractOptimizerState
         individual
         fitness
     end
@@ -28,13 +29,14 @@
     Evolutionary.population_size(method::TestOptimizer) = 5
     Evolutionary.default_options(method::TestOptimizer) = Dict(:iterations=>10, :abstol=>1e-10)
     Evolutionary.initial_state(method, options, d, population) = TestOptimizerState(population[end], value(d, population[end]))
-    function Evolutionary.update_state!(d, state::TestOptimizerState, population::AbstractVector, method, itr)
+    function Evolutionary.update_state!(d, constraints, state::TestOptimizerState, population::AbstractVector, method, itr)
         i = rand(1:population_size(method))
         state.individual = population[i]
         state.fitness = value!(d, state.individual)
         return false
     end
     mthd = TestOptimizer()
+    cnstr= NonDifferentiableConstraints()
 
     # options
     opts = Evolutionary.Options(store_trace=true; default_options(mthd)...)
@@ -57,7 +59,7 @@
     @test tr[1].iteration == 1
     @test tr[1].value == val
     @test tr[1].metadata["time"] <= time()
-    @test !update_state!(objfun, st, ppl, mthd, 10)
+    @test !update_state!(objfun, cnstr, st, ppl, mthd, 10)
     @test !Evolutionary.trace!(tr, 2, objfun, st, ppl, mthd, opts)
     @test tr[2].iteration == 2
     @test tr[2].value >= 1
@@ -155,6 +157,15 @@
     v = value!(objfun,rand(Bool,dimension))
     @test 0 <= v <= dimension
     @test value(objfun) == v
+
+
+    ###############
+    # CONSTRAINTS #
+    ###############
+    cnstr= NonDifferentiableConstraints(cb)
+    @test cnstr.bounds.bx == cb.bx
+    cnstr= NonDifferentiableConstraints(lb, ub)
+    @test cnstr.bounds.bx == cb.bx
 
 
     ############

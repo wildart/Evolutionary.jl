@@ -40,7 +40,7 @@ function initial_state(method::DE, options, objfun, population)
     return DEState(N, fitness, copy(individual))
 end
 
-function update_state!(objfun, state, population::AbstractVector{IT}, method::DE, itr) where {IT}
+function update_state!(objfun, constraints, state, population::AbstractVector{IT}, method::DE, itr) where {IT}
 
     # setup
     Np = method.populationSize

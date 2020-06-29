@@ -1,23 +1,47 @@
 after_while!(objfun, state, method, options) = nothing
 
 # Optimization interface
+function optimize(f, lower, upper, method::M,
+                  options::Options = Options(;default_options(method)...)
+                 ) where {M<:AbstractOptimizer}
+    bounds = ConstraintBounds(lower,upper,[],[])
+    optimize(f, bounds, method, options)
+end
 function optimize(f, individual, method::M,
                   options::Options = Options(;default_options(method)...)
                  ) where {M<:AbstractOptimizer}
     population = initial_population(method, individual)
     @assert length(population) > 0 "Population is empty"
     objfun = NonDifferentiable(f, first(population))
-    optimize(objfun, population, method, options)
+    optimize(objfun, NonDifferentiableConstraints(), population, method, options)
+end
+function optimize(f, individual::ConstraintBounds, method::M,
+                  options::Options = Options(;default_options(method)...)
+                 ) where {M<:AbstractOptimizer}
+    population = initial_population(method, individual)
+    @assert length(population) > 0 "Population is empty"
+    constraints = NonDifferentiableConstraints(individual)
+    objfun = NonDifferentiable(f, first(population))
+    optimize(objfun, constraints, population, method, options)
+end
+function optimize(f,  lower, upper, individual, method::M,
+                  options::Options = Options(;default_options(method)...)
+                 ) where {M<:AbstractOptimizer}
+    population = initial_population(method, individual)
+    @assert length(population) > 0 "Population is empty"
+    constraints = NonDifferentiableConstraints(lower,upper)
+    objfun = NonDifferentiable(f, first(population))
+    optimize(objfun, constraints, population, method, options)
 end
 
-function optimize(objfun::D, population::AbstractArray, method::M,
-                  options::Options = Options(;default_options(method)...),
+function optimize(objfun::D, constraints::AbstractConstraints, population::AbstractArray,
+                  method::M, options::Options = Options(;default_options(method)...),
                   state = initial_state(method, options, objfun, population)
-                 ) where {D<:AbstractObjective, S<:AbstractOptimizerState, M<:AbstractOptimizer}
+                 ) where {D<:AbstractObjective, M<:AbstractOptimizer}
 
     # setup trace
     tr = OptimizationTrace{typeof(value(objfun)), typeof(method)}()
-    tracing = options.store_trace || options.show_trace || options.callback != nothing
+    tracing = options.store_trace || options.show_trace || options.callback !== nothing
 
     # prepare iteration counter (used to make "initial state" trace entry)
     iteration = 0
@@ -32,7 +56,7 @@ function optimize(objfun::D, population::AbstractArray, method::M,
         iteration += 1
 
         # perform state update
-        update_state!(objfun, state, population, method, iteration) && break
+        update_state!(objfun, constraints, state, population, method, iteration) && break
 
         # evaluate convergence
         converged = assess_convergence(objfun, state, method, options)

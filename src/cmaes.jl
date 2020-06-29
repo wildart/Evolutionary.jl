@@ -105,7 +105,7 @@ function initial_state(method::CMAES, options, objfun, population)
             copy(individual), copy(individual) )
 end
 
-function update_state!(objfun, state::CMAESState{T,TI}, population::AbstractVector{TI},
+function update_state!(objfun, constraints, state::CMAESState{T,TI}, population::AbstractVector{TI},
                        method::CMAES, itr) where {T, TI}
     μ, λ, cₘ = method.μ, method.λ, method.cₘ
     N,μ_eff,σ,w,d_σ = state.N, state.μ_eff, state.σ, state.wᵢ, state.d_σ
