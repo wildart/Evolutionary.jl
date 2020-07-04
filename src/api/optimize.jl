@@ -10,34 +10,31 @@ end
 function optimize(f, individual, method::M,
                   options::Options = Options(;default_options(method)...)
                  ) where {M<:AbstractOptimizer}
-    population = initial_population(method, individual)
-    @assert length(population) > 0 "Population is empty"
-    objfun = NonDifferentiable(f, first(population))
-    optimize(objfun, NonDifferentiableConstraints(), population, method, options)
+    optimize(f, NoConstraints(), individual, method, options)
 end
 function optimize(f, individual::ConstraintBounds, method::M,
                   options::Options = Options(;default_options(method)...)
                  ) where {M<:AbstractOptimizer}
-    population = initial_population(method, individual)
-    @assert length(population) > 0 "Population is empty"
-    constraints = NonDifferentiableConstraints(individual)
-    objfun = NonDifferentiable(f, first(population))
-    optimize(objfun, constraints, population, method, options)
+    optimize(f, BoxConstraints(individual), individual, method, options)
 end
-function optimize(f,  lower, upper, individual, method::M,
+function optimize(f, lower, upper, individual, method::M,
                   options::Options = Options(;default_options(method)...)
                  ) where {M<:AbstractOptimizer}
+    optimize(f, BoxConstraints(lower,upper), individual, method, options)
+end
+function optimize(f, constraints::C, individual, method::M,
+                  options::Options = Options(;default_options(method)...)
+                 ) where {M<:AbstractOptimizer, C<:AbstractConstraints}
     population = initial_population(method, individual)
     @assert length(population) > 0 "Population is empty"
-    constraints = NonDifferentiableConstraints(lower,upper)
     objfun = NonDifferentiable(f, first(population))
     optimize(objfun, constraints, population, method, options)
 end
 
-function optimize(objfun::D, constraints::AbstractConstraints, population::AbstractArray,
+function optimize(objfun::D, constraints::C, population::AbstractArray,
                   method::M, options::Options = Options(;default_options(method)...),
                   state = initial_state(method, options, objfun, population)
-                 ) where {D<:AbstractObjective, M<:AbstractOptimizer}
+                 ) where {D<:AbstractObjective, C<:AbstractConstraints, M<:AbstractOptimizer}
 
     # setup trace
     tr = OptimizationTrace{typeof(value(objfun)), typeof(method)}()

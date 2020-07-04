@@ -22,8 +22,8 @@
         ),
         Evolutionary.Options(successive_f_tol = 20,iterations = 1500, store_trace=true));
     println("GA:UR(3):FLP:SP (OneMax: 1/sum) => F: $(minimum(res)), C: $(Evolutionary.iterations(res))")
-    @test sum(Evolutionary.minimizer(res)) >= N-1
-    @test abs(minimum(res)) >= N-1
+    @test sum(Evolutionary.minimizer(res)) >= N-3
+    @test abs(minimum(res)) >= N-3
     @test Evolutionary.trace(res)[end].metadata["fitpop"][1] == minimum(res)
 
 end

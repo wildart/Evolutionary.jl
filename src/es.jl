@@ -41,6 +41,7 @@ struct ES <: AbstractOptimizer
 end
 population_size(method::ES) = method.μ
 default_options(method::ES) = Dict(:iterations=>1000, :abstol=>1e-10)
+summary(io::IO, m::ES) = print(io, "($(m.μ)/$(m.ρ)$(m.selection == :plus ? '+' : ',')$(m.λ))-ES")
 
 mutable struct ESState{T,IT,ST} <: AbstractOptimizerState
     N::Int
@@ -97,10 +98,13 @@ function update_state!(objfun, constraints, state, population::AbstractVector{IT
 
         # Mutate the objective parameter set of the recombinant using the mutated strategy parameter set
         # to control the statistical properties of the object parameter mutation
-        offspring[i] = mutation(recombinant, stgoff[i])
+        off = mutation(recombinant, stgoff[i])
+
+        # Apply constraints
+        offspring[i] = value(constraints, off)
 
         # Evaluate fitness
-        fitoff[i] = value(objfun, offspring[i])
+        fitoff[i] = value(constraints, objfun, offspring[i])
     end
 
     # Select new parent population

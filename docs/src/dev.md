@@ -49,3 +49,30 @@ Following population initialization strategies are available:
 ```@docs
 initial_population
 ```
+
+### Constraints
+
+All constraints derived from the `AbstractConstraints` abstract type.
+Usually the derived type wraps a `ConstraintBounds` object, so the
+
+Following methods can be overridden for the derived types:
+
+```@docs
+value(::AbstractConstraints, ::AbstractObjective, x)
+value(::AbstractConstraints, x)
+```
+
+Following auxillary functions are available for every derived type of `AbstractConstraints`.
+
+```@docs
+isfeasible(::AbstractConstraints, x)
+```
+
+Package provides following constrains implementations.
+
+```@docs
+Evolutionary.NoConstraints
+BoxConstraints
+TransfiniteConstraints
+PenaltyConstraints
+```

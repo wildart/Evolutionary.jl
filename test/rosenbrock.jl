@@ -21,38 +21,56 @@
     ]
     selections = [:plus, :comma]
     @testset "ES settings" for (sn,ss) in settings, sel in selections
-        result = Evolutionary.optimize( rosenbrock, (() -> rand(N)),
-            ES(
-                initStrategy = ss[3],
-                recombination = average, srecombination = average,
-                mutation = ss[1], smutation = ss[2],
-                μ = 10, ρ = 3, λ = 100, selection=sel
-            ), Evolutionary.Options(iterations=1000, successive_f_tol=25)
+        m = ES(
+            initStrategy = ss[3],
+            recombination = average, srecombination = average,
+            mutation = ss[1], smutation = ss[2],
+            μ = 15, ρ = 3, λ = 100, selection=sel
         )
-        println("(15/3$(sel == :plus ? "+" : ",")100)-ES:$(sn) => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
+        result = Evolutionary.optimize( rosenbrock, (() -> rand(N)), m, Evolutionary.Options(iterations=1000, successive_f_tol=25))
+        println("$(summary(m)):$(sn) => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
         test_result(result, N, sel == :plus ? 0.1 : 0.5)
     end
+    m = ES( initStrategy = IsotropicStrategy(N),
+                recombination = average, srecombination = average,
+                mutation = gaussian, smutation = gaussian,
+                μ = 15, ρ = 3, λ = 100)
+    result = Evolutionary.optimize(rosenbrock, BoxConstraints(0.0, 0.5, N), (() -> rand(N)), m)
+    println("$(summary(m)) [box] => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
+    @test Evolutionary.minimizer(result) ≈ [0.5, 0.25] atol=1e-1
 
     # Testing: CMA-ES
-    result = Evolutionary.optimize(rosenbrock, (() -> rand(Float32,N)), CMAES(mu = 5, lambda = 100))
+    result = Evolutionary.optimize(rosenbrock, (() -> rand(Float32,N)), CMAES(mu = 5, lambda = 100, weights=zeros(Float32,100)))
     println("(5/5,100)-CMA-ES => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
     test_result(result, N, 1e-2)
+    result = Evolutionary.optimize(rosenbrock, fill(0.0, N), fill(0.5, N), (() -> rand(N)), CMAES(mu = 5, lambda = 100))
+    println("(5/5,100)-CMA-ES [box] => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
+    @test Evolutionary.minimizer(result) ≈ [0.5, 0.25] atol=1e-5
+    result = Evolutionary.optimize(rosenbrock, TransfiniteConstraints(0.0, 0.5, N), (() -> rand(N)), CMAES(mu = 5, lambda = 150))
+    println("(5/5,100)-CMA-ES [transfinite] => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
+    @test Evolutionary.minimizer(result) ≈ [0.5, 0.25] atol=1e-1
 
     # Testing: GA
-    result = Evolutionary.optimize(rosenbrock, (() -> rand(N)),
-        GA(
-            populationSize = 100,
-            ɛ = 0.1,
-            selection = rouletteinv,
-            crossover = intermediate(0.25),
-            mutation = domainrange(fill(0.5,N))
-        ))
+    m = GA(
+        populationSize = 100,
+        ɛ = 0.1,
+        selection = rouletteinv,
+        crossover = intermediate(0.25),
+        mutation = domainrange(fill(0.5,N))
+    )
+    result = Evolutionary.optimize(rosenbrock, (() -> rand(N)), m)
     println("GA(p=100,x=0.8,μ=0.1,ɛ=0.1) => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
     test_result(result, N, 1e-1)
+    result = Evolutionary.optimize(rosenbrock, BoxConstraints(0.0, 0.5, N), (() -> rand(N)), m)
+    println("GA(p=100,x=0.8,μ=0.1,ɛ=0.1)[box] => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
+    @test Evolutionary.minimizer(result) ≈ [0.5, 0.25] atol=1e-1
 
     # Testing: DE
     result = Evolutionary.optimize(rosenbrock, (() -> rand(N)), DE(populationSize = 100))
     println("DE/rand/1/bin(F=1.0,Cr=0.5) => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
     test_result(result, N, 1e-1)
+    result = Evolutionary.optimize(rosenbrock, BoxConstraints(0.0, 0.5, N), (() -> rand(Float32,N)), DE(populationSize = 100))
+    println("DE/rand/1/bin(F=1.0,Cr=0.5)[box] => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
+    @test Evolutionary.minimizer(result) ≈ [0.5, 0.25] atol=1e-1
 
 end

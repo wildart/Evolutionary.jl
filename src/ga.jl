@@ -92,8 +92,9 @@ function update_state!(objfun, constraints, state, population::AbstractVector{IT
 
     # Create new generation & evaluate it
     for i in 1:populationSize
-        population[i] = offspring[i]
-        state.fitpop[i] = value(objfun, offspring[i])
+        o = value(constraints, offspring[i])
+        population[i] = o
+        state.fitpop[i] = value(constraints, objfun, o)
     end
     minfit, fitidx = findmin(state.fitpop)
     state.fittest = population[fitidx]

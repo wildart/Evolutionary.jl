@@ -4,13 +4,13 @@ module Evolutionary
     using UnPack: @unpack
     using NLSolversBase: AbstractObjective, NonDifferentiable, ConstraintBounds,
                          value, value!, nconstraints_x, AbstractConstraints
-    import NLSolversBase: NonDifferentiable, f_calls, value, value!
 
+    import NLSolversBase: NonDifferentiable, f_calls, value, value!
     import Base: show, copy, minimum, summary, identity
 
     export AbstractStrategy, strategy, mutationwrapper,
            IsotropicStrategy, AnisotropicStrategy, NoStrategy,
-           NonDifferentiableConstraints,
+           isfeasible, BoxConstraints, TransfiniteConstraints, PenaltyConstraints,
            # ES mutations
            gaussian, cauchy,
            # GA mutations
@@ -30,12 +30,13 @@ module Evolutionary
            # Optimization methods
            ES, CMAES, GA, DE,
            # re-export
-           NonDifferentiable
+           NonDifferentiable, value
 
     # optimize API
     include("api/types.jl")
     include("api/results.jl")
     include("api/utilities.jl")
+    include("api/constraints.jl")
     include("api/optimize.jl")
 
     # ES & GA recombination functions
