@@ -40,7 +40,7 @@ struct ES <: AbstractOptimizer
             mu, rho, lambda, selection)
 end
 population_size(method::ES) = method.μ
-default_options(method::ES) = Dict(:iterations=>1000, :abstol=>1e-10)
+default_options(method::ES) = (iterations=1000, abstol=1e-10)
 summary(m::ES) = "($(m.μ)/$(m.ρ)$(m.selection == :plus ? '+' : ',')$(m.λ))-ES"
 
 mutable struct ESState{T,IT,ST} <: AbstractOptimizerState
