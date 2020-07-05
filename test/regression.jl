@@ -1,4 +1,4 @@
-@testset "Rastrigin" begin
+@testset "Regression" begin
     ## data
     m, n, n2 = 9, 6, 3
     X, A, E = randn(m, n), randn(n, n2), randn(m, n2) * 0.1
