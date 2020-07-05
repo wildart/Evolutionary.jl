@@ -47,8 +47,20 @@
     println("(5/5,100)-CMA-ES [box] => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
     @test Evolutionary.minimizer(result) ≈ [0.5, 0.25] atol=1e-5
     result = Evolutionary.optimize(rosenbrock, TransfiniteConstraints(0.0, 0.5, N), (() -> rand(N)), CMAES(mu = 5, lambda = 150))
-    println("(5/5,100)-CMA-ES [transfinite] => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
+    println("(5/5,150)-CMA-ES [transfinite] => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
     @test Evolutionary.minimizer(result) ≈ [0.5, 0.25] atol=1e-1
+
+    con_c!(x) = sum(x)
+    c = PenaltyConstraints(10.0, Float64[], Float64[], [1.0], [1.0], con_c!)
+    result = Evolutionary.optimize(rosenbrock, c, (() -> rand(10N)), CMAES(mu = 5, lambda = 100))
+    println("(5/5,100)-CMA-ES [penalty] => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
+    @test Evolutionary.minimizer(result) |> sum ≈ 1.0 atol=1e-1
+
+    c = PenaltyConstraints(100.0, fill(0.0, 2N), fill(0.5, 2N), [1.0], [1.0], con_c!)
+    result = Evolutionary.optimize(rosenbrock, c, (() -> rand(2N)), CMAES(mu = 15, lambda = 100))
+    println("(5/5,100)-CMA-ES [penalty] => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
+    @test Evolutionary.minimizer(result) |> sum ≈ 1.0 atol=1e-1
+    @test all(0.0 <= x+0.01 && x-0.01 <= 0.5 for x in abs.(Evolutionary.minimizer(result)))
 
     # Testing: GA
     m = GA(

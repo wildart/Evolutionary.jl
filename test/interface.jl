@@ -171,6 +171,15 @@
     c = TransfiniteConstraints(0.0, 2.0, 4)
     @test value(c, [30., 0, 0, -30]) == [2.0, 1.0, 1.0, 0.0]
 
+    # con_c!(x) = x[1]^2 + x[2]^2
+    con_c!(x) = sum(x)
+    cb = Evolutionary.ConstraintBounds(fill(0.0, 3), fill(1.0, 3), [1.0], [1.0])
+    constraints = PenaltyConstraints(1.0, cb, con_c!)
+    objfun = NonDifferentiable(sum, zeros(3))
+    @test value(constraints, objfun, [0, 0, 0]) == 1.0 # c penalty
+    @test value(constraints, objfun, [1, 0, 0]) == 1.0 # no penalty
+    @test value(constraints, objfun, [-1, 2, 0]) == 3.0 # x penalty
+
 
     ############
     # OPTIMIZE #

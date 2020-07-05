@@ -105,10 +105,42 @@ end
 
 """
 Penalty constraints type encodes constraints as an additional penalty for an objective function.
+
+Only accepts bounds and equality constraints.
+
+    lx[i] <= x[i] <= ux[i]
+    lc[i] <= c(x)[i] <= uc[i]
 """
-struct PenaltyConstraints{T} <: AbstractConstraints
-    penalty::T
+struct PenaltyConstraints{T,F} <: AbstractConstraints
+    coef::Vector{T}
+    c!::F   # c!(x) returns the value of the constraint-functions at x
     bounds::ConstraintBounds{T}
+    PenaltyConstraints(penalty::Vector{T}, bounds::ConstraintBounds{T}, c::F) where {T,F} =
+        new{T,F}(penalty, c, bounds)
 end
-PenaltyConstraints(penalty::T, lower::AbstractVector{T}, upper::AbstractVector{T}) where {T} =
-    PenaltyConstraints(penalty, ConstraintBounds(lower, upper, [], []))
+PenaltyConstraints(penalty::T, bounds::ConstraintBounds{T}, cf=(x)->nothing) where {T} =
+    PenaltyConstraints(fill(penalty, nconstraints(bounds)+nconstraints_x(bounds)), bounds, cf)
+PenaltyConstraints(penalty::T, lx::AbstractVector{T}, ux::AbstractVector{T},
+                   lc::AbstractVector{T}=T[], uc::AbstractVector{T}=T[],
+                   cf=(x)->nothing) where {T} =
+    PenaltyConstraints(penalty, ConstraintBounds(lx, ux, lc, uc), cf)
+function value(constraints::PenaltyConstraints{T}, f::AbstractObjective, x) where {T}
+    bounds = constraints.bounds
+    coef = constraints.coef
+    xc = nconstraints_x(bounds)
+    penalty = zero(T)
+    for (i,j) in enumerate(bounds.eqx)
+        penalty += coef[j]*(x[j] - bounds.valx[i])^2
+    end
+    for (i,j) in enumerate(bounds.ineqx)
+        penalty += coef[j]*max(zero(T), bounds.σx[i]*(bounds.bx[i]-x[j]))^2
+    end
+    c = constraints.c!(x)
+    for (i,j) in enumerate(bounds.eqc)
+        penalty += coef[xc+j]*(c[j] - bounds.valc[i])^2
+    end
+    for (i,j) in enumerate(bounds.ineqc)
+        penalty += coef[xc+j]*max(zero(T), bounds.σc[i]*(bounds.bc[i]-c[j]))^2
+    end
+    value(f, x) + penalty
+end

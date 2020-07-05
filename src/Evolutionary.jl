@@ -3,7 +3,7 @@ module Evolutionary
     using Base: @kwdef
     using UnPack: @unpack
     using NLSolversBase: AbstractObjective, NonDifferentiable, ConstraintBounds,
-                         value, value!, nconstraints_x, AbstractConstraints
+                         value, value!, nconstraints_x, nconstraints, AbstractConstraints
 
     import NLSolversBase: NonDifferentiable, f_calls, value, value!
     import Base: show, copy, minimum, summary, identity
