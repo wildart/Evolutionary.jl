@@ -19,7 +19,8 @@ The constructor takes following keyword arguments:
     recombination::Function = uniformbin(0.5)
 end
 population_size(method::DE) = method.populationSize
-default_options(method::DE) = Dict(:abstol=>1e-10)
+default_options(method::DE) = (abstol=1e-10)
+summary(m::DE) = "DE/$(m.selection)/$(m.n)/$(m.recombination)"
 
 mutable struct DEState{T,IT} <: AbstractOptimizerState
     N::Int
@@ -67,7 +68,7 @@ function update_state!(objfun, constraints, state, population::AbstractVector{IT
         offspring[i], _ = method.recombination(offspring[i], base)
         # println("$i => recombined:", offspring[i])
     end
-
+    println(itr)
     # Create new generation
     fitidx = 0
     minfit = Inf
@@ -80,12 +81,15 @@ function update_state!(objfun, constraints, state, population::AbstractVector{IT
             if v < minfit
                 minfit = v
                 fitidx = i
+                println("$fitidx: $minfit")
             end
         end
     end
 
     # set best individual
-    state.fittest = population[fitidx]
+    if fitidx > 0
+        state.fittest = population[fitidx]
+    end
 
     return false
 end

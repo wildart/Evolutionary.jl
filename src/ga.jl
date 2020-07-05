@@ -27,7 +27,8 @@ struct GA <: AbstractOptimizer
         new(populationSize, crossoverRate, mutationRate, epsilon, selection, crossover, mutation)
 end
 population_size(method::GA) = method.populationSize
-default_options(method::GA) = Dict(:iterations=>1000, :abstol=>1e-10)
+default_options(method::GA) = (iterations=1000, abstol=1e-15)
+summary(m::GA) = "GA[P=$(m.populationSize),x=$(m.crossoverRate),μ=$(m.mutationRate),ɛ=$(m.ɛ)]"
 
 mutable struct GAState{T,IT} <: AbstractOptimizerState
     N::Int
