@@ -177,6 +177,43 @@ function domainrange(valrange::Vector, m::Int = 20)
     return mutation
 end
 
+"""
+    PM(lower, upper, p = 2)
+
+Returns an in-place real valued mutation function that performs the Power Mutation (PM) scheme within `lower` and `upper` bound, and an index of
+mutation `p`[^3].
+
+*Note:* The implementation is a degenerate case of Mixed Integer Power Mutation ([`MIPM`](@ref))
+"""
+function PM(lower::Vector, upper::Vector, p::Float64 = 5.0) # index of distribution p
+    return mipmmutation(lower, upper, p)
+end
+
+"""
+    MIPM(lower, upper, p_real = 10, p_int = 4)
+
+Returns an in-place real valued mutation function that performs the Mixed Integer Power Mutation (MI-PM) scheme within `lower` and `upper` bound, and an index of mutation `p_real` for real value and `p_int` for integer values[^4].
+"""
+function MIPM(lowerBounds::Vector, upperBounds::Vector, p_real::Float64 = 10.0, p_int::Float64 = 4.0) # index of distribution p
+    return mipmmutation(lowerBounds, upperBounds, p_real, p_int)
+end
+
+function mipmmutation(lowerBounds::Vector, upperBounds::Vector, p_real::Float64, p_int::Union{Nothing, Float64} = nothing)
+    function mutation(recombinant::T) where {T <: Vector}
+        d = length(recombinant)
+        @assert length(lowerBounds) == d "Bounds vector must have $(d) columns"
+        @assert length(upperBounds) == d "Bounds vector must have $(d) columns"
+        @assert p_int != nothing || all(!isa(x, Integer) for x in recombinant) "Need to set p_int for integer variables"
+        u = rand()
+        P = (isa(x, Integer) ? p_int : p_real for x in recombinant)
+        S = u .^ (1 ./ P) # random var following power distribution
+        D = (recombinant - lowerBounds) ./ (upperBounds - lowerBounds)
+        broadcast!((x, l, u, s, d) -> d < rand() ? x - s * (x - l) : x + s * (u - x), recombinant, recombinant, lowerBounds, upperBounds, S, D)
+        return recombinant
+    end
+    return mutation
+end
+
 # Combinatorial mutations (applicable to binary vectors)
 # ------------------------------------------------------
 

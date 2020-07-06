@@ -10,17 +10,18 @@ module Evolutionary
 
     export AbstractStrategy, strategy, mutationwrapper,
            IsotropicStrategy, AnisotropicStrategy, NoStrategy,
-           isfeasible, BoxConstraints, TransfiniteConstraints, PenaltyConstraints,
+           isfeasible, BoxConstraints, TransfiniteConstraints,
+           PenaltyConstraints, MixedTypePenaltyConstraints,
            # ES mutations
            gaussian, cauchy,
            # GA mutations
-           flip, bitinversion, domainrange, inversion, insertion, swap2, scramble, shifting,
+           flip, bitinversion, domainrange, inversion, insertion, swap2, scramble, shifting, PM, MIPM,
            # ES recombinations
            average, marriage,
            # GA recombinations
            singlepoint, twopoint, uniform,
-           discrete, waverage, intermediate, line,
-           pmx, ox1, cx, ox2, pos,
+           discrete, waverage, intermediate, line, HX, LX, MILX,
+           PMX, OX1, CX, OX2, POS,
            # GA selections
            ranklinear, uniformranking, roulette, rouletteinv, sus, susinv, tournament, truncation,
            # DE selections
@@ -30,7 +31,7 @@ module Evolutionary
            # Optimization methods
            ES, CMAES, GA, DE,
            # re-export
-           NonDifferentiable, value
+           NonDifferentiable, value, value!
 
     # optimize API
     include("api/types.jl")

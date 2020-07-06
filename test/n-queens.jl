@@ -29,7 +29,7 @@
             GA(
                 populationSize = P,
                 selection = susinv,
-                crossover = pmx,
+                crossover = PMX,
                 mutation = muts
             ));
         # show(result)

@@ -164,7 +164,11 @@ end
 # Real valued crossovers
 # ----------------------
 
-"""Discrete recombination"""
+"""
+    discrete(v1, v2)
+
+Returs a randomly assembled offspring and its inverse from the elements of parents `v1` and `v2`.
+"""
 function discrete(v1::T, v2::T) where {T <: AbstractVector}
     l = length(v1)
     c1 = similar(v1)
@@ -230,12 +234,65 @@ function line(d::Real = 0.0)
     return linexvr
 end
 
+"""
+    HX(x, y)
+
+Heuristic crossover (HX) recombination operation[^3] generates offspring `u` and `v` as
+
+- ``u = x + r (x - y)``
+- ``v = y + r (y - x)``
+
+where ``r`` is chosen uniform randomly in the interval ``[0;1)``.
+"""
+function HX(v1::T, v2::T) where {T <: Vector}
+    c1 = v1 .+ rand()*(v1 .- v2)
+    c2 = v2 .+ rand()*(v2 .- v1)
+    return c1, c2
+end
+
+"""
+    LX(μ::Real = 0.0, b::Real = 0.2)
+
+Returns a Laplace crossover (LX) recombination operation[^4], see [Recombination Interface](@ref).
+"""
+function LX(μ::Real = 0.0, b::Real = 0.2) # location μ, scale b > 0
+    function lxxvr(v1::T, v2::T) where {T <: Vector}
+        u = rand()
+        β = u > 0.5 ? μ + b * log(u) : μ - b * log(u)
+        S = β * abs.(v1 - v2)
+        c1 = v1 + S
+        c2 = v2 + S
+        return c1, c2
+    end
+    return lxxvr
+end
+
+"""
+    MILX(μ::Real = 0.0, b_real::Real = 0.15, b_int::Real = 0.35)
+
+Returns a mixed integer Laplace crossover (MI-LX) recombination operation[^5], see [Recombination Interface](@ref).
+"""
+function MILX(μ::Real = 0.0, b_real::Real = 0.15, b_int::Real = 0.35) # location μ, scale b > 0
+    function milxxvr(v1::T, v2::T) where {T <: Vector}
+        @assert all([typeof(a) == typeof(b) for (a, b) in zip(v1, v2)]) "Types of variables in vectors do not match"
+        l = length(v1)
+        U, R = rand(l), rand(l)
+        B = (isa(x, Integer) ? b_int : b_real for x in v1)
+        βs = broadcast((u, r, b) -> r > 0.5 ? μ + b * log.(u) : μ - b * log.(u), U, R, B)
+        S = βs .* abs.(v1 - v2)
+        c1 = v1 + S
+        c2 = v2 + S
+        return c1, c2
+    end
+    return milxxvr
+end
+
 
 # Permutation crossovers
 # ----------------------
 
 """Partially mapped crossover"""
-function pmx(v1::T, v2::T) where {T <: AbstractVector}
+function PMX(v1::T, v2::T) where {T <: AbstractVector}
     s = length(v1)
     from, to = rand(1:s, 2)
     from, to = from > to ? (to, from)  : (from, to)
@@ -277,7 +334,7 @@ function pmx(v1::T, v2::T) where {T <: AbstractVector}
 end
 
 """Order crossover"""
-function ox1(v1::T, v2::T) where {T <: AbstractVector}
+function OX1(v1::T, v2::T) where {T <: AbstractVector}
     s = length(v1)
     from, to = rand(1:s, 2)
     from, to = from > to ? (to, from)  : (from, to)
@@ -303,7 +360,7 @@ function ox1(v1::T, v2::T) where {T <: AbstractVector}
 end
 
 """Cycle crossover"""
-function cx(v1::T, v2::T) where {T <: AbstractVector}
+function CX(v1::T, v2::T) where {T <: AbstractVector}
     s = length(v1)
     c1 = zero(v1)
     c2 = zero(v2)
@@ -341,7 +398,7 @@ function cx(v1::T, v2::T) where {T <: AbstractVector}
 end
 
 """Order-based crossover"""
-function ox2(v1::T, v2::T) where {T <: AbstractVector}
+function OX2(v1::T, v2::T) where {T <: AbstractVector}
     s = length(v1)
     c1 = copy(v1)
     c2 = copy(v2)
@@ -370,7 +427,7 @@ function ox2(v1::T, v2::T) where {T <: AbstractVector}
 end
 
 """Position-based crossover"""
-function pos(v1::T, v2::T) where {T <: AbstractVector}
+function POS(v1::T, v2::T) where {T <: AbstractVector}
     s = length(v1)
     c1 = zero(v1)
     c2 = zero(v2)

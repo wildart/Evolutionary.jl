@@ -41,19 +41,28 @@ discrete
 waverage
 intermediate
 line
+HX
+LX
+MILX
 ```
 
 Permutation crossovers:
 ```@docs
-pmx
-ox1
-cx
-ox2
-pos
+PMX
+OX1
+CX
+OX2
+POS
 ```
 
 ## References
 
-[^1]: Mühlenbein, H. and Schlierkamp-Voosen, D.: Predictive Models for the Breeder Genetic Algorithm: I. Continuous Parameter Optimization. Evolutionary Computation, 1 (1), pp. 25-49, 1993.
+[^1]: H. Mühlenbein, D. Schlierkamp-Voosen, "Predictive Models for the Breeder Genetic Algorithm: I. Continuous Parameter Optimization". Evolutionary Computation, 1 (1), pp. 25-49, 1993.
 
 [^2]: K. V. Price and R. M. Storn and J. A. Lampinen, "Differential evolution: A practical approach to global optimization", Springer, 2005.
+
+[^3]: Z. Michalewicz, T. Logan,  S. Swaminathan. "Evolutionary operators for continuous convex parameter spaces." Proceedings of the 3rd Annual conference on Evolutionary Programming, 1994.
+
+[^4]: K. Deep, M. Thakur, "A new crossover operator for real coded genetic algorithms", Applied Mathematics and Computation 188, 2007, 895–912
+
+[^5]: K. Deep, K. P. Singh, M. L. Kansal, and C. Mohan, "A real coded  genetic algorithm for solving integer and mixed integer optimization problems.", Appl. Math. Comput. 212, 505-518, 2009

@@ -8,6 +8,7 @@ for tests in [
     "interface.jl",
     "selections.jl",
     "recombinations.jl",
+    "mutations.jl",
     "sphere.jl",
     "rosenbrock.jl",
     "schwefel.jl",

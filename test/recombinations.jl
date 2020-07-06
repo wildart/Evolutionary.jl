@@ -39,13 +39,17 @@
 
         @test waverage([1.0,0.5])(pop[1], pop[2]) == ([1.0, 2.0], [1.0, 2.0])
 
-        @test pmx(pop[1], pop[2]) == ([0.0, 1.0], [1.0, 0.0])
-        @test sum(pmx(collect(1:9), collect(9:-1:1))) == fill(10,9)
-        @test sum(ox1(collect(1:9), collect(9:-1:1))) == fill(10,9)
-        @test sum(ox2(collect(1:9), collect(9:-1:1))) == fill(10,9)
-        @test sum(cx(collect(1:9), collect(9:-1:1))) == fill(10,9)
-        @test sum(pos(collect(1:9), collect(9:-1:1))) == fill(10,9)
-        @test cx([8,4,7,3,6,2,5,1,9,0],collect(0:9)) == ([8,1,2,3,4,5,6,7,9,0],[0,4,7,3,6,2,5,1,8,9])
+        @test map(sum, HX(pop[1], pop[2])) |> collect ≈ [1.0, 1.0]
+        @test map(abs∘first∘diff, LX()(pop[1], pop[2])) |> collect ≈ [1.0, 1.0]
+        @test mapslices(diff, hcat(MILX(1., 0., 1.)(Real[0, 0.0], Real[1, 0.0])...), dims=2) |> vec ≈ [1.0, 0.0]
+
+        @test PMX(pop[1], pop[2]) == ([0.0, 1.0], [1.0, 0.0])
+        @test sum(PMX(collect(1:9), collect(9:-1:1))) == fill(10,9)
+        @test sum(OX1(collect(1:9), collect(9:-1:1))) == fill(10,9)
+        @test sum(OX2(collect(1:9), collect(9:-1:1))) == fill(10,9)
+        @test sum(CX(collect(1:9), collect(9:-1:1))) == fill(10,9)
+        @test sum(POS(collect(1:9), collect(9:-1:1))) == fill(10,9)
+        @test CX([8,4,7,3,6,2,5,1,9,0],collect(0:9)) == ([8,1,2,3,4,5,6,7,9,0],[0,4,7,3,6,2,5,1,8,9])
     end
 
     @testset "DE" begin
