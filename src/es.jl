@@ -101,11 +101,13 @@ function update_state!(objfun, constraints, state, population::AbstractVector{IT
         off = mutation(recombinant, stgoff[i])
 
         # Apply constraints
-        offspring[i] = value(constraints, off)
+        offspring[i] = apply!(constraints, off)
 
         # Evaluate fitness
-        fitoff[i] = value(constraints, objfun, offspring[i])
+        fitoff[i] = value(objfun, offspring[i])
     end
+    # apply penalty to fitness
+    penalty!(fitoff, constraints, offspring)
 
     # Select new parent population
     if selection == :plus

@@ -6,12 +6,12 @@ module Evolutionary
                          value, value!, nconstraints_x, nconstraints, AbstractConstraints
 
     import NLSolversBase: NonDifferentiable, f_calls, value, value!
-    import Base: show, copy, minimum, summary, identity
+    import Base: show, copy, minimum, summary, identity, getproperty
 
     export AbstractStrategy, strategy, mutationwrapper,
            IsotropicStrategy, AnisotropicStrategy, NoStrategy,
-           isfeasible, BoxConstraints, TransfiniteConstraints,
-           PenaltyConstraints, MixedTypePenaltyConstraints,
+           isfeasible, BoxConstraints, apply!, penalty, penalty!,
+           PenaltyConstraints, WorstFitnessConstraints, MixedTypePenaltyConstraints,
            # ES mutations
            gaussian, cauchy,
            # GA mutations

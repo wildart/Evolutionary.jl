@@ -22,6 +22,11 @@ function optimize(f, lower, upper, individual, method::M,
                  ) where {M<:AbstractOptimizer}
     optimize(f, BoxConstraints(lower,upper), individual, method, options)
 end
+function optimize(f, constraints::C, method::M,
+                  options::Options = Options(;default_options(method)...)
+                 ) where {M<:AbstractOptimizer, C<:AbstractConstraints}
+    optimize(f, constraints, constraints.bounds, method, options)
+end
 function optimize(f, constraints::C, individual, method::M,
                   options::Options = Options(;default_options(method)...)
                  ) where {M<:AbstractOptimizer, C<:AbstractConstraints}

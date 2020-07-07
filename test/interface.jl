@@ -5,7 +5,7 @@
     #########
 
     using Evolutionary: AbstractOptimizer, AbstractOptimizerState, Options, value!,
-                        f_calls, NonDifferentiable, BoxConstraints, TransfiniteConstraints
+                        f_calls, NonDifferentiable, BoxConstraints, PenaltyConstraints
     import Evolutionary: value, population_size, default_options, initial_state, update_state!
 
     # objectvive function
@@ -164,21 +164,31 @@
     ###############
     c = Evolutionary.NoConstraints()
     @test isfeasible(c, 1)
-    @test value(c, 1) == 1
+    @test isa(c.bounds, Evolutionary.ConstraintBounds)
+    @test value(c, 1) === nothing
+    @test apply!(c, 1) == 1
+    @test penalty(c, 1) == 0
+
     c = BoxConstraints(lb, ub)
     @test isfeasible(c, [0, 1, 2, 0])
-    @test value(c, [1,4,2,-2]) == [0,3,2,-1]
-    c = TransfiniteConstraints(0.0, 2.0, 4)
-    @test value(c, [30., 0, 0, -30]) == [2.0, 1.0, 1.0, 0.0]
+    @test value(c, [1,4,2,-2]) === nothing
+    @test apply!(c, [1,4,2,-2]) == [0,3,2,-1]
+    @test penalty(c, [1,4,2,-2]) == 0
 
-    # con_c!(x) = x[1]^2 + x[2]^2
-    con_c!(x) = sum(x)
+    con_c!(x) = [sum(x)]
     cb = Evolutionary.ConstraintBounds(fill(0.0, 3), fill(1.0, 3), [1.0], [1.0])
-    constraints = PenaltyConstraints(1.0, cb, con_c!)
+    c = PenaltyConstraints(1.0, cb, con_c!)
     objfun = NonDifferentiable(sum, zeros(3))
-    @test value(constraints, objfun, [0, 0, 0]) == 1.0 # c penalty
-    @test value(constraints, objfun, [1, 0, 0]) == 1.0 # no penalty
-    @test value(constraints, objfun, [-1, 2, 0]) == 3.0 # x penalty
+    x, y = [0, 1, 0], [0, -1, 3]
+    @test isfeasible(c, x)    # feasible
+    @test !isfeasible(c, y) # not feasible
+    @test apply!(c, x) == x
+    @test apply!(c, y) == y
+    @test value(c, x) == [sum(x)]
+    @test value(c, y) == [sum(y)]
+    @test penalty(c, x) == 0.0 # c penalty
+    @test penalty(c, y) == 1+2^2+1.0 # c penalty
+    @test penalty!([1.0, 2.0], c, [x,y]) == [1, 2 + penalty(c, y)]
 
 
     ############

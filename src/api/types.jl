@@ -111,8 +111,8 @@ end
 
 
 # Constructor for nondifferentiable function over bit vector
-NonDifferentiable(f, x::AbstractVector{<:Integer}) =
-    NonDifferentiable{Integer,typeof(x)}(f, zero(Integer), zeros(Integer, length(x)), [0,])
+NonDifferentiable(f, x::AbstractVector{T}) where {T<:Real}=
+    NonDifferentiable{T,typeof(x)}(f, zero(T), zeros(T, length(x)), [0,])
 NonDifferentiable(f, x::AbstractVector{Bool}) = NonDifferentiable(f, BitVector(x))
 function NonDifferentiable(f, x::BitArray)
     xs = BitArray(zero(eltype(x)) for i = 1:length(x))

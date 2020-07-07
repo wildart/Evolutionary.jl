@@ -146,9 +146,10 @@ function update_state!(objfun, constraints, state::CMAESState{T,TI}, population:
         # y[:,i] =  B * D * z[:,i]
         # y[:,i] =  SqrtC * z[:,i]
         # offspring[i] = state.parent + σ * y[:,i]
-        offspring[i] = value(constraints, parent + σ * B * D * z[:,i])
-        fitoff[i] = value(constraints, objfun, reshape(offspring[i],parentshape...)) # Evaluate fitness
+        offspring[i] = apply!(constraints, parent + σ * B * D * z[:,i])
+        fitoff[i] = value(objfun, reshape(offspring[i],parentshape...)) # Evaluate fitness
     end
+    penalty!(fitoff, constraints, offspring)
 
     # Select new parent population
     idx = sortperm(fitoff)

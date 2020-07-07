@@ -62,7 +62,7 @@ function update_state!(objfun, constraints, state, population::AbstractVector{IT
 
     offspring = similar(population)
 
-     # Select offspring
+    # Select offspring
     selected = selection(state.fitpop, populationSize)
 
     # Perform matingstate.fitness
@@ -93,10 +93,14 @@ function update_state!(objfun, constraints, state, population::AbstractVector{IT
 
     # Create new generation & evaluate it
     for i in 1:populationSize
-        o = value(constraints, offspring[i])
+        o = apply!(constraints, offspring[i])
         population[i] = o
-        state.fitpop[i] = value(constraints, objfun, o)
+        state.fitpop[i] = value(objfun, o)
     end
+    # apply penalty to fitness
+    penalty!(state.fitpop, constraints, population)
+
+    # find the best individual
     minfit, fitidx = findmin(state.fitpop)
     state.fittest = population[fitidx]
     state.fitness = state.fitpop[fitidx]
