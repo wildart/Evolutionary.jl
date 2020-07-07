@@ -40,8 +40,8 @@ function uniformranking(μ::Int)
     function uniformrank(fitness::Vector{<:Real}, N::Int)
         λ = length(fitness)
         idx = sortperm(fitness)
-        @assert μ < λ "μ should be less then $(λ)"
-        ranks = similar(fitness, Float64)
+        @assert μ <= λ "μ should be no larger then $(λ)"
+        ranks = zeros(length(fitness))
         for i in 1:μ
             ranks[idx[i]] = 1/μ
         end
@@ -61,7 +61,8 @@ In roulette selection, the fitness level is used to associate a probability of s
 
 """
 function roulette(fitness::Vector{<:Real}, N::Int)
-    prob = fitness./sum(fitness)
+    absf = abs.(fitness)
+    prob = absf./sum(absf)
     return pselection(prob, N)
 end
 
@@ -84,7 +85,7 @@ Consider ``N`` the number of individuals to be selected, then the distance betwe
 
 """
 function sus(fitness::Vector{<:Real}, N::Int)
-    F = sum(fitness)
+    F = sum(abs, fitness)
     P = F/N
     start = P*rand()
     pointers = [start+P*i for i = 0:(N-1)]
@@ -191,6 +192,7 @@ best(fitness::Vector{<:Real}, N::Int) = fill(last(findmin(fitness)),N)
 # Utils: selection
 function pselection(prob::Vector{<:Real}, N::Int)
     cp = cumsum(prob)
+    # println(cp)
     selected = Array{Int}(undef, N)
     for i in 1:N
         j = 1

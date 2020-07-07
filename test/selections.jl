@@ -11,13 +11,16 @@
     end
 
     @testset "Uniform" begin
+        Random.seed!(2);
         s = uniformranking(2)
         @test sort(unique(s([1.0,2.0,3.0], 10))) == [1,2]
-        @test sort(unique(s([5,2,3], 5))) == [3]
-        @test_throws AssertionError s([1.,2.], 2)
+        @test sort(unique(s([5,2,3], 5))) == [2,3]
+        @test_throws AssertionError s([1.], 4)
     end
 
     @testset "Roulette" begin
+        Random.seed!(2);
+        @test roulette([30.0, -0.1,-0.2, -30.0], 2) == [1, 4]
         @test roulette([0.0,0.0,3.0], 2) == [3, 3]
         @test roulette([0,2,0], 2) == [2,2]
         @test rouletteinv([0.0,0.0,3.0], 2) == [1, 1]
