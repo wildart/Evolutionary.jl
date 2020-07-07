@@ -73,6 +73,7 @@ Package provides following constrains implementations.
 ```@docs
 Evolutionary.NoConstraints
 BoxConstraints
-TransfiniteConstraints
 PenaltyConstraints
+WorstFitnessConstraints
+MixedTypePenaltyConstraints
 ```
