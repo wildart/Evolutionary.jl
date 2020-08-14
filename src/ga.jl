@@ -11,23 +11,23 @@ The constructor takes following keyword arguments:
 - `crossover`: [Crossover](@ref) function (default: `identity`)
 - `mutation`: [Mutation](@ref) function (default: `identity`)
 """
-struct GA <: AbstractOptimizer
+struct GA{F1,F2,F3} <: AbstractOptimizer
     populationSize::Int
     crossoverRate::Float64
     mutationRate::Float64
     ɛ::Real
-    selection::Function
-    crossover::Function
-    mutation::Function
-
-    GA(; populationSize::Int=50, crossoverRate::Float64=0.8, mutationRate::Float64=0.1,
-        ɛ::Real=0, epsilon::Real=ɛ,
-        selection::Function = ((x,n)->1:n),
-        crossover::Function = identity, mutation::Function = identity) =
-        new(populationSize, crossoverRate, mutationRate, epsilon, selection, crossover, mutation)
+    selection::F1
+    crossover::F2
+    mutation::F3
 end
+
+GA(; populationSize::Int=50, crossoverRate::Float64=0.8, mutationRate::Float64=0.1,
+ɛ::Real=0, epsilon::Real=ɛ,
+selection::Function=((x,n) -> 1:n),
+crossover::Function=identity, mutation::Function=identity) =
+GA(populationSize, crossoverRate, mutationRate, epsilon, selection, crossover, mutation)
 population_size(method::GA) = method.populationSize
-default_options(method::GA) = (iterations=1000, abstol=1e-15)
+default_options(method::GA) = (iterations = 1000, abstol = 1e-15)
 summary(m::GA) = "GA[P=$(m.populationSize),x=$(m.crossoverRate),μ=$(m.mutationRate),ɛ=$(m.ɛ)]"
 
 mutable struct GAState{T,IT} <: AbstractOptimizerState
@@ -69,7 +69,7 @@ function update_state!(objfun, constraints, state, population::AbstractVector{IT
     offidx = randperm(populationSize)
     offspringSize = populationSize - state.eliteSize
     for i in 1:2:offspringSize
-        j = (i == offspringSize) ? i-1 : i+1
+        j = (i == offspringSize) ? i - 1 : i + 1
         if rand() < crossoverRate
             offspring[i], offspring[j] = crossover(population[selected[offidx[i]]], population[selected[offidx[j]]])
         else
@@ -80,7 +80,7 @@ function update_state!(objfun, constraints, state, population::AbstractVector{IT
     # Elitism (copy population individuals before they pass to the offspring & get mutated)
     fitidxs = sortperm(state.fitpop)
     for i in 1:state.eliteSize
-        subs = offspringSize+i
+        subs = offspringSize + i
         offspring[subs] = copy(population[fitidxs[i]])
     end
 

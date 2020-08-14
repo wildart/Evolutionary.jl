@@ -13,34 +13,35 @@ The constructor takes following keyword arguments:
 - `λ`/`lambda`: the number of offspring
 - `selection`: the selection strategy `:plus` or `:comma` (default: `:plus`)
 """
-struct ES <: AbstractOptimizer
+struct ES{F1,F2} <: AbstractOptimizer
     initStrategy::AbstractStrategy
     recombination::Function
     srecombination::Function
-    mutation::Function
-    smutation::Function
+    mutation::F1
+    smutation::F2
     μ::Integer
     ρ::Integer
     λ::Integer
     selection::Symbol
-
-    ES(; initStrategy::AbstractStrategy = NoStrategy(),
-        recombination::Function = first,
-        srecombination::Function = first,
-        mutation::Function = ((r,s) -> r),
-        smutation::Function = identity,
-        μ::Integer = 1,
-        mu::Integer = μ,
-        ρ::Integer = μ,
-        rho::Integer = ρ,
-        λ::Integer = 1,
-        lambda::Integer = λ,
-        selection::Symbol = :plus) =
-        new(initStrategy, recombination, srecombination, mutation, smutation,
-            mu, rho, lambda, selection)
 end
+
+ES(; initStrategy::AbstractStrategy=NoStrategy(),
+recombination::Function=first,
+srecombination::Function=first,
+mutation::Function=((r,s) -> r),
+smutation::Function=identity,
+μ::Integer=1,
+mu::Integer=μ,
+ρ::Integer=μ,
+rho::Integer=ρ,
+λ::Integer=1,
+lambda::Integer=λ,
+selection::Symbol=:plus) =
+ES(initStrategy, recombination, srecombination, mutation, smutation,
+    mu, rho, lambda, selection)
+
 population_size(method::ES) = method.μ
-default_options(method::ES) = (iterations=1000, abstol=1e-10)
+default_options(method::ES) = (iterations = 1000, abstol = 1e-10)
 summary(m::ES) = "($(m.μ)/$(m.ρ)$(m.selection == :plus ? '+' : ',')$(m.λ))-ES"
 
 mutable struct ESState{T,IT,ST} <: AbstractOptimizerState
@@ -112,7 +113,7 @@ function update_state!(objfun, constraints, state, population::AbstractVector{IT
     # Select new parent population
     if selection == :plus
         idxs = sortperm(vcat(state.fitness, fitoff))[1:μ]
-        skip = idxs[idxs.<=μ]
+        skip = idxs[idxs .<= μ]
         for i = 1:μ
             if idxs[i] ∉ skip
                 ii = idxs[i] - μ
