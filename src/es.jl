@@ -26,18 +26,18 @@ struct ES{F1,F2} <: AbstractOptimizer
 end
 
 ES(; initStrategy::AbstractStrategy=NoStrategy(),
-recombination::Function=first,
-srecombination::Function=first,
-mutation::Function=((r,s) -> r),
-smutation::Function=identity,
-μ::Integer=1,
-mu::Integer=μ,
-ρ::Integer=μ,
-rho::Integer=ρ,
-λ::Integer=1,
-lambda::Integer=λ,
-selection::Symbol=:plus) =
-ES(initStrategy, recombination, srecombination, mutation, smutation,
+    recombination::Function=first,
+    srecombination::Function=first,
+    mutation::Function=((r,s) -> r),
+    smutation::Function=identity,
+    μ::Integer=1,
+    mu::Integer=μ,
+    ρ::Integer=μ,
+    rho::Integer=ρ,
+    λ::Integer=1,
+    lambda::Integer=λ,
+    selection::Symbol=:plus) =
+    ES(initStrategy, recombination, srecombination, mutation, smutation,
     mu, rho, lambda, selection)
 
 population_size(method::ES) = method.μ

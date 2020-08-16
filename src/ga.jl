@@ -22,10 +22,11 @@ struct GA{F1,F2,F3} <: AbstractOptimizer
 end
 
 GA(; populationSize::Int=50, crossoverRate::Float64=0.8, mutationRate::Float64=0.1,
-ɛ::Real=0, epsilon::Real=ɛ,
-selection::Function=((x,n) -> 1:n),
-crossover::Function=identity, mutation::Function=identity) =
-GA(populationSize, crossoverRate, mutationRate, epsilon, selection, crossover, mutation)
+    ɛ::Real=0, epsilon::Real=ɛ,
+    selection::Function=((x,n) -> 1:n),
+    crossover::Function=identity, mutation::Function=identity) =
+    GA(populationSize, crossoverRate, mutationRate, epsilon, selection, crossover, mutation)
+
 population_size(method::GA) = method.populationSize
 default_options(method::GA) = (iterations = 1000, abstol = 1e-15)
 summary(m::GA) = "GA[P=$(m.populationSize),x=$(m.crossoverRate),μ=$(m.mutationRate),ɛ=$(m.ɛ)]"
