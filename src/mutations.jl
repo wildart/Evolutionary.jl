@@ -199,16 +199,28 @@ function MIPM(lowerBounds::Vector, upperBounds::Vector, p_real::Float64 = 10.0, 
 end
 
 function mipmmutation(lowerBounds::Vector, upperBounds::Vector, p_real::Float64, p_int::Union{Nothing, Float64} = nothing)
+    function pm_mutation(x, l, u, s, d)
+        x̄ = d < rand() ? x - s * (x - l) : x + s * (u - x)
+        if isa(x, Integer)
+            if isinteger(x̄)
+                Int(x̄)
+            else
+                floor(Int, x̄) + (rand() > 0.5)
+            end
+        else
+            x̄
+        end
+    end
     function mutation(recombinant::T) where {T <: Vector}
         d = length(recombinant)
         @assert length(lowerBounds) == d "Bounds vector must have $(d) columns"
         @assert length(upperBounds) == d "Bounds vector must have $(d) columns"
-        @assert p_int != nothing || all(!isa(x, Integer) for x in recombinant) "Need to set p_int for integer variables"
+        @assert !(p_int === nothing && any(isa(x, Integer) for x in recombinant)) "Need to set p_int for integer variables"
         u = rand()
         P = (isa(x, Integer) ? p_int : p_real for x in recombinant)
         S = u .^ (1 ./ P) # random var following power distribution
         D = (recombinant - lowerBounds) ./ (upperBounds - lowerBounds)
-        broadcast!((x, l, u, s, d) -> d < rand() ? x - s * (x - l) : x + s * (u - x), recombinant, recombinant, lowerBounds, upperBounds, S, D)
+        broadcast!(pm_mutation, recombinant, recombinant, lowerBounds, upperBounds, S, D)
         return recombinant
     end
     return mutation

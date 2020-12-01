@@ -55,14 +55,14 @@ uc = [5.0, 5.5, 1.2, 1.8, 2.5, 1.2, 1.64, 4.25, 4.64]
 tc = [Float64, Float64, Float64, Int, Int, Int, Int]
 
 cb = Evolutionary.ConstraintBounds(lx,ux,lc,uc)
-c = MixedTypePenaltyConstraints(PenaltyConstraints(1e2, cb, cons), tc)
+# c = MixedTypePenaltyConstraints(PenaltyConstraints(1e2, cb, cons), tc)
 c = MixedTypePenaltyConstraints(WorstFitnessConstraints(cb, cons), tc)
 init = ()->Real[rand(Float64,3); rand(0:1,4)]
 
 opts = Evolutionary.Options(iterations=2000)
-mthd = GA(populationSize=100, ɛ=0.05, crossoverRate=0.8, mutationRate=0.01, selection=susinv, crossover=MILX(0.0,0.5,0.3), mutation=MIPM(lx,ux))
+mthd = GA(populationSize=300, ɛ=0.05, crossoverRate=0.8, mutationRate=0.01, selection=susinv, crossover=MILX(0.0,0.5,0.3), mutation=MIPM(lx,ux))
 
-Random.seed!(235);
+Random.seed!(544);
 result = Evolutionary.optimize(f8, c, init, mthd, opts)
 @test minimum(result) < 4
 
