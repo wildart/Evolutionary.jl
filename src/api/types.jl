@@ -118,6 +118,10 @@ function NonDifferentiable(f, x::BitArray)
     xs = BitArray(zero(eltype(x)) for i = 1:length(x))
     NonDifferentiable{Real,typeof(xs)}(f, f(xs), xs, [0,])
 end
+function NonDifferentiable(f, x::Expr)
+    val = f(x)
+    NonDifferentiable{typeof(val),typeof(x)}(f, zero(val), :(), [0,])
+end
 
 const Individual = Union{AbstractArray, Function, Nothing}
 

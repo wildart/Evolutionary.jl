@@ -16,7 +16,8 @@ for tests in [
     "n-queens.jl",
     "knapsack.jl",
     "onemax.jl",
-    "regression.jl"
+    "regression.jl",
+    "gp.jl"
 ]
     include(tests)
 end

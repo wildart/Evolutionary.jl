@@ -11,7 +11,7 @@ The constructor takes following keyword arguments:
 - `crossover`: [Crossover](@ref) function (default: `identity`)
 - `mutation`: [Mutation](@ref) function (default: `identity`)
 """
-struct GA <: AbstractOptimizer
+mutable struct GA <: AbstractOptimizer
     populationSize::Int
     crossoverRate::Float64
     mutationRate::Float64

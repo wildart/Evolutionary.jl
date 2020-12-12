@@ -91,13 +91,17 @@ function show(io::IO, r::EvolutionaryOptimizationResults)
     print(io, "\n")
     print(io, " * Status: ", converged(r) ? "success" : failure_string, "\n\n")
     print(io, " * Candidate solution\n")
-    nx = length(minimizer(r))
-    str_x_elements = ["$_x" for _x in Iterators.take(minimizer(r), min(nx, 3))]
-    if nx >= 4
-        push!(str_x_elements, " ...")
+    mzr = minimizer(r)
+    if isa(mzr, Array)
+        nx = length(mzr)
+        str_x_elements = ["$_x" for _x in Iterators.take(mzr, min(nx, 3))]
+        if nx >= 4
+            push!(str_x_elements, " ...")
+        end
+        print(io, "    Minimizer:  [", join(str_x_elements, ", "),  "]\n")
+    else
+        print(io, "    Minimizer:  $mzr\n")
     end
-
-    print(io, "    Minimizer:  [", join(str_x_elements, ", "),  "]\n")
     print(io, "    Minimum:    $(minimum(r))\n")
     print(io, "    Iterations: $(iterations(r))\n")
     print(io, "\n")

@@ -6,7 +6,7 @@ module Evolutionary
                          value, value!, nconstraints_x, nconstraints, AbstractConstraints
 
     import NLSolversBase: NonDifferentiable, f_calls, value, value!
-    import Base: show, copy, minimum, summary, identity, getproperty
+    import Base: show, copy, minimum, summary, identity, getproperty, rand, getindex, length, copyto!, setindex!
 
     export AbstractStrategy, strategy, mutationwrapper,
            IsotropicStrategy, AnisotropicStrategy, NoStrategy,
@@ -28,8 +28,10 @@ module Evolutionary
            random, permutation, randomoffset, best,
            # DE recombinations
            uniformbin, exponential,
+           # GP exports
+           Terminal, crosstree, mutatetree,
            # Optimization methods
-           ES, CMAES, GA, DE,
+           ES, CMAES, GA, DE, TreeGP,
            # re-export
            NonDifferentiable, value, value!
 
@@ -58,6 +60,9 @@ module Evolutionary
 
     # Differential Evolution
     include("de.jl")
+
+    # Genetic Programming
+    include("gp.jl")
 
     # deprecations
     @deprecate isotropic(recombinant, strategy) gaussian(recombinant, strategy)
