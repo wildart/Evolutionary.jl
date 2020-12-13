@@ -170,15 +170,32 @@ function update_state!(objfun, constraints, state::GPState, population::Abstract
     return res
 end
 
-function evaluate(ex::Expr, params, vals)
+function symbols(ex::Expr)
+    syms = Symbol[]
+    for e in ex.args
+        isa(e, Symbol) && push!(syms, e)
+        isa(e, Expr) && append!(syms, symbols(e))
+    end
+    unique!(syms)
+end
+
+struct Expression
+    expr::Expr
+    syms::Vector{Symbol}
+end
+Expression(ex::Expr) = Expression(ex, sort!(symbols(ex)))
+show(io::IO, e::Expression) = infix(io, e.expr)
+(e::Expression)(val) = evaluate(val, e.expr, e.syms)
+
+function evaluate(val, ex::Expr, psyms::Vector{Symbol})
     exprm = ex.args
-    exvals = (isa(nex, Expr) || isa(nex, Symbol) ? evaluate(nex, params, vals) : nex for nex in exprm[2:end])
+    exvals = (isa(nex, Expr) || isa(nex, Symbol) ? evaluate(val, nex, psyms) : nex for nex in exprm[2:end])
     exprm[1](exvals...)
 end
 
-function evaluate(ex::Symbol, params, vals)
-    pidx = findfirst(isequal(ex), params)
-    vals[pidx]
+function evaluate(val, ex::Symbol, psyms::Vector{Symbol})
+    pidx = findfirst(isequal(ex), psyms)
+    val[pidx]
 end
 
 iszeronum(root) = isa(root, Number) && iszero(root)
@@ -286,17 +303,17 @@ function simplify!(root)
     return root
 end
 
-function infix(root; digits=3)
+function infix(io::IO, root; digits=3)
     if isa(root, Number)
-        print(round(root, digits=digits))
+        print(io, round(root, digits=digits))
     elseif isa(root, Expr) && root.head == :call
-        print("(")
-        infix(root.args[2])
-        infix(root.args[1])
-        infix(root.args[3])
-        print(")")
+        print(io, "(")
+        infix(io, root.args[2])
+        infix(io, root.args[1])
+        infix(io, root.args[3])
+        print(io, ")")
     else
-        print(root)
+        print(io, root)
     end
 end
 

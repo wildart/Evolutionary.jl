@@ -30,7 +30,7 @@
     @test gt[2] == :x
     @test gt[4] == Expr(:call, /, :x, :x)
 
-
+    # simplification
     @test Expr(:call, -, :x, :x) |> Evolutionary.simplify! == 0
     @test Expr(:call, /, :x, :x) |> Evolutionary.simplify! == 1
     @test Expr(:call, *, 0, :x) |> Evolutionary.simplify! == 0
@@ -54,11 +54,18 @@
     @test Expr(:call, +, Expr(:call, -, :x, 1), 1 ) |> Evolutionary.simplify! == Expr(:call, -, :x, 2)
     @test Expr(:call, -, Expr(:call, +, :x, 1), 1 ) |> Evolutionary.simplify! == Expr(:call, +, :x, 0)
 
+    # evaluation
+    ex = Expr(:call, +, 1, :x) |> Evolutionary.Expression
+    xs = rand(10)
+    @test ex(xs[1]) == xs[1]+1
+    @test ex.(xs) == xs.+1
+
     depth = 5
     fitfun(x) = x*x + x + 1.0
     function fitobj(expr)
         rg = -5.0:0.5:5.0
-        sum(v->isnan(v) ? 1.0 : v, (abs(fitfun(x) - Evolutionary.evaluate(expr, [:x], [x])) for x in rg))
+        ex = Evolutionary.Expression(expr)
+        sum(v->isnan(v) ? 1.0 : v, abs2.(fitfun.(rg) - ex.(rg)) )/length(rg) |> sqrt
     end
 
     Random.seed!(9874984737426);
@@ -74,6 +81,6 @@
             ),
         )
     )
-    @test minimum(res) < 21
+    @test minimum(res) < 1
 
 end
