@@ -64,6 +64,12 @@ shifting
 Evolutionary.differentiation
 ```
 
+## Genetic Programming
+
+```@docs
+Evolutionary.mutatetree
+```
+
 ## References
 
 [^1]: Mühlenbein, H. and Schlierkamp-Voosen, D.: Predictive Models for the Breeder Genetic Algorithm: I. Continuous Parameter Optimization. Evolutionary Computation, 1 (1), pp. 25-49, 1993.

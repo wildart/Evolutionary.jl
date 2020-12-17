@@ -35,6 +35,7 @@ exponential
 ```
 
 Real valued crossovers:
+
 ```@docs
 identity
 discrete
@@ -47,12 +48,19 @@ MILX
 ```
 
 Permutation crossovers:
+
 ```@docs
 PMX
 OX1
 CX
 OX2
 POS
+```
+
+Tree crossovers:
+
+```@docs
+crosstree
 ```
 
 ## References

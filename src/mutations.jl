@@ -331,7 +331,7 @@ function differentiation(recombinant::T, mutators::AbstractVector{T}; F::Real = 
     return recombinant
 end
 
-# Utils
+# Utilities
 # =====
 function swap!(v::T, from::Int, to::Int) where {T <: AbstractVector}
     val = v[from]

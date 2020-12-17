@@ -13,22 +13,37 @@
     @testset for (func, arity) in t.functions
         @test arity == 2
     end
-    @test summary(t) == "TreeGP[P=10,Parameter[x,y],Function[*, +, /, -]]"
+    @test_skip summary(t) == "TreeGP[P=10,Parameter[x,y],Function[*, +, /, -]]"
 
+    # population initialization
     popexp = Evolutionary.initial_population(t);
     @test length(popexp) == pop
+    popexp = Evolutionary.initial_population(t, :(x + 1));
+    @test popexp[1] == :(x + 1)
 
-    Random.seed!(9874984737484)
-    ft = rand(t, method=:full)
-    @test Evolutionary.nodes(ft) == 7
-    @test Evolutionary.height(ft) == 2
-    gt = rand(t, method=:grow)
-    @test Evolutionary.nodes(gt) == 5
-    @test Evolutionary.height(gt) == 2
+    # recursive helper functions
+    Random.seed!(9874984737482)
+    gt = rand(TreeGP(pop, terms, funcs, maxdepth=2, initialization=:grow), 2)
+    @test Evolutionary.nodes(gt) == 3
+    @test Evolutionary.height(gt) == 1
     @test gt[0] == gt
     @test gt[1] == :x
     @test gt[2] == :x
-    @test gt[4] == Expr(:call, /, :x, :x)
+    ft = rand(TreeGP(pop, terms, funcs, maxdepth=2, initialization=:full), 2)
+    @test Evolutionary.nodes(ft) == 7
+    @test Evolutionary.height(ft) == 2
+    @test length(ft) == 7
+    @test Evolutionary.depth(ft, :y) == 2
+    ft[2] = :z
+    @test Evolutionary.depth(ft, :z) == 2
+    @test Evolutionary.depth(ft, ft) == 0
+    @test Evolutionary.depth(ft, ft[3]) == 1
+    @test Evolutionary.depth(ft, :x) == -1
+    @test Evolutionary.evaluate([1.0, 2.0], ft, [:y, :z]) == -3.104752729609502
+    @test Evolutionary.evaluate([1.0, 2.0], :y, [:y, :z]) == 1.0
+    copyto!(ft, gt)
+    @test ft == gt
+    @test Evolutionary.symbols(ft) == [:x]
 
     # simplification
     @test Expr(:call, -, :x, :x) |> Evolutionary.simplify! == 0
@@ -41,24 +56,16 @@
     @test Expr(:call, +, :x, 0) |> Evolutionary.simplify! == :x
     @test Expr(:call, -, :x, 0) |> Evolutionary.simplify! == :x
     @test Expr(:call, +, :x, :x) |> Evolutionary.simplify! == Expr(:call, *, 2, :x)
-    @test Expr(:call, +, 1, Expr(:call, -, 1, :x) ) |> Evolutionary.simplify! == Expr(:call, -, 2, :x)
-    @test Expr(:call, -, 1, Expr(:call, +, 1, :x) ) |> Evolutionary.simplify!  == Expr(:call, +, 0, :x)
-    @test Expr(:call, *, Expr(:call, *, :x, :y), Expr(:call, /, :z, :x)) |> Evolutionary.simplify! == Expr(:call, *, :y, :z)
-    @test Expr(:call, *, Expr(:call, *, :x, :y), Expr(:call, /, :z, :y)) |> Evolutionary.simplify! == Expr(:call, *, :x, :z)
-    @test Expr(:call, *, Expr(:call, /, :z, :x), Expr(:call, *, :x, :y)) |> Evolutionary.simplify! == Expr(:call, *, :z, :y)
-    @test Expr(:call, *, Expr(:call, /, :z, :y), Expr(:call, *, :x, :y)) |> Evolutionary.simplify! == Expr(:call, *, :z, :x)
-    @test Expr(:call, *, Expr(:call, *, 2, :y), Expr(:call, /, :z, 2)) |> Evolutionary.simplify! == Expr(:call, *, :y, :z)
-    @test Expr(:call, *, Expr(:call, *, :y, 2), Expr(:call, /, :z, 2)) |> Evolutionary.simplify! ==  Expr(:call, *, :y, :z)
-    @test Expr(:call, *, Expr(:call, /, :z, 2), Expr(:call, *, 2, :y)) |> Evolutionary.simplify! == Expr(:call, *, :z, :y)
-    @test Expr(:call, *, Expr(:call, /, :z, 2), Expr(:call, *, :y, 2)) |> Evolutionary.simplify! ==  Expr(:call, *, :z, :y)
-    @test Expr(:call, +, Expr(:call, -, :x, 1), 1 ) |> Evolutionary.simplify! == Expr(:call, -, :x, 2)
-    @test Expr(:call, -, Expr(:call, +, :x, 1), 1 ) |> Evolutionary.simplify! == Expr(:call, +, :x, 0)
+    @test Expr(:call, -, 2, 1) |> Evolutionary.simplify! == 1
 
     # evaluation
     ex = Expr(:call, +, 1, :x) |> Evolutionary.Expression
     xs = rand(10)
     @test ex(xs[1]) == xs[1]+1
     @test ex.(xs) == xs.+1
+    io = IOBuffer()
+    show(io, "text/latex", ex)
+    @test String(take!(io)) == "\\left(1.0+x\\right)"
 
     depth = 5
     fitfun(x) = x*x + x + 1.0

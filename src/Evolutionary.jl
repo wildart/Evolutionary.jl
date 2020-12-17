@@ -2,8 +2,7 @@ module Evolutionary
     using Random, LinearAlgebra, Statistics
     using Base: @kwdef
     using UnPack: @unpack
-    using NLSolversBase: AbstractObjective, NonDifferentiable, ConstraintBounds,
-                         value, value!, nconstraints_x, nconstraints, AbstractConstraints
+    using NLSolversBase: AbstractObjective, ConstraintBounds, AbstractConstraints, nconstraints_x, nconstraints
 
     import NLSolversBase: NonDifferentiable, f_calls, value, value!
     import Base: show, copy, minimum, summary, identity, getproperty, rand, getindex, length, copyto!, setindex!
@@ -29,7 +28,7 @@ module Evolutionary
            # DE recombinations
            uniformbin, exponential,
            # GP exports
-           Terminal, crosstree, mutatetree,
+           Terminal,
            # Optimization methods
            ES, CMAES, GA, DE, TreeGP,
            # re-export
@@ -41,6 +40,7 @@ module Evolutionary
     include("api/utilities.jl")
     include("api/constraints.jl")
     include("api/optimize.jl")
+    include("api/expressions.jl")
 
     # ES & GA recombination functions
     include("recombinations.jl")

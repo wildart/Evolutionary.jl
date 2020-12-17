@@ -453,8 +453,24 @@ function POS(v1::T, v2::T) where {T <: AbstractVector}
     return c1,c2
 end
 
-# Utils
-# =====
+# ===================
+# Genetic Programming
+# ===================
+
+"""Perform an arbitrary subtree swap"""
+function crosstree(t1::Expr, t2::Expr)
+    tt1, tt2 = copy(t1), copy(t2)
+    i, j = rand(1:nodes(t1)-1), rand(1:nodes(t2)-1)
+    ex1 = tt1[i]
+    ex2 = tt2[j]
+    tt1[i] = ex2
+    tt2[j] = ex1
+    tt1, tt2
+end
+
+
+# Utilities
+# =========
 function vswap!(v1::T, v2::T, idx::Int) where {T <: AbstractVector}
     val = v1[idx]
     v1[idx] = v2[idx]

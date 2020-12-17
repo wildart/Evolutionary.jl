@@ -66,7 +66,7 @@ function optimize(objfun::D, constraints::C, population::AbstractArray,
         # update the function value
         value!(objfun, minimizer(state))
 
-        # check covergence persistence
+        # check convergence persistence
         counter_tol = converged ? counter_tol+1 : 0
         converged = converged && (counter_tol > options.successive_f_tol)
 
