@@ -1,0 +1,11 @@
+[deps]
+Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
+Evolutionary = "86b6b26d-c046-49b6-aa0b-5f0f74682bd6"
+Flux = "587475ba-b771-5e3f-ad9e-33799f191a9c"
+IJulia = "7073ff75-c697-5162-941a-fcdaad2a7d2a"
+MLDatasets = "eb30cadb-4394-5ae3-aed4-317e484a6458"
+NLSolversBase = "d41bc354-129a-5804-8e4c-c37616107c6c"
+Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
+PyCall = "438e738f-606a-5dbb-bf0a-cddfbfd45ab0"
+Revise = "295af30f-e4ad-537b-8983-00126c2a3abe"
+SymPy = "24249f21-da20-56a4-8eb1-6a02cf4ae2e6"
