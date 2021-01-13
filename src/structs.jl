@@ -345,7 +345,7 @@ end
                          nworkers ::Int64          = Sys.CPU_THREADS ,
                          parallel ::Bool           = false           )
 
-Creates communication pipes for the external program `program`. If `parallel` is `true`, then, considering N workers available, N pipes for reading and N pipes for writing will be created. `pipename` is just a handle for the name of the pipes. If `pipename` is `pipe`, then the pipe names will be `pipe_in` and `pipe_out` for `parallel` as false and `pipe_inn` and `pipe_outn` for `parallel` as true, with `n` being one of the N workers. `nworkers` is the number of cores to be used, including the number of cores of a remote computer. `parallel` sets the the external program to run in several workers.
+Creates communication pipes for the external program `program`. If `parallel` is `true`, then, considering N workers available, N pipes for reading and N pipes for writing will be created. `pipename` is just a handle for the name of the pipes. If `pipename` is `pipe`, then the pipe names will be `pipe_in` and `pipe_out` if `parallel=false` and `pipe_inn` and `pipe_outn` if `parallel=true`, with `n` being one of the N workers. `nworkers` is the number of cores to be used, including the number of cores of a remote computer. `parallel` sets the the external program to run in several workers.
 """
 mutable struct GAExternal
     program       ::AbstractString
