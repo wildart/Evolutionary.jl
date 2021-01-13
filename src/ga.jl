@@ -8,18 +8,6 @@ export ga
 
 ####################################################################
 
-# Genetic Algorithms
-# ==================
-#         objfun : Objective fitness function
-#              N : Search space dimensionality
-# initPopulation : Search space dimension ranges as a vector, or initial population values as matrix,
-#                  or generation function which produce individual population entities.
-# populationSize : Size of the population
-#  crossoverRate : The fraction of the population at the next generation, not including elite
-#                  children, that is created by the crossover function.
-#   mutationRate : Probability of chromosome to be mutated
-#              ϵ : Boolean to decide if the N best ones will surely survive or
-#                  it's all random
 """
     ga( objfun        ::Function                                    ,
         population    ::Vector{Individual}                          ;
@@ -36,7 +24,7 @@ export ga
         isbackup      ::Bool                      = true            ,
         backuptime    ::Float64                   = 1.0             )
 
-Runs the Genetic Algorithm using the objective function `objfun`, the initial population `initpopulation` and the population size `populationSize`. `objfun` is the function to MINIMIZE. The table below shows how the optional arguments behave:
+Runs the Genetic Algorithm using the objective function `objfun` and the initial population `population`. `objfun` is the function to MINIMIZE. The table below shows how the optional arguments behave:
 
 | Optional Argument | Behaviour |
 |-------------------|-----------|
