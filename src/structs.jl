@@ -8,7 +8,7 @@
 export BinaryGene, IntegerGene, FloatGene
 export Crossover, Selection
 export selection, crossover, bin
-export GAExternal, distributed_ga
+export GAExternal, ext_init, distributed_ga
 
 ####################################################################
 
