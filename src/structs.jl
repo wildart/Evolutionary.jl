@@ -429,6 +429,45 @@ end
 ####################################################################
 
 """
+    ext_init(gaext ::GAExternal, codeline ::AbstractString)
+
+Function to help initialize the external program.
+
+When using external programs, you usually have an initial script to be run before performing the genetic algorithm. After creating the `GAExternal` structure, just send it to this function along with the line of code to initialize the optimization process.
+
+## Example
+
+In case of AMPL, if we have a script with the initial model called `init.ampl`, then we could do:
+
+```
+ext = GAExternal("ampl", "pipe")
+ext_init(ext, "include init.ampl;")
+```
+"""
+function ext_init(gaext ::GAExternal, codeline ::AbstractString)
+    function ext(gaext ::GAExternal)
+        if gaext.parallel
+            pin = gaext.pipes_in[:L]
+        else
+            pin = gaext.pipes_in
+        end
+        for p in pin
+            open(p, "w") do file
+                write(file, codeline)
+            end
+        end
+    end
+    if gaext.parallel
+        spmd(ext, gaext, pids=gaext.avail_workers) 
+    else
+        ext(gaext)
+    end
+    return nothing           
+end
+
+####################################################################
+
+"""
     distributed_ga( ;
                     localcpu ::Int64           = Sys.CPU_THREADS ,
                     cluster  ::Vector{<:Tuple} = [()]            ,
