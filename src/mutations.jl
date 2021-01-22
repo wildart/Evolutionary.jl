@@ -245,6 +245,11 @@ function inversion(recombinant::T) where {T <: AbstractVector}
     return recombinant
 end
 
+"""
+    insertion(recombinant)
+
+Returns an in-place mutated individual with an arbitrary element of the genome moved in a random position.
+"""
 function insertion(recombinant::T) where {T <: AbstractVector}
     l = length(recombinant)
     from, to = rand(1:l, 2)

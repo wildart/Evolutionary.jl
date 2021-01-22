@@ -13,6 +13,7 @@ makedocs(
             "Differential Evolution" => "de.md",
             "Evolution Strategy" => "es.md",
             "CMA-ES" => "cmaes.md",
+            "Genetic Programming" => "gp.md",
         ],
         "Operations" => [
             "Selection" => "selection.md",

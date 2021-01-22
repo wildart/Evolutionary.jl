@@ -22,6 +22,7 @@ pkg> add Evolutionary
 - (μ/μ<sub>I</sub>,λ)-CMA-ES
 - Genetic Algorithms (GA)
 - Differential Evolution (DE)
+- Genetic Programming (TreeGP)
 
 ## Operators
 

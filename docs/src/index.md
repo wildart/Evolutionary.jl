@@ -10,7 +10,7 @@ To install the package just type
 ] add Evolutionary
 ```
 
-A simple example of using the [`GA`](@ref) algorithm to find minium of the [Sphere function](https://www.sfu.ca/~ssurjano/spheref.html).
+A simple example of using the [`GA`](@ref) algorithm to find minimum of the [Sphere function](https://www.sfu.ca/~ssurjano/spheref.html).
 
 ```@repl
 using Evolutionary

@@ -457,7 +457,11 @@ end
 # Genetic Programming
 # ===================
 
-"""Perform an arbitrary subtree swap"""
+"""
+    crosstree(t1::Expr, t2::Expr)
+
+Perform an arbitrary subtree swap between the expressions `t1` and `t2`.
+"""
 function crosstree(t1::Expr, t2::Expr)
     tt1, tt2 = copy(t1), copy(t2)
     i, j = rand(1:nodes(t1)-1), rand(1:nodes(t2)-1)

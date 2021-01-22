@@ -67,7 +67,7 @@ Evolutionary.differentiation
 ## Genetic Programming
 
 ```@docs
-Evolutionary.mutatetree
+Evolutionary.mutatesubtree
 ```
 
 ## References

@@ -1,4 +1,4 @@
-const Terminal = Union{Symbol, Function}
+const Terminal = Union{Symbol, Real, Function}
 
 """
 Implementation of Koza-type (tree-based) Genetic Programming
@@ -6,10 +6,19 @@ Implementation of Koza-type (tree-based) Genetic Programming
 The constructor takes following keyword arguments:
 
 - `populationSize`: The size of the population
+- `terminals`: A dictionary of terminals with their their corresponding dimensionality
+    - This dictionary contains (`Terminal`, `Int`) pairs
+    - The terminals can be any symbols (variables), constat values, or 0-arity functions.
+- `functions`: A collection of functions with their corresponding arity.
+    - This dictionary contains (`Function`, `Int`) pairs
 - `initialization`: A strategy for population initialization (default: `:grow`)
     - Possible values: `:grow` and `:full`
-- `simplify`: Perform expression simplification  (default: `:true`)
-
+- `mindepth`: Minimal depth of the expression (default: `0`)
+- `maxdepth`: Maximal depth of the expression (default: `3`)
+- `simplify`: An expression simplification function (default: `:nothing`)
+- `optimizer`: An evolutionary optimizer used for evolving the expressions (default: [`GA`](@ref))
+    - Use `mutation` and `crossover` parameters to specify GP-related mutation operation.
+    - Use `selection` parameter to specify the offspring selection procedure
 """
 @kwdef struct TreeGP <: AbstractOptimizer
     populationSize::Integer = 50
@@ -105,17 +114,19 @@ end
 
 # Custom optimization call
 function optimize(f, method::TreeGP, options::Options = Options(;default_options(method)...))
-    method.optimizer.mutation =  mutatetree(method)
+    method.optimizer.mutation =  mutatesubtree(method)
     method.optimizer.crossover = crosstree
     optimize(f, NoConstraints(), nothing, method, options)
 end
 
 """
-    mutatetree(method::TreeGP)
+    mutatesubtree(method::TreeGP)
 
 Returns an in-place expression mutation function that performs mutation of an arbitrary expression subtree with a randomly generated.
+    - This mutation operation may produce large expression because it only limits the depth of
+      the mutated expression at some arbitrary node, and not the height of the expression tree.
 """
-function mutatetree(method::TreeGP)
+function mutatesubtree(method::TreeGP)
     function mutation(recombinant::Expr)
         i = rand(1:nodes(recombinant)-1)
         th = depth(recombinant, recombinant[i])

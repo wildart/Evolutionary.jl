@@ -57,10 +57,10 @@ OX2
 POS
 ```
 
-Tree crossovers:
+Tree (expression) crossovers:
 
 ```@docs
-crosstree
+Evolutionary.crosstree
 ```
 
 ## References
