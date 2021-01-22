@@ -11,7 +11,7 @@ The constructor takes following keyword arguments:
 - `c_sigma` is a learning rate for the cumulation for the step-size control
 - `c_m` is the learning rate for the mean update, ``c_m \\leq 1``
 - `σ0`/`sigma0` is the initial step size `σ`
-- `weights` are recombination weights, if the weights are set to ```1/\\mu`` then the *intermediate* recombination is activated.
+- `weights` are recombination weights, if the weights are set to ``1/\\mu`` then the *intermediate* recombination is activated.
 """
 struct CMAES{T} <: AbstractOptimizer
     μ::Int
