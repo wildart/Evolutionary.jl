@@ -10,6 +10,7 @@ makedocs(
         "Tutorial" => "tutorial.md",
         "Algorithms" => [
             "Genetic Algorithm" => "ga.md",
+            "Differential Evolution" => "de.md",
             "Evolution Strategy" => "es.md",
             "CMA-ES" => "cmaes.md",
         ],

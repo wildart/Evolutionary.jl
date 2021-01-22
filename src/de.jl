@@ -30,7 +30,7 @@ end
 value(s::DEState) = minimum(s.fitness)
 minimizer(s::DEState) = s.fittest
 
-"""Initialization of ES algorithm state"""
+"""Initialization of DE algorithm state"""
 function initial_state(method::DE, options, objfun, population)
     T = typeof(value(objfun))
     individual = first(population)
