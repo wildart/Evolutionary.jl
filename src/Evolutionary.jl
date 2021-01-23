@@ -62,6 +62,7 @@ module Evolutionary
     include("de.jl")
 
     # Genetic Programming
+    include("api/protected.jl")
     include("gp.jl")
 
     # deprecations

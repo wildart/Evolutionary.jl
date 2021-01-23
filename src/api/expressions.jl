@@ -72,33 +72,10 @@ function setindex!(ex::Expr, subex, idx::Int)
     end
 end
 
-"""
-Special eveluation conditions for some common functions.
-"""
-function specialfunc(f::Function, vals...)
-    if f == (log)
-        vl = first(vals)
-        iszero(vl) ? one(vl) : log(abs(vl))
-    elseif f == (/)
-        iszero(last(vals)) ? one(last(vals)) : (/)(vals...)
-    elseif f == (sin)
-        vl = first(vals)
-        isinf(vl) ? one(vl) : f(vl)
-    elseif f == (cos)
-        vl = first(vals)
-        isinf(vl) ? one(vl) : f(vl)
-    elseif f == (^)
-        vl = real(complex(first(vals))^last(vals))
-        isinf(vl) || isnan(vl) ? zero(first(vals)) : vl
-    else
-        f(vals...)
-    end
-end
-
 function evaluate(val, ex::Expr, psyms::Vector{Symbol})
     exprm = ex.args
     exvals = (isa(nex, Expr) || isa(nex, Symbol) ? evaluate(val, nex, psyms) : nex for nex in exprm[2:end])
-    specialfunc(exprm[1], exvals...)
+    exprm[1](exvals...)
 end
 
 function evaluate(val, ex::Symbol, psyms::Vector{Symbol})
@@ -149,7 +126,7 @@ function simplify!(root)
         end
         # evaluate numerical arithmetic
         if all(e->!(isa(e, Symbol) || isa(e, Expr)), root.args[2:end])
-            root = specialfunc(root.args[1], root.args[2:end]...)
+            root = root.args[1](root.args[2:end]...)
         end
     end
     return root

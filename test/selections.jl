@@ -38,7 +38,7 @@
         @test_throws AssertionError tournament(0)
         t = tournament(2)
         @test t([0,2,0],2) == [2,2]
-        @test t([0.0,0.0,1.0],2) == [3,3]
+        @test mean(t([0.0,0.0,1.0],100)) > 2.0
     end
 
     @testset "SUS" begin

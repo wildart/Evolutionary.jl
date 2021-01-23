@@ -2,6 +2,7 @@ using Evolutionary
 using Test
 using Random
 using LinearAlgebra
+using Statistics
 Random.seed!(9874984737486)
 
 for tests in [

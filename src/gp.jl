@@ -23,7 +23,7 @@ The constructor takes following keyword arguments:
 @kwdef struct TreeGP <: AbstractOptimizer
     populationSize::Integer = 50
     terminals::Dict{Terminal, Int} = Dict(:x=>1, rand=>1)
-    functions::Dict{Function, Int} = Dict( f=>2 for f in [+,-,*,/] )
+    functions::Dict{Function, Int} = Dict( f=>2 for f in [+,-,*,pdiv] )
     mindepth::Int = 0
     maxdepth::Int = 3
     initialization::Symbol = :grow

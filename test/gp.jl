@@ -23,27 +23,24 @@
 
     # recursive helper functions
     Random.seed!(9874984737482)
-    gt = rand(TreeGP(pop, terms, funcs, maxdepth=2, initialization=:grow), 2)
-    @test Evolutionary.nodes(gt) == 3
-    @test Evolutionary.height(gt) == 1
-    @test gt[0] == gt
-    @test gt[1] == :x
-    @test gt[2] == :x
-    ft = rand(TreeGP(pop, terms, funcs, maxdepth=2, initialization=:full), 2)
-    @test Evolutionary.nodes(ft) == 7
-    @test Evolutionary.height(ft) == 2
-    @test length(ft) == 7
-    @test Evolutionary.depth(ft, :y) == 2
+    gt = rand(TreeGP(pop, terms, funcs, maxdepth=2, initialization=:grow), 3)
+    @test Evolutionary.nodes(gt) < 15
+    @test Evolutionary.height(gt) <= 3
+    @test length(gt) < 15
+    ft = rand(TreeGP(pop, terms, funcs, maxdepth=2, initialization=:full), 3)
+    @test Evolutionary.nodes(ft) == 15
+    @test Evolutionary.height(ft) == 3
+    @test length(ft) == 15
+    @test Evolutionary.depth(ft, :y) == 3
     ft[2] = :z
-    @test Evolutionary.depth(ft, :z) == 2
+    @test Evolutionary.depth(ft, :z) == 3
     @test Evolutionary.depth(ft, ft) == 0
-    @test Evolutionary.depth(ft, ft[3]) == 1
-    @test Evolutionary.depth(ft, :x) == -1
-    @test Evolutionary.evaluate([1.0, 2.0], ft, [:y, :z]) == -3.104752729609502
+    @test Evolutionary.depth(ft, ft[3]) > 0
+    @test Evolutionary.depth(ft, :w) == -1
     @test Evolutionary.evaluate([1.0, 2.0], :y, [:y, :z]) == 1.0
     copyto!(ft, gt)
     @test ft == gt
-    @test Evolutionary.symbols(ft) == [:x]
+    @test Evolutionary.symbols(ft) == [:y, :x]
 
     # simplification
     @test Expr(:call, -, :x, :x) |> Evolutionary.simplify! == 0
