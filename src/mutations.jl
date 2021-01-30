@@ -336,6 +336,99 @@ function differentiation(recombinant::T, mutators::AbstractVector{T}; F::Real = 
     return recombinant
 end
 
+# Genetic Programming
+# ======================
+
+"""
+    subtree(method::TreeGP; growth::Real = 0.1)
+
+Returns an in-place expression mutation function that performs mutation of an arbitrary expression subtree with a randomly generated one [^5].
+
+Parameters:
+- `growth`: Growth restriction on the offspring in comparison to the parent.
+            The offspring cannot be more than `growth`% deeper than its parent.  (default: `0.0`)
+"""
+function subtree(method::TreeGP; growth::Real = 0.0)
+    function mutation(recombinant::Expr)
+        i = rand(1:nodes(recombinant)-1)
+        th = depth(recombinant, recombinant[i])
+        maxh = if growth > 0
+            rh = height(recombinant)
+            mh = max(method.maxdepth, rand(rh:rh*(1+growth)))
+            round(Int, mh)
+        else
+            method.maxdepth
+        end
+        recombinant[i] = rand(method, max(0, maxh-th))
+        recombinant
+    end
+    return mutation
+end
+
+"""
+    point(method::TreeGP)
+
+Returns an in-place expression mutation function that replaces an arbitrary node in the tree by the randomly selected one.
+Node replacement mutation is similar to bit string mutation in that it randomly changes a point in the individual.
+To ensure the tree remains legal, the replacement node has the same number of arguments as the node it is replacing [^6].
+"""
+function point(method::TreeGP)
+    function mutation(recombinant::Expr)
+        i = rand(0:nodes(recombinant)-1)
+        nd = recombinant[i]
+        if isa(nd, Expr)
+            aty = length(nd.args)-1
+            atyfnc = filter(kv -> kv[2] == aty, method.functions)
+            if length(atyfnc) > 0
+                nd.args[1] = atyfnc |> keys |> rand
+            end
+        else
+            recombinant[i] = randterm(method)
+        end
+        recombinant
+    end
+    return mutation
+end
+
+"""
+    hoist(method::TreeGP)
+
+Returns an in-place expression mutation function that creates a new offspring individual which is copy
+of a randomly chosen subtree of the parent. Thus, the offspring will be smaller than the parent
+and will have a different root node [^7].
+"""
+function hoist(method::TreeGP)
+    function mutation(recombinant::Expr)
+        rnodes = nodes(recombinant)
+        stsize = 0
+        ch = recombinant
+        while stsize < 2 && rnodes > 3
+            i = rand(1:rnodes-1)
+            ch = recombinant[i]
+            stsize = length(ch)
+        end
+        copyto!(recombinant, ch)
+    end
+    return mutation
+end
+
+"""
+    shrink(method::TreeGP)
+
+Returns an in-place expression mutation function that replaces a randomly chosen subtree with a randomly
+created terminal. This is a special case of subtree mutation where the replacement tree is a terminal.
+As with hoist mutation, it is motivated by the desire to reduce program size [^8].
+"""
+function shrink(method::TreeGP)
+    function mutation(recombinant::Expr)
+        i = rand(1:nodes(recombinant)-1)
+        recombinant[i] = randterm(method)
+        recombinant
+    end
+    return mutation
+end
+
+
 # Utilities
 # =====
 function swap!(v::T, from::Int, to::Int) where {T <: AbstractVector}

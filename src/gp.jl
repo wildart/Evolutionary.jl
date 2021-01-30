@@ -45,22 +45,31 @@ function summary(m::TreeGP)
 end
 
 """
+    randterm(t::TreeGP)
+
+Returns a random terminal given the specification from the `TreeGP` object `t`.
+"""
+function randterm(t::TreeGP)
+    term = rand(keys(t.terminals))
+    if isa(term, Symbol)
+        term
+    else
+        dim = t.terminals[term]
+        dim == 1 ? rand() : rand(dim)
+    end
+end
+
+"""
     rand(t::TreeGP, maxdepth=2; mindepth=maxdepth-1)::Expr
 
-Create a ranodm expression tree given the specification from the `TreeGP` object, `t`.
+Create a ranodm expression tree given the specification from the `TreeGP` object `t`.
 """
 function rand(t::TreeGP, maxdepth::Int=2; mindepth::Int=maxdepth-1)
     @assert maxdepth > mindepth "`maxdepth` must be larger then `mindepth`"
     tl = length(t.terminals)
     fl = length(t.functions)
     root = if (maxdepth == 0  || ( t.initialization == :grow && rand() < tl/(tl+fl) ) ) && mindepth <= 0
-        term = rand(keys(t.terminals))
-        if isa(term, Symbol)
-            term
-        else
-            dim = t.terminals[term]
-            dim == 1 ? rand() : rand(dim)
-        end
+        randterm(t)
     else
         rand(keys(t.functions))
     end
@@ -114,24 +123,7 @@ end
 
 # Custom optimization call
 function optimize(f, method::TreeGP, options::Options = Options(;default_options(method)...))
-    method.optimizer.mutation =  mutatesubtree(method)
+    method.optimizer.mutation =  subtree(method)
     method.optimizer.crossover = crosstree
     optimize(f, NoConstraints(), nothing, method, options)
-end
-
-"""
-    mutatesubtree(method::TreeGP)
-
-Returns an in-place expression mutation function that performs mutation of an arbitrary expression subtree with a randomly generated.
-    - This mutation operation may produce large expression because it only limits the depth of
-      the mutated expression at some arbitrary node, and not the height of the expression tree.
-"""
-function mutatesubtree(method::TreeGP)
-    function mutation(recombinant::Expr)
-        i = rand(1:nodes(recombinant)-1)
-        th = depth(recombinant, recombinant[i])
-        recombinant[i] = rand(method, max(0, method.maxdepth-th))
-        recombinant
-    end
-    return mutation
 end

@@ -28,7 +28,7 @@ module Evolutionary
            # DE recombinations
            uniformbin, exponential,
            # GP exports
-           Terminal,
+           Terminal, subtree, point, hoist, shrink,
            # Optimization methods
            ES, CMAES, GA, DE, TreeGP,
            # re-export
@@ -41,15 +41,6 @@ module Evolutionary
     include("api/constraints.jl")
     include("api/optimize.jl")
     include("api/expressions.jl")
-
-    # ES & GA recombination functions
-    include("recombinations.jl")
-
-    # ES & GA mutation functions
-    include("mutations.jl")
-
-    # GA selection functions
-    include("selections.jl")
 
     # Evolution Strategy
     include("es.jl")
@@ -64,6 +55,15 @@ module Evolutionary
     # Genetic Programming
     include("api/protected.jl")
     include("gp.jl")
+
+    # ES & GA recombination functions
+    include("recombinations.jl")
+
+    # ES & GA mutation functions
+    include("mutations.jl")
+
+    # GA selection functions
+    include("selections.jl")
 
     # deprecations
     @deprecate isotropic(recombinant, strategy) gaussian(recombinant, strategy)
