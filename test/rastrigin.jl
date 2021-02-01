@@ -25,6 +25,7 @@
 
     # Testing: (μ/μ_I,λ)-σ-Self-Adaptation-ES
     # with non-isotropic mutation operator y' := y + (σ_1 N_1(0, 1), ..., σ_N N_N(0, 1))
+    Random.seed!(9874984737486)
     m = ES(mu = 15, lambda = P)
     @test m.μ == 15
     @test m.λ == P
@@ -47,12 +48,13 @@
     test_result(result, N, 1e-1)
 
     # Testing: GA
+    Random.seed!(9874984737486)
     m = GA(epsilon = 10.0)
     @test m.ɛ == 10
 
     selections = [:roulette=>rouletteinv, :sus=>susinv, :rank=>ranklinear(1.5)]
     crossovers = [:discrete=>discrete, :intermediate0=>intermediate(0.), :intermediate0_25=>intermediate(0.5), :line=>line(0.2)]
-    mutations = [:domrng0_5=>domainrange(fill(0.5,N)), :uniform=>uniform(3.0), :gaussian=>gaussian(0.6)]
+    mutations = [:domrng0_5=>domainrange(fill(0.5,N)), :uniform=>uniform(2.0), :gaussian=>gaussian(0.3)]
 
     @testset "GA settings" for (sn,ss) in selections, (xn,xovr) in crossovers, (mn,ms) in mutations
         xn == :discrete && (mn == :uniform || mn == :gaussian) && continue # bad combination
@@ -71,9 +73,10 @@
     end
 
     # Testing: DE
+    Random.seed!(9874984737486)
     selections = [:rand=>random, :perm=>permutation, :rndoff=>randomoffset, :best=>best]
     mutations = [:exp=>exponential(0.5), :bin=>uniformbin(0.5)]
- 
+
     @testset "DE settings" for (sn,ss) in selections, (mn,ms) in mutations, n in 1:2
         result = Evolutionary.optimize( rastrigin, initState,
             DE(

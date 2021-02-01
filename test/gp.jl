@@ -40,7 +40,7 @@
     @test Evolutionary.evaluate([1.0, 2.0], :y, [:y, :z]) == 1.0
     copyto!(ft, gt)
     @test ft == gt
-    @test Evolutionary.symbols(ft) == [:y, :x]
+    @test Evolutionary.symbols(ft) |> sort == [:x, :y]
 
     # simplification
     @test Expr(:call, -, :x, :x) |> Evolutionary.simplify! == 0
@@ -74,7 +74,7 @@
 
     Random.seed!(9874984737426);
     res = Evolutionary.optimize(fitobj,
-        TreeGP(50, Terminal[:x, randn], Function[+,-,*,/],
+        TreeGP(50, Terminal[:x, randn], Function[+,-,*,Evolutionary.pdiv],
             mindepth=1,
             maxdepth=depth,
             optimizer = GA(
