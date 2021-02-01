@@ -65,7 +65,7 @@ function update_state!(objfun, constraints, state, population::AbstractVector{IT
     # Select offspring
     selected = selection(state.fitpop, populationSize)
 
-    # Perform matingstate.fitness
+    # Perform mating
     offidx = randperm(populationSize)
     offspringSize = populationSize - state.eliteSize
     for i in 1:2:offspringSize

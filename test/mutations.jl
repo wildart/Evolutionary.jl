@@ -7,6 +7,19 @@
         @test PM(lx, ux, Inf)([1.0, 2.0])[2] == 1.0
         @test MIPM(lx, ux, Inf, 1.0)(Real[1.0, 2])[1] ∈ [0.0, 2.0]
         @test MIPM(lx, ux, 10.0, Inf)(Real[1.0, 2])[2] == 1.0
+
+        mut = uniform(3.0)
+        @test all(mut(ones(3)) .!= 1)
+        @test all(map(sum ∘ mut, [ones(3) for i in 1:10]) .!= 3)
+        mut = uniform(0.0)
+        @test all(map(sum ∘ mut, [ones(3) for i in 1:10]) .== 3)
+
+        mut = gaussian(3.0)
+        @test all(mut(ones(3)) .!= 1)
+        @test all(map(sum ∘ mut, [ones(3) for i in 1:10]) .!= 3)
+        mut = gaussian(0.0)
+        @test all(map(sum ∘ mut, [ones(3) for i in 1:10]) .== 3)
+
     end
 
     @testset "DE" begin
@@ -15,8 +28,6 @@
         @test_throws AssertionError Evolutionary.differentiation(rec, mut[1:1])
         @test Evolutionary.differentiation(rec, mut) == [0.5, 1.5]
     end
-
-    using Evolutionary, Test, Random
 
     @testset "GP" begin
         Random.seed!(9874984737482)

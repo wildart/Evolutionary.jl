@@ -125,7 +125,7 @@ The mutated individual is given by
 function uniform(r::Real = 1.0)
     function mutation(recombinant::T) where {T <: AbstractVector}
         d = length(recombinant)
-        recombinant += 2r.*rand(d).-r
+        recombinant .+= 2r.*rand(d).-r
         return recombinant
     end
     return mutation
@@ -145,7 +145,7 @@ The mutated individual is given by
 function gaussian(σ::Real = 1.0)
     function mutation(recombinant::T) where {T <: AbstractVector}
         d = length(recombinant)
-        recombinant += σ.*randn(d)
+        recombinant .+= σ.*randn(d)
         return recombinant
     end
     return mutation
@@ -283,8 +283,7 @@ function scramble(recombinant::T) where {T <: AbstractVector}
     if diff > 1
         patch = recombinant[from:to]
         idx = randperm(diff)
-        # println("$(from)-$(to), P: $(patch), I: $(idx)")
-        for i in 1:(diff)
+        for i in 1:diff
             recombinant[from+i-1] = patch[idx[i]]
         end
     end
@@ -303,7 +302,6 @@ function shifting(recombinant::T) where {T <: AbstractVector}
     diff = where - to
     if diff > 0
         # move values after tail of patch to the patch head position
-        #println([from, to, where, diff])
         for i in 1:diff
             recombinant[from+i-1] = recombinant[to+i]
         end
