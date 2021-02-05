@@ -64,7 +64,7 @@ function ga( objfun        ::Function                                    ,
     if piping == nothing
         func = objfun
     else
-        func = (x) -> objfun(x, piping)
+        func(x) = objfun(x, piping)
     end
 
     # save optional arguments in a dictionary
@@ -142,7 +142,7 @@ function generations( objfun     ::Function           ,
     full_fit       = Vector{Float64   }(undef, 2*N)
 
     for i in 1:N
-         fitness[i] = objfun(population[i])
+         fitness[i] = objfun.(population[i])
         full_fit[i] = fitness[i]
         full_pop[i] = population[i]
     end
@@ -150,29 +150,25 @@ function generations( objfun     ::Function           ,
     # Elitism
     # When true, always picks N best individuals from the full population
     # (parents+offspring), which is size 2*N.
-    # When false, does everything randomly
+    # When false, only uses offspring
     function elitism_true()
         @inbounds begin
             full_pop[N+1:2*N] = offspring
             full_fit[N+1:2*N] = objfun.(offspring)
             fitidx            = sortperm(full_fit)
         end
-        for i in 1:N
-            @inbounds begin
-                population[i] = full_pop[fitidx[i]]
-                   fitness[i] = full_fit[fitidx[i]]
-                  full_fit[i] = fitness[i]
-                  full_pop[i] = population[i]
-            end
+        @inbounds begin
+            population[1:N] = full_pop[fitidx[1:N]]
+               fitness[1:N] = full_fit[fitidx[1:N]]
+              full_fit[1:N] = fitness[1:N]
+              full_pop[1:N] = population[1:N]
         end
         return nothing
     end
     function elitism_false()
-        for i in 1:N
-            @inbounds begin
-                population[i] = offspring[i]
-                   fitness[i] = objfun(population[i])
-            end
+        @inbounds begin
+            population[1:N] = offspring[1:N]
+               fitness[1:N] = objfun.(population[1:N])
         end
         return nothing
     end
