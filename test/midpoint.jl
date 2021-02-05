@@ -4,15 +4,9 @@ using Evolutionary
 nworks = 2
 distributed_ga(localcpu=nworks)
 
-@everywhere using SpecialFunctions
-@everywhere using DataAnalysis
-
-x = -5.0:0.01:5.0
-y = erf.(x)
-
 gene = IntegerGene(10, "index")
 
-npop = 100 * nworks
+npop = 10 * nworks
 pop = Vector{Individual}(undef, npop)
 
 for i in 1:npop
@@ -29,8 +23,10 @@ println("Creating objfun function...\n")
 end
 
 println("Starting ga...")
-bestFit, bestGene = ga( objfun, pop,
-                        parallel = true,
-                        nworkers = nworks)
+bestGene, bestFit = ga( objfun, pop,
+                        parallel   = true ,
+                        nworkers   = nworks ,
+                        iterations = 10 )
+
 
 nothing
