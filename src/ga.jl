@@ -89,7 +89,7 @@ function ga( objfun        ::Function                                    ,
             for w in works
                 if !remotecall_fetch(isdir, w, "backup-files")
                     remotecall_fetch(mkdir, w, "backup-files")
-                    println("folder created")
+                    println("backup folder created")
                 end
             end
         end
@@ -119,7 +119,7 @@ function ga( objfun        ::Function                                    ,
     end
 
     # result presentation
-    data_presentation( population[bestIndividual], N, iterations, bestFitness,
+    data_presentation( population[bestIndividual], N, nworkers, iterations, bestFitness,
                        isfit, elapsed_time, showprint, output )
     
     return population[bestIndividual], bestFitness
@@ -134,19 +134,14 @@ function generations( objfun     ::Function           ,
                       pars       ::Dict{Symbol,Any}   )
     
     # Variable initialization
-    generations    = 1
-    bestIndividual = 0
-    bestFitness    = 0.0
     offspring      = Vector{Individual}(undef,   N)
     full_pop       = Vector{Individual}(undef, 2*N)
     full_fit       = Vector{Float64   }(undef, 2*N)
 
-    for i in 1:N
-         fitness[i] = objfun.(population[i])
-        full_fit[i] = fitness[i]
-        full_pop[i] = population[i]
-    end
-
+    fitness = objfun.(population)
+    full_fit[1:N] = copy(fitness)
+    full_pop[1:N] = deepcopy(population)
+    
     # Elitism
     # When true, always picks N best individuals from the full population
     # (parents+offspring), which is size 2*N.
@@ -158,17 +153,19 @@ function generations( objfun     ::Function           ,
             fitidx            = sortperm(full_fit)
         end
         @inbounds begin
-            population[1:N] = full_pop[fitidx[1:N]]
-               fitness[1:N] = full_fit[fitidx[1:N]]
-              full_fit[1:N] = fitness[1:N]
-              full_pop[1:N] = population[1:N]
+            population = full_pop[fitidx[1:N]]
+               fitness = full_fit[fitidx[1:N]]
+        end
+        @inbounds begin
+              full_fit[1:N] = copy(fitness)
+              full_pop[1:N] = deepcopy(population)
         end
         return nothing
     end
     function elitism_false()
         @inbounds begin
-            population[1:N] = offspring[1:N]
-               fitness[1:N] = objfun.(population[1:N])
+            population = deepcopy(offspring)
+               fitness = objfun.(population)
         end
         return nothing
     end
@@ -230,48 +227,39 @@ function generations_parallel( objfun ::Function                                
                                fit    ::DArray{Float64,1,Vector{Float64}}       ,
                                pars   ::Dict{Symbol,Any}                        )
     # Variable initialization
-    population     = popul[:L]
-    fitness        =   fit[:L]
-    N              = length(population)
-    generations    = 1
-    bestIndividual = 0
-    bestFitness    = 0.0
-    offspring      = Vector{Individual}(undef,   N)
-    full_pop       = Vector{Individual}(undef, 2*N)
-    full_fit       = Vector{Float64   }(undef, 2*N)
+    N              = length(popul[:L])
+    offspring      = Vector{Individual}(undef,  N)
+    full_pop       = Vector{Individual}(undef, 2N)
+    full_fit       = Vector{Float64   }(undef, 2N)
 
-     fitness      = objfun.(population)
-    full_fit[1:N] = fitness
-    full_pop[1:N] = population
+     fit[:L][1:N] = objfun.(popul[:L])
+    full_fit[1:N] = copy(fit[:L])
+    full_pop[1:N] = deepcopy(popul[:L])
     
     # Elitism
     # When true, always picks N best individuals from the full population
-    # (parents+offspring), which is size 2*N.
+    # (parents+offspring), which is size 2N.
     # When false, only uses offspring
     function elitism_true()
         @inbounds begin
-            full_pop[N+1:2*N] = offspring
-            full_fit[N+1:2*N] = objfun.(offspring)
+            full_pop[N+1:2N] = offspring
+            full_fit[N+1:2N] = objfun.(offspring)
             fitidx = sortperm(full_fit)
         end
-        for i in 1:N
-            @inbounds begin
-                population[i] = full_pop[fitidx[i]]
-                   fitness[i] = full_fit[fitidx[i]]
-            end
+        @inbounds begin
+            popul[:L] = full_pop[fitidx[1:N]]
+              fit[:L] = full_fit[fitidx[1:N]]
         end
         @inbounds begin
-            full_fit[1:N] = copy(fitness)
-            full_pop[1:N] = deepcopy(population)
+            full_fit[1:N] = copy(fit[:L])
+            full_pop[1:N] = deepcopy(popul[:L])
         end
         return nothing
     end
     function elitism_false()
-        for i in 1:N
-            @inbounds begin
-                population[i] = offspring[i]
-                   fitness[i] = objfun(population[i])
-            end
+        @inbounds begin
+            popul[:L][1:N] = offspring[1:N]
+              fit[:L][1:N] = objfun.(popul[:L][1:N])
         end
         return nothing
     end
@@ -290,12 +278,12 @@ function generations_parallel( objfun ::Function                                
         dt = time() - t_ref
         if dt > pars[:backuptime]
             file = "Backup_GA_worker$(myid())"
-            backup(iter, pars[:iterations], population, file)
+            backup(iter, pars[:iterations], popul[:L], file)
             t_ref = time()
         end
 
         # Select offspring
-        selected = selection(fitness, N)
+        selected = selection(fit[:L], N)
         
         # Perform mating
         offidx = randperm(N)
@@ -304,14 +292,14 @@ function generations_parallel( objfun ::Function                                
             if rand() < pars[:crossoverRate]
                 @inbounds begin
                     offspring[i], offspring[j] =
-                        crossover( population[selected[offidx[i]]] ,
-                                   population[selected[offidx[j]]] )
+                        crossover( popul[:L][selected[offidx[i]]] ,
+                                   popul[:L][selected[offidx[j]]] )
                 end
             else
                 @inbounds begin
                     offspring[i], offspring[j] =
-                        deepcopy(population[selected[i]]),
-                        deepcopy(population[selected[j]])
+                        deepcopy(popul[:L][selected[i]]),
+                        deepcopy(popul[:L][selected[j]])
                 end
             end
         end
@@ -332,6 +320,7 @@ end
 
 function data_presentation( individual   ::Individual ,
                             popsize      ::Integer    ,
+                            nworkers     ::Integer    ,
                             generations  ::Integer    ,
                             bestFitness  ::Float64    ,
                             isfit        ::Bool       ,
@@ -388,6 +377,7 @@ function data_presentation( individual   ::Individual ,
     if showprint
         printstyled("\nRESULTS :\n", color=:bold)
         println("population size       = $popsize"           )
+        println("number of threads     = $nworkers"          )
         println("number of generations = $generations"       )
         println("best Fitness          = $bestFitness"       )
         println("Run time              = $optim_time seconds")
