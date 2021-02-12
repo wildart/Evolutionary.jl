@@ -6,23 +6,33 @@
 
 export ga
 
+mutable struct OptimResults
+    N       ::Int64
+    bestFit ::Float64
+    bestInd ::Individual
+    time    ::Float64
+    threads ::Int64
+    iter    ::Int64
+    
+end
+
 ####################################################################
 
 """
-    ga( objfun        ::Function                                    ,
-        population    ::Vector{Individual}                          ;
-        crossoverRate ::Float64                   = 0.5             ,
-        mutationRate  ::Float64                   = 0.5             ,
-        ϵ             ::Bool                      = true            ,
-        iterations    ::Integer                   = 100             ,
-        tol           ::Real                      = 0.0             ,
-        parallel      ::Bool                      = false           ,
-        piping        ::Union{Nothing,GAExternal} = nothing         ,
-        nworkers      ::Integer                   = Sys.CPU_THREADS ,
-        output        ::AbstractString            = ""              ,
-        showprint     ::Bool                      = true            ,
-        isbackup      ::Bool                      = true            ,
-        backuptime    ::Float64                   = 1.0             )
+    ga( objfun        ::Function                            ,
+        population    ::Vector{Individual}                  ;
+        crossoverRate ::Float64                   = 0.5     ,
+        mutationRate  ::Float64                   = 0.5     ,
+        ϵ             ::Bool                      = true    ,
+        iterations    ::Integer                   = 100     ,
+        tol           ::Real                      = 0.0     ,
+        parallel      ::Bool                      = false   ,
+        piping        ::Union{Nothing,GAExternal} = nothing ,
+        nworkers      ::Integer                   = 1       ,
+        output        ::AbstractString            = ""      ,
+        showprint     ::Bool                      = true    ,
+        isbackup      ::Bool                      = true    ,
+        backuptime    ::Float64                   = 1.0     )
 
 Runs the Genetic Algorithm using the objective function `objfun` and the initial population `population`. `objfun` is the function to MINIMIZE. The table below shows how the optional arguments behave:
 
@@ -35,26 +45,26 @@ Runs the Genetic Algorithm using the objective function `objfun` and the initial
 | tol | objective function tolerance |
 | parallel | sets parallelization to true or false |
 | piping | if piping is different from `nothing`, uses external program |
-| nworkers | number of cores to be used. Only works if parallel is set to true |
+| nworkers | number of threads to be used. Only works if parallel is set to true |
 | output | writes optimization output to a file |
 | showprint | set screen output to true or false |
 | isbackup | sets backup to true or false |
 | backuptime | backup interval in seconds|
 """
-function ga( objfun        ::Function                                    ,
-             population    ::Vector{Individual}                          ;
-             crossoverRate ::Float64                   = 0.5             ,
-             mutationRate  ::Float64                   = 0.5             ,
-             ϵ             ::Bool                      = true            ,
-             iterations    ::Integer                   = 100             ,
-             tol           ::Real                      = 0.0             ,
-             parallel      ::Bool                      = false           ,
-             piping        ::Union{Nothing,GAExternal} = nothing         ,
-             nworkers      ::Integer                   = Sys.CPU_THREADS ,
-             output        ::AbstractString            = ""              ,
-             showprint     ::Bool                      = true            ,
-             isbackup      ::Bool                      = true            ,
-             backuptime    ::Float64                   = 1.0             )
+function ga( objfun        ::Function                            ,
+             population    ::Vector{Individual}                  ;
+             crossoverRate ::Float64                   = 0.5     ,
+             mutationRate  ::Float64                   = 0.5     ,
+             ϵ             ::Bool                      = true    ,
+             iterations    ::Integer                   = 100     ,
+             tol           ::Real                      = 0.0     ,
+             parallel      ::Bool                      = false   ,
+             piping        ::Union{Nothing,GAExternal} = nothing ,
+             nworkers      ::Integer                   = 1       ,
+             output        ::AbstractString            = ""      ,
+             showprint     ::Bool                      = true    ,
+             isbackup      ::Bool                      = true    ,
+             backuptime    ::Float64                   = 1.0     )
 
     # Initialize population
     N = length(population)
@@ -112,17 +122,13 @@ function ga( objfun        ::Function                                    ,
     end
 
     bestFitness, bestIndividual = findmin(fitness)
-    if bestFitness <= tol
-        isfit = true
-    else
-        isfit = false
-    end
 
     # result presentation
     data_presentation( population[bestIndividual], N, nworkers, iterations, bestFitness,
-                       isfit, elapsed_time, showprint, output )
+                       elapsed_time, showprint, output )
     
-    return population[bestIndividual], bestFitness
+    return OptimResults(N, bestFitness, population[bestIndividual], elapsed_time,
+                        nworkers, iterations)
 end
 
 ####################################################################
@@ -323,7 +329,6 @@ function data_presentation( individual   ::Individual ,
                             nworkers     ::Integer    ,
                             generations  ::Integer    ,
                             bestFitness  ::Float64    ,
-                            isfit        ::Bool       ,
                             elapsed_time ::Float64    ,
                             showprint    ::Bool       ,
                             output       ::String     )
@@ -385,30 +390,23 @@ function data_presentation( individual   ::Individual ,
         printstyled("GENES OF BEST INDIVIDUAL :\n", color=:bold)
         println(table)
         println("")
-        if isfit
-            printstyled("OPTIMIZATION SUCCESSFUL\n"  , color=:bold)
-        else
-            printstyled("OPTIMIZATION UNSUCCESSFUL\n", color=:bold)
-        end
+        printstyled("OPTIMIZATION FINISHED SUCCESSFULLY\n"  , color=:bold)
     end
 
     if output != ""
         open(output, "w") do f
             write(f, "Result File of Genetic Algorithm, $(now())\n\n")
             write(f, "RESULTS :\n")
-            write(f, string("population size       = ", popsize    , "\n"))
-            write(f, string("number of generations = ", generations, "\n"))
-            write(f, string("best Fitness          = ", bestFitness, "\n"))
-            write(f, "Run time              = $optim_time seconds\n")
+            write(f, string("population size       = ", popsize    ,        "\n"))
+            write(f, string("number of threads     = ", nworkers   ,        "\n"))
+            write(f, string("number of generations = ", generations,        "\n"))
+            write(f, string("best Fitness          = ", bestFitness,        "\n"))
+            write(f, string("Run time              = ", optim_time , "seconds\n"))
             write(f, "\n")
             write(f, "GENES OF BEST INDIVIDUAL :\n")
             write(f, table)
             write(f, "\n")
-            if isfit
-                write(f, "OPTIMIZATION SUCCESSFUL\n")
-            else
-                write(f, "OPTIMIZATION UNSUCCESSFUL\n")
-            end
+            write(f, "OPTIMIZATION FINISHED SUCCESSFULLY\n")
         end
     end
 
