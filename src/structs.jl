@@ -8,7 +8,7 @@
 export BinaryGene, IntegerGene, FloatGene
 export Crossover, Selection
 export selection, crossover, bin
-export GAExternal
+export GAExternal, ext_init, distributed_ga
 
 ####################################################################
 
@@ -45,7 +45,7 @@ BinaryGene() = BinaryGene(rand(Bool), "bin")
 """
     IntegerGene(value ::BitVector, name ::AbstractString)
 
-Creates a `IntegerGene` structure. This gene represents an integer variable as `BitVector`. To convert the `BitVector` in an integer, just look at the `bin` function from this package by typing `?bin` on the command prompt. `name` is a stringt that represents the name of the variable. It's needed for result presentation purposes.
+Creates a `IntegerGene` structure. This gene represents an integer variable as `BitVector`. To convert the `BitVector` in an integer, just look at the `bin` function from this package by typing `?bin` on the command prompt. `name` is a string that represents the name of the variable. It's needed for result presentation purposes.
 """
 mutable struct IntegerGene <: AbstractGene
     value    ::BitVector
@@ -109,23 +109,30 @@ end
 """
     FloatGene(value ::Vector{Float64}, range ::Vector{Float64}, m ::Int64)
 
-Creates a `FloatGene` structure. `value` is a vector with the variables to be changed. `range` is a vector with the minimum and maximum values a variable can take. `m` is just a parameter that changes how much in a mutation the variables change, the bigger the value, the bigger the change in each mutation. If the range of a variable is 0.5, then the biggest mutation a variable can suffer in one iteration is 0.5 for instance.
+Creates a `FloatGene` structure. `value` is a vector with the variables to be changed. `range` is a vector with the minimum and maximum values a variable can take. `m` is just a parameter that changes how much in a mutation the variables change, the bigger the value, the bigger the change in each mutation. If the range of a variable is 0.5, then the biggest mutation a variable can suffer in one iteration is 0.5, for instance.
 """
 mutable struct FloatGene <: AbstractGene
     value ::Vector{Float64}
     range ::Vector{Float64}
     m     ::Int64
-    name  ::Vector{<:AbstractString}
+    name  ::Vector{AbstractString}
     
-    function FloatGene( value ::Vector{Float64}          ,
-                        range ::Vector{Float64}          ,
-                        m     ::Int64                    ,
-                        name  ::Vector{<:AbstractString} )
+    function FloatGene( value ::Vector{Float64} ,
+                        range ::Vector{Float64} ,
+                        m     ::Int64           ,
+                        name  ::Vector{String}  )
         if length(value) != length(range)
             error("vectors must have the same length")
         end
         return new(value, range, m, name)
     end
+end
+
+function FloatGene( value ::Vector{Float64} ,
+                    range ::Vector{Float64} ,
+                    name  ::Vector{String}  ;
+                    m     ::Int64 = 20      )
+    return FloatGene(value, range, m, name)
 end
 
 """
@@ -145,10 +152,10 @@ end
 
 Creates a `FloatGene` structure. Handy for creating a vector of real numbers with the same range.
 """
-function FloatGene( value ::Vector{Float64}          ,
-                    range ::Float64                  ,
-                    name  ::Vector{<:AbstractString} ;
-                    m     ::Int64 = 20               )
+function FloatGene( value ::Vector{Float64} ,
+                    range ::Float64         ,
+                    name  ::Vector{String}  ;
+                    m     ::Int64 = 20      )
     vec = Float64[range for i in value]
     return FloatGene(value, vec, m, name)
 end
@@ -158,9 +165,9 @@ end
 
 Creates a `FloatGene` structure. Handy for creating a vector of real numbers with a random range.
 """
-function FloatGene( value ::Vector{Float64}          ,
-                    name  ::Vector{<:AbstractString} ;
-                    m     ::Int64 = 20               )
+function FloatGene( value ::Vector{Float64} ,
+                    name  ::Vector{String}  ;
+                    m     ::Int64 = 20      )
     range = rand(Float64, length(value))
     return FloatGene(value, range, m, name)
 end
@@ -182,7 +189,7 @@ Creates a `FloatGene` structure. Creates a vector of length `n` with random vari
 function FloatGene(n ::Int64, name ::AbstractString)
     value = rand(Float64, n)
     range = rand(Float64, n)
-    vec_name = Vector{AbstractString}(undef, n)
+    vec_name = Vector{String}(undef, n)
     for i in 1:n
         vec_name[i] = string(name, i)
     end
@@ -333,16 +340,17 @@ end
 ####################################################################
 
 """
-    function GAExternal( program  ::AbstractString ,
-                         pipename ::AbstractString ;
-                         parallel ::Bool = false   )
+    function GAExternal( program  ::AbstractString                   ,
+                         pipename ::AbstractString                   ;
+                         nworkers ::Int64          = Sys.CPU_THREADS ,
+                         parallel ::Bool           = false           )
 
-Creates communication pipes for the external program `program`. If `parallel` is `true`, then, considering N workers available, N pipes for reading and N pipes for writing will be created. `pipename` is just a handle for the name of the pipes. If `pipename` is `pipe`, then the pipe names will be `pipe_in` and `pipe_out` for `parallel` as false and `pipe_inn` and `pipe_outn` for `parallel` as true, such as `n` being one of the N workers.
+Creates communication pipes for the external program `program`. If `parallel` is `true`, then, considering N workers available, N pipes for reading and N pipes for writing will be created. `pipename` is just a handle for the name of the pipes. If `pipename` is `pipe`, then the pipe names will be `pipe_in` and `pipe_out` if `parallel=false` and `pipe_inn` and `pipe_outn` if `parallel=true`, with `n` being one of the N workers. `nworkers` is the number of cores to be used, including the number of cores of a remote computer. `parallel` sets the the external program to run in several workers.
 """
 mutable struct GAExternal
     program       ::AbstractString
-    pipes_in      ::DArray{String,1,Vector{String}}
-    pipes_out     ::DArray{String,1,Vector{String}}
+    pipes_in      ::Union{Vector{<:AbstractString},DArray{String,1,Vector{String}}}
+    pipes_out     ::Union{Vector{<:AbstractString},DArray{String,1,Vector{String}}}
     avail_workers ::Vector{Int64}
     parallel      ::Bool
 
@@ -365,6 +373,8 @@ mutable struct GAExternal
                     remotecall_fetch(run, p, `mkfifo $f`)
                 end
             end
+            pin  = distribute(pipes["in" ]; procs=avail_workers)
+            pout = distribute(pipes["out"]; procs=avail_workers)
         else
             # create one pipe for reading and another for writing
             for i in ["in","out"]
@@ -373,16 +383,18 @@ mutable struct GAExternal
                 rm(f, force=true)
                 run(`mkfifo $f`)
             end
+            pin = pipes["in"]
+            pout = pipes["out"]
         end
 
-        pin  = distribute(pipes["in" ]; procs=avail_workers)
-        pout = distribute(pipes["out"]; procs=avail_workers)
+        #pin  = distribute(pipes["in" ]; procs=avail_workers)
+        #pout = distribute(pipes["out"]; procs=avail_workers)
 
         # activate writing pipes for a big amount of time
-        for (i,p) in enumerate(pipes["in"])
-            id  = 2*nworkers+1 + i
-            id1 = 3*nworkers+1 + i
-            @spawnat id  run(pipeline(`sleep 100000000`, p))
+        for (i,p) in enumerate(pin)
+            id  = 1*nworkers+1 + i
+            id1 = 2*nworkers+1 + i
+            @spawnat id  run(pipeline(`sleep 100000000`; stdout=p))
             @spawnat id1 run(pipeline(`$program`; stdin=p))
         end
 
@@ -393,8 +405,8 @@ mutable struct GAExternal
             f = open(pipe, "r")
             return nothing
         end
-        for (i,p) in enumerate(pipes["out"])
-            v = nworkers+1 + i
+        for (i,p) in enumerate(pout)
+            v = 3*nworkers+1 + i
             @spawnat v spawn_readpipes(p)
         end
 
@@ -406,11 +418,89 @@ mutable struct GAExternal
                     remotecall_fetch(rm, id, p)
                 end
             end
-            
             return nothing
         end
         atexit(external_atexit)
 
         return new(program, pin, pout, avail_workers, parallel)
     end
+end
+
+####################################################################
+
+"""
+    ext_init(gaext ::GAExternal, codeline ::AbstractString)
+
+Function to help initialize the external program.
+
+When using external programs, you usually have an initial script to be run before performing the genetic algorithm. After creating the `GAExternal` structure, just send it to this function along with the line of code to initialize the optimization process.
+
+## Example
+
+In case of AMPL, if we have a script with the initial model called `init.ampl`, then we could do:
+
+```
+ext = GAExternal("ampl", "pipe")
+ext_init(ext, "include init.ampl;")
+```
+"""
+function ext_init(gaext ::GAExternal, codeline ::AbstractString)
+    function ext(gaext ::GAExternal)
+        if gaext.parallel
+            pin = gaext.pipes_in[:L]
+        else
+            pin = gaext.pipes_in
+        end
+        for p in pin
+            open(p, "w") do file
+                write(file, codeline)
+            end
+        end
+    end
+    if gaext.parallel
+        spmd(ext, gaext, pids=gaext.avail_workers) 
+    else
+        ext(gaext)
+    end
+    return nothing           
+end
+
+####################################################################
+
+"""
+    distributed_ga( ;
+                    localcpu ::Int64           = Sys.CPU_THREADS ,
+                    cluster  ::Vector{<:Tuple} = [()]            ,
+                    dir      ::AbstractString  = pwd()           )
+
+Function to help set up the local computer or a cluster for parallel run of the Genetic Algorithm. `localcpu` is the number of cores to be used in your local computer. `cluster` is a vector of machine specifications. To know more about this, type `?addprocs` in the command prompt after importing the `Distributed` package. `dir` is the directory where you want julia to run in each remote computer.
+"""
+function distributed_ga( ;
+                         localcpu ::Int64           = Sys.CPU_THREADS ,
+                         cluster  ::Vector{<:Tuple} = [()]            ,
+                         dir      ::AbstractString  = pwd()           )
+
+    nworkers = localcpu
+    if cluster != [()]
+        for i in cluster
+            nworkers += i[2]
+        end
+    end
+        
+    @eval using Distributed
+    for i in 1:4
+        if localcpu != 0
+            addprocs(localcpu)
+        end
+        if cluster != [()]
+            addprocs(cluster, dir=dir)
+        end
+    end
+
+    @eval @everywhere using Distributed
+    @eval @everywhere using DistributedArrays
+    @eval @everywhere using DistributedArrays.SPMD
+    @eval @everywhere using Evolutionary
+
+    return nworkers
 end

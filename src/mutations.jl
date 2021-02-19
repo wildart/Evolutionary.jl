@@ -240,7 +240,7 @@ function mutate(gene ::FloatGene)
 end
 
 """
-    mutate(chromossome ::Vector{<:AbstractGene})
+    mutate(chromossome ::Vector{<:AbstractGene}, rate ::Float64)
 
 Mutates each entry of `chromossome` according to the mutations chosen.
 """

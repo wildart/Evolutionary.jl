@@ -22,7 +22,7 @@ abstract type AbstractGene end
 
 const Strategy = Dict{Symbol,Any}
 
-const Individual = Vector{<:AbstractGene}
+const Individual = Vector{AbstractGene}
 
 const GAVector = Union{T, BitVector} where T <: Vector
 
@@ -87,6 +87,9 @@ include("selections.jl")
 # Evolution Strategy
 include("es.jl")
 include("cmaes.jl")
+
+# Backup functions
+include("backup.jl")
 
 # Genetic Algorithms
 include("ga.jl")
