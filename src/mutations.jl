@@ -226,24 +226,16 @@ Mutates `gene` using Real Valued Mutation.
 function mutate(gene ::FloatGene)
     prob = 1.0 / gene.m
     δ = zeros(gene.m)
-    
-    function mutation_help(value ::Float64, range ::Float64)
-        for j in 1:gene.m
+    for i in 1:length(gene.value)
+       for j in 1:gene.m
             δ[j] = (rand() < prob) ? 2.0^(-j) : 0.0
         end
         if rand() > 0.5
-            value += sum(δ)*range
+            gene.value[i] += sum(δ)*gene.range[i]
         else
-            value -= sum(δ)*range
+            gene.value[i] -= sum(δ)*gene.range[i]
         end
         return value
-    end
-
-    for i in 1:length(gene.value)
-        gene.value[i] = mutation_help(gene.value[i], gene.range[i])
-        while !isbound(gene, i)
-            gene.value[i] = mutation_help(gene.value[i], gene.range[i])
-        end
     end
         
     return nothing
@@ -258,10 +250,9 @@ function mutate(chromossome ::Individual, rate ::Float64)
     for gene in chromossome
         if rand() < rate
             mutate(gene)
-        else
-            while !isbound(gene)
-                mutate(gene)
-            end
+        end
+        while !isbound(gene)
+            mutate(gene)
         end
     end
     return nothing

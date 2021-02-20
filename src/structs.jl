@@ -81,14 +81,13 @@ end
 
 Creates a `IntegerGene` structure in which the `BitVector` is of length `n` with random `Bool` values.
 """
-function IntegerGene(n ::Int64, name ::AbstractString,
-                     lbound ::Real = -Inf, ubound ::Real = Inf )
+function IntegerGene(n ::Int64, name ::AbstractString;
+                     lb ::Real = -Inf, ub ::Real = Inf )
     value  = BitVector(undef, n)
-    bounds = [lbound, ubound]
     for i in 1:n
         @inbounds value[i] = rand(Bool)
     end
-    return IntegerGene(value, bounds, name)
+    return IntegerGene(value, lb, ub, name)
 end
 
 """
@@ -205,10 +204,6 @@ function FloatGene(n ::Int64, name ::AbstractString; m ::Int64 = 20)
 end
 
 ####################################################################
-
-function isbound(gene ::FloatGene, i ::Integer)
-    return gene.value[i] >= gene.lbound[i] && gene.value[i] <= gene.ubound[i]
-end
 
 function isbound(gene ::FloatGene)
     lb = findmin( gene.value  .- gene.lbound )[1]
