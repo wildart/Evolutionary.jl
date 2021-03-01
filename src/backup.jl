@@ -20,6 +20,7 @@ function backup(f ::IOStream, gene ::IntegerGene)
     for i in gene.value
         write(f, i)
     end
+    write(f, Float64(gene.lbound), Float64(gene.ubound))
     write(f, Int8(-length(gene.name)), gene.name)
     return nothing
 end
@@ -33,16 +34,16 @@ function backup(f ::IOStream, gene ::FloatGene)
     write(f, 'F')
     write(f, gene.m)
     write(f, Int8(length(gene.value)))
-    for i in gene.value
-        write(f, i)
-    end
-    for i in gene.range
-        write(f, i)
+    for i in [:value, :range, :lbound, :ubound]
+        for j in getfield(gene, i)
+            write(f, j)
+        end
     end
     for i in gene.name
         l = Int8(-length(i))
         write(f, l, i)
     end
+    
     return nothing
 end
 
@@ -64,19 +65,18 @@ end
             chrom ::Vector{Individual} ,
             file  ::AbstractString     )
 
-Writes number of generations `ngens`, total numberof generations `tgens` and the population `chrom` into file `file`. Always writes to folder `backup-files` that is created, if inexistent, inside the `ga` function.
+Writes number of generations `ngens`, total number of generations `tgens` and the population `chrom` into file `file`. Always writes to folder `backup-files` that is created, if nonexistent, inside the `ga` function.
 """
 function backup( ngens ::Int64              ,
                  tgens ::Int64              ,
-                 chrom ::Vector{Individual} ,
+                 pop   ::Vector{Individual} ,
                  file  ::AbstractString     )
     file = "backup-files/$file"
-    chromossome = chrom
-    psize = length(chromossome   )
-    gsize = length(chromossome[1])
+    psize = length(pop   )
+    gsize = length(pop[1])
     open(file, "w") do f
         write(f, ngens, tgens, psize, gsize)
-        for i in chromossome
+        for i in pop
             for j in i
                 backup(f, j)
             end
@@ -99,28 +99,35 @@ function reverse_backup(file ::AbstractString)
     tgens    = read(f, Int64)
     popsize  = read(f, Int64)
     genesize = read(f, Int64)
+    
     population = Vector{Individual}(undef, popsize)    
     for p in 1:popsize
         population[p] = Individual(undef, genesize)
         for g in 1:genesize
             id = read(f, Char)
             if id == 'I'
-                nvals = read(f, Int8)
+                nvals   = read(f, Int8)
                 bit_vec = BitVector(undef, nvals)
                 readbytes!(f, reinterpret(UInt8, bit_vec))
+                lb      = read(f, Float64)
+                ub      = read(f, Float64)
                 strsize = -read(f, Int8)
-                name = Vector{UInt8}(undef, strsize)
+                name    = Vector{UInt8}(undef, strsize)
                 readbytes!(f, name)
                 population[p][g] =
-                    IntegerGene(bit_vec, String(name))
+                    IntegerGene(bit_vec, lb, ub, String(name))
             elseif id == 'F'
-                m     = read(f, Int64)
-                nvals = read(f, Int8 )
+                m      = read(f, Int64)
+                nvals  = read(f, Int8 )
                 names  = Vector{String }(undef, nvals)
                 values = Vector{Float64}(undef, nvals)
                 ranges = Vector{Float64}(undef, nvals)
+                lb     = Vector{Float64}(undef, nvals)
+                ub     = Vector{Float64}(undef, nvals)
                 readbytes!(f, reinterpret(UInt8, values))
                 readbytes!(f, reinterpret(UInt8, ranges))
+                readbytes!(f, reinterpret(UInt8, lb    ))
+                readbytes!(f, reinterpret(UInt8, ub    ))
                 for i in 1:nvals
                     strsize = -read(f, Int8)
                     name = Vector{UInt8}(undef, strsize)
@@ -128,7 +135,7 @@ function reverse_backup(file ::AbstractString)
                     names[i] = String(name)
                 end
                 population[p][g] =
-                    FloatGene(values, ranges, m, names)
+                    FloatGene(values, ranges, names, m, lb, ub)
             elseif id == 'B'
                 value = read(f, Bool)
                 strsize = -read(f, Int8)

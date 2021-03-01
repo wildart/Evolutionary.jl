@@ -196,11 +196,13 @@ Creates a `FloatGene` structure. Creates a vector of length `n` with random vari
 function FloatGene(n ::Int64, name ::AbstractString; m ::Int64 = 20)
     value = rand(Float64, n)
     range = rand(Float64, n)
+    lb    = rand(Float64, n)
+    ub    = rand(Float64, n)
     vec_name = Vector{String}(undef, n)
     for i in 1:n
         vec_name[i] = string(name, i)
     end
-    return FloatGene(value, range, vec_name, m=m)
+    return FloatGene(value, range, vec_name, m, lb, ub)
 end
 
 ####################################################################
