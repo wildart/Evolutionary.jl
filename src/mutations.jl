@@ -235,9 +235,7 @@ function mutate(gene ::FloatGene)
         else
             gene.value[i] -= sum(δ)*gene.range[i]
         end
-        return value
     end
-        
     return nothing
 end
 
