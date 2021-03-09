@@ -211,9 +211,11 @@ function isbound(gene ::FloatGene)
     lb = findmin( gene.value  .- gene.lbound )[1]
     ub = findmin( gene.ubound .- gene.value  )[1]
     if lb < 0.0
+        @info("lower boundary violated, retrying...")
         return false
     end
     if ub < 0.0
+        @info("upper boundary violated, retrying...")
         return false
     end
     return true
