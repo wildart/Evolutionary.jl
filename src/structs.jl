@@ -48,12 +48,10 @@ BinaryGene() = BinaryGene(rand(Bool), "bin")
 Creates a `IntegerGene` structure. This gene represents an integer variable as `BitVector`. To convert the `BitVector` in an integer, just look at the `bin` function from this package by typing `?bin` on the command prompt. `name` is a string that represents the name of the variable. It's needed for result presentation purposes.
 """
 mutable struct IntegerGene <: AbstractGene
-    value    ::BitVector
-    name     ::AbstractString
-    
-    function IntegerGene(value ::BitVector, name ::AbstractString)
-        return new(value, name)
-    end
+    value  ::BitVector
+    lbound ::Real
+    ubound ::Real
+    name   ::AbstractString
 end
 
 """
@@ -83,12 +81,13 @@ end
 
 Creates a `IntegerGene` structure in which the `BitVector` is of length `n` with random `Bool` values.
 """
-function IntegerGene(n ::Int64, name ::AbstractString)
-    value = BitVector(undef, n)
+function IntegerGene(n ::Int64, name ::AbstractString;
+                     lb ::Real = -Inf, ub ::Real = Inf )
+    value  = BitVector(undef, n)
     for i in 1:n
         @inbounds value[i] = rand(Bool)
     end
-    return IntegerGene(value, name)
+    return IntegerGene(value, lb, ub, name)
 end
 
 """
@@ -112,27 +111,52 @@ end
 Creates a `FloatGene` structure. `value` is a vector with the variables to be changed. `range` is a vector with the minimum and maximum values a variable can take. `m` is just a parameter that changes how much in a mutation the variables change, the bigger the value, the bigger the change in each mutation. If the range of a variable is 0.5, then the biggest mutation a variable can suffer in one iteration is 0.5, for instance.
 """
 mutable struct FloatGene <: AbstractGene
-    value ::Vector{Float64}
-    range ::Vector{Float64}
-    m     ::Int64
-    name  ::Vector{AbstractString}
+    value  ::Vector{Float64}
+    range  ::Vector{Float64}
+    name   ::Vector{AbstractString}
+    m      ::Int64
+    lbound ::Vector{<:Real}
+    ubound ::Vector{<:Real}
     
-    function FloatGene( value ::Vector{Float64} ,
-                        range ::Vector{Float64} ,
-                        m     ::Int64           ,
-                        name  ::Vector{String}  )
+    function FloatGene( value  ::Vector{Float64}           ,
+                        range  ::Vector{Float64}           ,
+                        name   ::Vector{String}            ,
+                        m      ::Int64                     ,
+                        lbound ::Union{Vector{<:Real},Real},
+                        ubound ::Union{Vector{<:Real},Real})
         if length(value) != length(range)
-            error("vectors must have the same length")
+            error("value and range have different lengths")
         end
-        return new(value, range, m, name)
+        if typeof(lbound) <: Real
+            lb = Float64[lbound for i in value]
+        else
+            if length(value) != length(lbound)
+                error("value and lbound have different lengths")
+            else
+                lb = lbound
+            end
+        end
+        if typeof(ubound) <: Real
+            ub = Float64[ubound for i in value]
+        else
+            if length(value) != length(ubound)
+                error("value and ubound have different lengths")
+            else
+                ub = ubound
+            end
+        end
+        return new(value, range, name, m, lb, ub)
     end
 end
 
-function FloatGene( value ::Vector{Float64} ,
-                    range ::Vector{Float64} ,
-                    name  ::Vector{String}  ;
-                    m     ::Int64 = 20      )
-    return FloatGene(value, range, m, name)
+function FloatGene( value ::Vector{Float64}                  ,
+                    range ::Vector{Float64}                  ,
+                    name  ::Vector{String}                   ;
+                    m     ::Int64                      =  20 ,
+                    lb    ::Union{Vector{<:Real},Real} = -Inf,
+                    ub    ::Union{Vector{<:Real},Real} =  Inf)
+    
+    return FloatGene(value, range, name, m, lb, ub)
 end
 
 """
@@ -140,11 +164,13 @@ end
 
 Creates a `FloatGene` structure. Handy for creating just one real number variable.
 """
-function FloatGene( value ::Float64        ,
-                    range ::Float64        ,
-                    name  ::AbstractString ;
-                    m     ::Int64 = 20     )
-    return FloatGene(Float64[value], Float64[range], m, [name])
+function FloatGene( value ::Float64                          ,
+                    range ::Float64                          ,
+                    name  ::AbstractString                   ;
+                    m     ::Int64                      =  20 ,
+                    lb    ::Union{Vector{<:Real},Real} = -Inf,
+                    ub    ::Union{Vector{<:Real},Real} =  Inf)
+    return FloatGene([value], [range], [name], m, lb, ub)
 end
 
 """
@@ -152,33 +178,14 @@ end
 
 Creates a `FloatGene` structure. Handy for creating a vector of real numbers with the same range.
 """
-function FloatGene( value ::Vector{Float64} ,
-                    range ::Float64         ,
-                    name  ::Vector{String}  ;
-                    m     ::Int64 = 20      )
-    vec = Float64[range for i in value]
-    return FloatGene(value, vec, m, name)
-end
-
-"""
-    FloatGene(value ::Vector{Float64}; m ::Int64 = 20)
-
-Creates a `FloatGene` structure. Handy for creating a vector of real numbers with a random range.
-"""
-function FloatGene( value ::Vector{Float64} ,
-                    name  ::Vector{String}  ;
-                    m     ::Int64 = 20      )
-    range = rand(Float64, length(value))
-    return FloatGene(value, range, m, name)
-end
-
-"""
-    FloatGene(value ::Float64; m ::Int64 = 20)
-
-Creates a `FloatGene` structure. Handy for creating one variable with a random range.
-"""
-function FloatGene(value ::Float64; m ::Int64 = 20)
-    return FloatGene(value, rand(); m=m)
+function FloatGene( value ::Vector{Float64}                  ,
+                    range ::Float64                          ,
+                    name  ::Vector{String}                   ;
+                    m     ::Int64                      =  20 ,
+                    lb    ::Union{Vector{<:Real},Real} = -Inf,
+                    ub    ::Union{Vector{<:Real},Real} =  Inf)
+    range_vec = Float64[range for i in value]
+    return FloatGene(value, range_vec, name, m, lb, ub)
 end
 
 """
@@ -186,15 +193,39 @@ end
 
 Creates a `FloatGene` structure. Creates a vector of length `n` with random variables and random ranges. Used particularly for testing purposes.
 """
-function FloatGene(n ::Int64, name ::AbstractString)
+function FloatGene(n ::Int64, name ::AbstractString; m ::Int64 = 20)
     value = rand(Float64, n)
     range = rand(Float64, n)
+    lb    = rand(Float64, n)
+    ub    = rand(Float64, n)
     vec_name = Vector{String}(undef, n)
     for i in 1:n
         vec_name[i] = string(name, i)
     end
-    return FloatGene(value, range, 20, vec_name)
+    return FloatGene(value, range, vec_name, m, lb, ub)
 end
+
+####################################################################
+
+function isbound(gene ::FloatGene)
+    lb = findmin( gene.value  .- gene.lbound )[1]
+    ub = findmin( gene.ubound .- gene.value  )[1]
+    if lb < 0.0
+        @info("lower boundary violated, retrying...")
+        return false
+    end
+    if ub < 0.0
+        @info("upper boundary violated, retrying...")
+        return false
+    end
+    return true
+end
+
+function isbound(gene ::IntegerGene)
+    return bin(gene) >= gene.lbound && bin(gene) <= gene.ubound
+end
+
+isbound(gene ::BinaryGene) = true
 
 ####################################################################
 

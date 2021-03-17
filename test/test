@@ -1,0 +1,14 @@
+Result File of Genetic Algorithm, 2021-02-11T19:18:56.33
+
+RESULTS :
+population size       = 20
+number of generations = 10
+best Fitness          = -497.0
+Run time              = 1.90818 seconds
+
+GENES OF BEST INDIVIDUAL :
+| parameter | value |
+|-----------|-------|
+| index     | 4     |
+
+OPTIMIZATION SUCCESSFUL

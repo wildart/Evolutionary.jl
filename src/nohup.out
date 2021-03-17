@@ -1,0 +1,213 @@
+Using desktop session i3-with-shmlog
+
+New 'TITAN:1 (tsantos)' desktop is TITAN:1
+
+Starting desktop session i3-with-shmlog
+
+
+Xvnc TigerVNC 1.11.0 - built Nov 24 2020 19:41:47
+Copyright (C) 1999-2020 TigerVNC Team and many others (see README.rst)
+See https://www.tigervnc.org for information on TigerVNC.
+Underlying X server release 12009000, The X.Org Foundation
+
+
+Tue Mar  9 14:56:31 2021
+ vncext:      VNC extension running!
+ vncext:      Listening for VNC connections on all interface(s), port 5901
+ vncext:      created VNC server for screen 0
+xinit: XFree86_VT property unexpectedly has 0 items instead of 1
+Running X session wrapper
+Loading profile from /etc/profile
+Loading profile from /home/tsantos/.profile
+Loading xinit script /etc/X11/xinit/xinitrc.d/40-libcanberra-gtk-module.sh
+Loading xinit script /etc/X11/xinit/xinitrc.d/50-systemd-user.sh
+Loading xinit script /etc/X11/xinit/xinitrc.d/80xapp-gtk3-module.sh
+X session wrapper complete, running session i3-with-shmlog
+i3status: trying to auto-detect output_format setting
+i3status: auto-detected "i3bar"
+
+(nm-applet:449345): libnotify-WARNING **: 14:56:31.556: Failed to connect to proxy
+
+(nm-applet:449345): nm-applet-WARNING **: 14:56:31.558: Failed to show notification: GDBus.Error:org.freedesktop.DBus.Error.ServiceUnknown: The name org.freedesktop.Notifications was not provided by any .service files
+
+Tue Mar  9 14:56:39 2021
+ Connections: accepted: 10.188.129.211::47108
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VeNCrypt(19)
+ SVeNCrypt:   Client requests security type TLSVnc (258)
+
+Tue Mar  9 14:56:42 2021
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ ComparingUpdateTracker: 0 pixels in / 0 pixels out
+ ComparingUpdateTracker: (1:-nan ratio)
+[../i3-4.19.1/i3bar/src/xcb.c:1042] ERROR: PropertyNotify received for unknown window 00c00002
+[../i3-4.19.1/i3bar/src/xcb.c:1042] ERROR: PropertyNotify received for unknown window 00c00010
+Failed to connect to session manager: Failed to connect to the session manager: SESSION_MANAGER environment variable not defined
+
+Tue Mar  9 14:57:27 2021
+ VNCSConnST:  closing 10.188.129.211::47108: read: Connection reset by peer
+              (104)
+ EncodeManager: Framebuffer updates: 274
+ EncodeManager:   CopyRect:
+ EncodeManager:     Copies: 1 rects, 1.86427 Mpixels
+ EncodeManager:             16 B (1:466068 ratio)
+ EncodeManager:   Tight:
+ EncodeManager:     Solid: 1.104 krects, 10.2704 Mpixels
+ EncodeManager:            17.25 KiB (1:2326.46 ratio)
+ EncodeManager:     Bitmap RLE: 115 rects, 158.695 kpixels
+ EncodeManager:                 3.69434 KiB (1:168.163 ratio)
+ EncodeManager:     Indexed RLE: 1.668 krects, 1.22236 Mpixels
+ EncodeManager:                  295.543 KiB (1:16.2224 ratio)
+ EncodeManager:   Tight (JPEG):
+ EncodeManager:     Full Colour: 902 rects, 3.95051 Mpixels
+ EncodeManager:                  3.83352 MiB (1:3.93381 ratio)
+ EncodeManager:   Total: 3.79 krects, 17.4662 Mpixels
+ EncodeManager:          4.14261 MiB (1:16.0941 ratio)
+ TLS:         TLS session wasn't terminated gracefully
+ TcpSocket:   unable to get peer name for socket
+ Connections: closed: ::0
+ ComparingUpdateTracker: 88.3256 Mpixels in / 17.3844 Mpixels out
+ ComparingUpdateTracker: (1:5.08075 ratio)
+
+Tue Mar  9 15:34:34 2021
+ Connections: accepted: 10.188.129.211::49298
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VeNCrypt(19)
+ SVeNCrypt:   Client requests security type TLSVnc (258)
+
+Tue Mar  9 15:34:38 2021
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+
+Tue Mar  9 15:37:15 2021
+ ComparingUpdateTracker: 311.247 Mpixels in / 25.4744 Mpixels out
+ ComparingUpdateTracker: (1:12.218 ratio)
+[../i3-4.19.1/i3bar/src/xcb.c:1042] ERROR: PropertyNotify received for unknown window 00c00017
+[../i3-4.19.1/i3bar/src/xcb.c:1042] ERROR: PropertyNotify received for unknown window 00c00022
+
+Tue Mar  9 15:37:25 2021
+ ComparingUpdateTracker: 17.4547 Mpixels in / 183.04 kpixels out
+ ComparingUpdateTracker: (1:95.3601 ratio)
+[../i3-4.19.1/i3bar/src/xcb.c:1042] ERROR: PropertyNotify received for unknown window 00c00029
+[../i3-4.19.1/i3bar/src/xcb.c:1042] ERROR: PropertyNotify received for unknown window 00c00034
+
+Tue Mar  9 15:55:52 2021
+ ComparingUpdateTracker: 2.04047 Gpixels in / 42.4778 Mpixels out
+ ComparingUpdateTracker: (1:48.0363 ratio)
+[../i3-4.19.1/i3bar/src/xcb.c:1042] ERROR: PropertyNotify received for unknown window 00c0003b
+[../i3-4.19.1/i3bar/src/xcb.c:1042] ERROR: PropertyNotify received for unknown window 00c00046
+
+Tue Mar  9 15:58:14 2021
+ VNCSConnST:  closing 10.188.129.211::49298: Clean disconnection
+ EncodeManager: Framebuffer updates: 6209
+ EncodeManager:   Tight:
+ EncodeManager:     Solid: 6.588 krects, 41.0567 Mpixels
+ EncodeManager:            102.938 KiB (1:1558.76 ratio)
+ EncodeManager:     Bitmap RLE: 1.035 krects, 486.724 kpixels
+ EncodeManager:                 31.042 KiB (1:61.6389 ratio)
+ EncodeManager:     Indexed RLE: 13.527 krects, 8.44021 Mpixels
+ EncodeManager:                  2.38765 MiB (1:13.5496 ratio)
+ EncodeManager:   Tight (JPEG):
+ EncodeManager:     Full Colour: 11.964 krects, 38.7551 Mpixels
+ EncodeManager:                  48.1775 MiB (1:3.07147 ratio)
+ EncodeManager:   Total: 33.114 krects, 88.7388 Mpixels
+ EncodeManager:          50.696 MiB (1:6.68475 ratio)
+ TLS:         TLS session wasn't terminated gracefully
+ Connections: closed: 10.188.129.211::49298
+ ComparingUpdateTracker: 364.299 Mpixels in / 4.21978 Mpixels out
+ ComparingUpdateTracker: (1:86.3312 ratio)
+
+Tue Mar  9 16:21:27 2021
+ Connections: accepted: 10.188.130.45::42508
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VeNCrypt(19)
+ SVeNCrypt:   Client requests security type TLSVnc (258)
+
+Tue Mar  9 16:21:30 2021
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+ ComparingUpdateTracker: 1.95072 Mpixels in / 1.95072 Mpixels out
+ ComparingUpdateTracker: (1:1 ratio)
+[../i3-4.19.1/i3bar/src/xcb.c:1042] ERROR: PropertyNotify received for unknown window 00c0004d
+[../i3-4.19.1/i3bar/src/xcb.c:1042] ERROR: PropertyNotify received for unknown window 00c00054
+
+Tue Mar  9 16:30:02 2021
+ ComparingUpdateTracker: 3.15435 Gpixels in / 128.089 Mpixels out
+ ComparingUpdateTracker: (1:24.6263 ratio)
+[../i3-4.19.1/i3bar/src/xcb.c:1042] ERROR: PropertyNotify received for unknown window 00c0005d
+[../i3-4.19.1/i3bar/src/xcb.c:1042] ERROR: PropertyNotify received for unknown window 00c00068
+
+Tue Mar  9 16:54:31 2021
+ ComparingUpdateTracker: 68.2603 Gpixels in / 6.85368 Mpixels out
+ ComparingUpdateTracker: (1:9959.66 ratio)
+[../i3-4.19.1/i3bar/src/xcb.c:1042] ERROR: PropertyNotify received for unknown window 00c0006f
+
+Tue Mar  9 17:13:14 2021
+ ComparingUpdateTracker: 7.50816 Gpixels in / 77.1551 Mpixels out
+ ComparingUpdateTracker: (1:97.3125 ratio)
+[../i3-4.19.1/i3bar/src/xcb.c:1042] ERROR: PropertyNotify received for unknown window 00c0007a
+[../i3-4.19.1/i3bar/src/xcb.c:1042] ERROR: PropertyNotify received for unknown window 00c00083
+
+Tue Mar  9 17:35:06 2021
+ VNCSConnST:  closing 10.188.130.45::42508: read: Connection timed out (110)
+ EncodeManager: Framebuffer updates: 20319
+ EncodeManager:   Tight:
+ EncodeManager:     Solid: 9.733 krects, 86.9644 Mpixels
+ EncodeManager:            152.078 KiB (1:2234.5 ratio)
+ EncodeManager:     Bitmap RLE: 2.425 krects, 899.574 kpixels
+ EncodeManager:                 73.2334 KiB (1:48.3711 ratio)
+ EncodeManager:     Indexed RLE: 33.098 krects, 24.8016 Mpixels
+ EncodeManager:                  7.59894 MiB (1:12.5003 ratio)
+ EncodeManager:   Tight (JPEG):
+ EncodeManager:     Full Colour: 28.851 krects, 114.414 Mpixels
+ EncodeManager:                  110.042 MiB (1:3.96927 ratio)
+ EncodeManager:   Total: 74.107 krects, 227.079 Mpixels
+ EncodeManager:          117.861 MiB (1:7.35689 ratio)
+ TLS:         TLS session wasn't terminated gracefully
+ TcpSocket:   unable to get peer name for socket
+ Connections: closed: ::0
+ ComparingUpdateTracker: 4.33595 Gpixels in / 9.41729 Mpixels out
+ ComparingUpdateTracker: (1:460.424 ratio)
+
+Tue Mar  9 18:56:31 2021
+ Connections: accepted: 10.188.130.110::47296
+ SConnection: Client needs protocol version 3.8
+
+Tue Mar  9 18:56:32 2021
+ SConnection: Client requests security type VeNCrypt(19)
+ SVeNCrypt:   Client requests security type TLSVnc (258)
+
+Tue Mar  9 18:56:35 2021
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
+
+Tue Mar  9 18:56:37 2021
+ ComparingUpdateTracker: 13.1578 Mpixels in / 0 pixels out
+ ComparingUpdateTracker: (1:inf ratio)
+[../i3-4.19.1/i3bar/src/xcb.c:1042] ERROR: PropertyNotify received for unknown window 00c0008a
+
+Tue Mar  9 19:18:08 2021
+ VNCSConnST:  closing 10.188.130.110::47296: Clean disconnection
+ EncodeManager: Framebuffer updates: 7566
+ EncodeManager:   Tight:
+ EncodeManager:     Solid: 4.717 krects, 30.9767 Mpixels
+ EncodeManager:            73.7031 KiB (1:1642.51 ratio)
+ EncodeManager:     Bitmap RLE: 1.488 krects, 545.124 kpixels
+ EncodeManager:                 44.8174 KiB (1:47.9017 ratio)
+ EncodeManager:     Indexed RLE: 10.532 krects, 7.64444 Mpixels
+ EncodeManager:                  2.26153 MiB (1:12.9478 ratio)
+ EncodeManager:   Tight (JPEG):
+ EncodeManager:     Full Colour: 8.629 krects, 44.2715 Mpixels
+ EncodeManager:                  40.3813 MiB (1:4.18464 ratio)
+ EncodeManager:   Total: 25.366 krects, 83.4377 Mpixels
+ EncodeManager:          42.7585 MiB (1:7.45067 ratio)
+ TLS:         TLS session wasn't terminated gracefully
+ Connections: closed: 10.188.130.110::47296
+ ComparingUpdateTracker: 5.85247 Gpixels in / 73.6139 Mpixels out
+ ComparingUpdateTracker: (1:79.5023 ratio)
+
+Tue Mar  9 19:18:37 2021
+ Connections: accepted: 10.188.130.110::47554
+ SConnection: Client needs protocol version 3.8
+ SConnection: Client requests security type VeNCrypt(19)
+ SVeNCrypt:   Client requests security type TLSVnc (258)
+
+Tue Mar  9 19:18:41 2021
+ VNCSConnST:  Server default pixel format depth 24 (32bpp) little-endian rgb888
