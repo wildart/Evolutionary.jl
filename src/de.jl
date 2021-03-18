@@ -21,6 +21,7 @@ end
 population_size(method::DE) = method.populationSize
 default_options(method::DE) = (abstol=1e-10,)
 summary(m::DE) = "DE/$(m.selection)/$(m.n)/$(m.recombination)"
+show(io::IO,m::DE) = print(io, summary(m))
 
 mutable struct DEState{T,IT} <: AbstractOptimizerState
     N::Int

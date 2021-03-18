@@ -43,6 +43,7 @@ function summary(m::TreeGP)
     par = join(terminals(m),",")
     "TreeGP[P=$(m.populationSize),Parameter[$(par)],$(keys(m.functions))]"
 end
+show(io::IO,m::TreeGP) = print(io, summary(m))
 
 """
     randterm(t::TreeGP)

@@ -29,6 +29,7 @@ end
 population_size(method::GA) = method.populationSize
 default_options(method::GA) = (iterations=1000, abstol=1e-15)
 summary(m::GA) = "GA[P=$(m.populationSize),x=$(m.crossoverRate),μ=$(m.mutationRate),ɛ=$(m.ɛ)]"
+show(io::IO,m::GA) = print(io, summary(m))
 
 mutable struct GAState{T,IT} <: AbstractOptimizerState
     N::Int

@@ -42,6 +42,7 @@ end
 population_size(method::ES) = method.μ
 default_options(method::ES) = (iterations=1000, abstol=1e-10)
 summary(m::ES) = "($(m.μ)/$(m.ρ)$(m.selection == :plus ? '+' : ',')$(m.λ))-ES"
+show(io::IO,m::ES) = print(io, summary(m))
 
 mutable struct ESState{T,IT,ST} <: AbstractOptimizerState
     N::Int

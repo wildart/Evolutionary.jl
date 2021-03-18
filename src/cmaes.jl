@@ -39,6 +39,7 @@ end
 population_size(method::CMAES) = method.μ
 default_options(method::CMAES) = (iterations=1500, abstol=1e-15)
 summary(m::CMAES) = "($(m.μ),$(m.λ))-CMA-ES"
+show(io::IO,m::CMAES) = print(io, summary(m))
 
 mutable struct CMAESState{T,TI} <: AbstractOptimizerState
     N::Int
