@@ -176,8 +176,8 @@
     @test penalty(c, [1,4,2,-2]) == 0
 
     con_c!(x) = [sum(x)]
-    cb = Evolutionary.ConstraintBounds(fill(0.0, 3), fill(1.0, 3), [1.0], [1.0])
-    c = PenaltyConstraints(1.0, cb, con_c!)
+    cb = Evolutionary.ConstraintBounds(fill(0, 3), fill(1, 3), [1], [1])
+    c = PenaltyConstraints(1, cb, con_c!)
     objfun = NonDifferentiable(sum, zeros(3))
     x, y = [0, 1, 0], [0, -1, 3]
     @test isfeasible(c, x)    # feasible
@@ -188,7 +188,7 @@
     @test value(c, y) == [sum(y)]
     @test penalty(c, x) == 0.0 # c penalty
     @test penalty(c, y) == 1+2^2+1.0 # c penalty
-    @test penalty!([1.0, 2.0], c, [x,y]) == [1, 2 + penalty(c, y)]
+    @test penalty!([1, 2], c, [x,y]) == [1, 2 + penalty(c, y)]
 
 
     ############
