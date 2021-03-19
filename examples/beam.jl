@@ -1,5 +1,5 @@
 # Welded beam design problem
-# from Kalyanmoy Deb, "An effcient constraint handling method for genetic algorithms", 2000
+# from Kalyanmoy Deb, "An efficient constraint handling method for genetic algorithms", 2000
 
 using Evolutionary, Test, Random
 
