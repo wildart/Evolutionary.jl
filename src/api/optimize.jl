@@ -7,11 +7,19 @@ function optimize(f, lower, upper, method::M,
     bounds = ConstraintBounds(lower,upper,[],[])
     optimize(f, bounds, method, options)
 end
+
+"""
+    optimize(f, indiv, algo)
+
+Perform optimization of the function `f` using aloruthm `algo` with the population composed of
+individuals similar to the original individual `indiv`.
+"""
 function optimize(f, individual, method::M,
                   options::Options = Options(;default_options(method)...)
                  ) where {M<:AbstractOptimizer}
     optimize(f, NoConstraints(), individual, method, options)
 end
+
 function optimize(f, individual::ConstraintBounds, method::M,
                   options::Options = Options(;default_options(method)...)
                  ) where {M<:AbstractOptimizer}

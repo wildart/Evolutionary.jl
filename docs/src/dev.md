@@ -58,7 +58,6 @@ Usually the derived type wraps a `ConstraintBounds` object, so the
 Following methods can be overridden for the derived types:
 
 ```@docs
-value(::AbstractConstraints, ::AbstractObjective, x)
 value(::AbstractConstraints, x)
 ```
 
@@ -68,12 +67,9 @@ Following auxillary functions are available for every derived type of `AbstractC
 isfeasible(::AbstractConstraints, x)
 ```
 
-Package provides following constrains implementations.
+Package provides following additional constrains implementations.
 
 ```@docs
 Evolutionary.NoConstraints
-BoxConstraints
-PenaltyConstraints
-WorstFitnessConstraints
 MixedTypePenaltyConstraints
 ```

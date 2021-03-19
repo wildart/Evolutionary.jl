@@ -1,3 +1,5 @@
+BUILDDIR=build
+
 .PHONY: docs clean
 
 all: docs

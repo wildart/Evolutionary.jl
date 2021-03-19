@@ -7,6 +7,7 @@ using Evolutionary
 ```
 
 ## Optimization
+
 To show how the **Evolutionary** package can be used, we minimize the
 [Rosenbrock function](http://en.wikipedia.org/wiki/Rosenbrock_function),
 a classical test problem for numerical optimization. We'll assume that you've already
@@ -16,7 +17,7 @@ First, we load **Evolutionary** and define the Rosenbrock function:
 
 ```julia
 using Evolutionary
-f(x) = (1.0 - x[1])^2 + 100.0 * (x[2] - x[1]^2)^2
+f(x) = (1.0 - x[1])^2 + 100.0 * (x[2] - x[1]^2)^2 # Rosenbrock
 ```
 
 Once we've defined this function, we can find the minimizer (the input that minimizes the objective) and the minimum (the value of the objective at the minimizer) using any of our favorite optimization algorithms. With a function defined,
@@ -25,6 +26,10 @@ we just specify a form of an individual `x` of the population for an evolutionar
 ```julia
 x0 = [0.0, 0.0];
 Evolutionary.optimize(f, x0, CMAES())
+```
+
+```@docs
+Evolutionary.optimize
 ```
 
 ## Configurable options
@@ -51,8 +56,8 @@ We currently recommend the statically dispatched interface by using the `Evoluti
 
 ```julia
 res = Evolutionary.optimize(x->-sum(x),
-                            BitVector(zeros(3)),
-                            GA(),
+                            BitVector(zeros(30)),
+                            GA(selection=uniformranking(5),mutation=flip,crossover=singlepoint),
                             Evolutionary.Options(iterations=10))
 ```
 
