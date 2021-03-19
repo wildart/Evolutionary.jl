@@ -21,6 +21,7 @@ store_trace::Bool = false
 show_trace::Bool  = false
 show_every::Integer = 1
 callback::TCallback = nothing
+time_limit::Float64 = NaN
 ```
 """
 @kwdef struct Options{TCallback <: Union{Nothing, Function}}
@@ -32,6 +33,7 @@ callback::TCallback = nothing
     show_trace::Bool  = false
     show_every::Integer = 1
     callback::TCallback = nothing
+    time_limit::Float64 = NaN
 end
 function show(io::IO, o::Options)
     for k in fieldnames(typeof(o))

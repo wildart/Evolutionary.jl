@@ -57,7 +57,11 @@ f_calls(r::OptimizationResults) = r.f_calls
 
 Returns an absolute tollerance value of the optimization `result`.
 """
-tol(r::OptimizationResults) = error("tol is not implemented for $(summary(r)).")
+tol(r::OptimizationResults) = error("`tol` is not implemented for $(summary(r)).")
+
+time_limit(r::OptimizationResults) = r.time_limit
+time_run(  r::OptimizationResults) = r.time_run
+
 
 """
 Evolutionary optimization result type
@@ -72,6 +76,8 @@ mutable struct EvolutionaryOptimizationResults{O<:AbstractOptimizer, T, Tx, Tf} 
     abstol::T
     trace::OptimizationTrace
     f_calls::Int
+    time_limit::Float64
+    time_run::Float64
 end
 
 """
@@ -87,6 +93,9 @@ function show(io::IO, r::EvolutionaryOptimizationResults)
     failure_string = "failure"
     if iteration_limit_reached(r)
         failure_string *= " (reached maximum number of iterations)"
+    end
+    if time_run(r) > time_limit(r)
+        failure_string *= " (exceeded time limit of $(time_limit(r)))"
     end
     print(io, "\n")
     print(io, " * Status: ", converged(r) ? "success" : failure_string, "\n\n")
@@ -107,5 +116,12 @@ function show(io::IO, r::EvolutionaryOptimizationResults)
     print(io, "\n")
     print(io, " * Found with\n")
     print(io, "    Algorithm: $(summary(r))\n")
+    print(io, "\n")
+    print(io, " * Work counters\n")
+    tr = round(time_run(r); digits=4)
+    tl = isnan(time_limit(r)) ? Inf : round(time_limit(r); digits=4)
+    print(io, "    Seconds run:   $tr (vs limit $tl)\n")
+    print(io, "    Iterations:    $(iterations(r))\n")
+    print(io, "    f(x) calls:    $(f_calls(r))\n")
     return
 end

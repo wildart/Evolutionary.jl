@@ -94,7 +94,7 @@
     res = Evolutionary.EvolutionaryOptimizationResults(
         mthd, individual, value(objfun),
         opts.iterations, opts.show_trace, opts.store_trace,
-        opts.abstol, tr, f_calls(objfun)
+        opts.abstol, tr, f_calls(objfun), 1.0, 1.0
     );
     @test summary(res) == summary(mthd)
     @test Evolutionary.minimizer(res) == individual
@@ -104,6 +104,8 @@
     @test Evolutionary.tol(res) == opts.abstol
     @test Evolutionary.converged(res) == opts.store_trace
     @test f_calls(res) == f_calls(objfun)
+    @test Evolutionary.time_run(res) == 1.0
+    @test Evolutionary.time_limit(res) == 1.0
     @test length(Evolutionary.trace(res)) >= 1
     show(IOBuffer(), res)
 

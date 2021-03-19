@@ -62,6 +62,7 @@ function optimize(objfun::D, constraints::C, population::AbstractArray,
     options.show_trace && print_header(method)
     trace!(tr, iteration, objfun, state, population, method, options, time()-t0)
 
+    _time = time()
     while !converged && !stopped && iteration < options.iterations
         iteration += 1
 
@@ -86,10 +87,14 @@ function optimize(objfun::D, constraints::C, population::AbstractArray,
             stopped_by_callback = trace!(tr, iteration, objfun, state, population, method, options, time()-t0)
         end
 
-        if stopped_by_callback
+        _time = time()
+        stopped_by_time_limit = _time-t0 > options.time_limit
+
+        if stopped_by_callback || stopped_by_time_limit
             stopped = true
         end
     end
+
     after_while!(objfun, state, method, options)
 
     return EvolutionaryOptimizationResults(
@@ -101,6 +106,8 @@ function optimize(objfun::D, constraints::C, population::AbstractArray,
         converged,
         options.abstol,
         tr,
-        f_calls(objfun)
+        f_calls(objfun),
+        options.time_limit,
+        _time-t0,
     )
 end
