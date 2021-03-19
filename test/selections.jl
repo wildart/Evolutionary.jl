@@ -36,9 +36,12 @@
     @testset "Tournament" begin
         Random.seed!(2);
         @test_throws AssertionError tournament(0)
-        t = tournament(2)
+        t = tournament(3, false)
         @test t([0,2,0],2) == [2,2]
-        @test mean(t([0.0,0.0,1.0],100)) > 2.0
+        t = tournament(3)
+        @test all(i->i∈[1,3], t([0,2,0],2))
+        t = tournament(2)
+        @test mean(t([0.0,0.0,1.0],100)) < 2.0
     end
 
     @testset "SUS" begin

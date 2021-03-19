@@ -69,7 +69,7 @@ end
 """
     rouletteinv(fitness)
 
-Fitness proportionate selection (FPS) or roulette wheel for inverse `fitness` values. Best used in minimization context.
+Fitness proportionate selection (FPS) or roulette wheel for inverse `fitness` values. Best used in minimization to 0.
 """
 rouletteinv(fitness::Vector{<:Real}, N::Int) = roulette(1.0 ./ fitness, N)
 
@@ -104,7 +104,7 @@ end
 """
     susinv(fitness)
 
-Inverse fitness SUS. Best used in minimization context.
+Inverse fitness SUS. Best used in minimization to 0.
 """
 susinv(fitness::Vector{<:Real}, N::Int) = sus(1.0 ./ fitness, N)
 
@@ -121,31 +121,29 @@ function truncation(fitness::Vector{<:Real}, N::Int)
 end
 
 """Tournament selection"""
-function tournament(groupSize :: Int)
+function tournament(groupSize :: Int, minimize::Bool=true)
     @assert groupSize > 0 "Group size must be positive"
     function tournamentN(fitness::Vector{<:Real}, N::Int)
         selection = fill(0,N)
 
         nFitness = length(fitness)
-
+        tour = randperm(nFitness)
+        j = 1
         for i in 1:N
-            contender = unique(rand(1:nFitness, groupSize))
-            while length(contender) < groupSize
-                contender = unique(vcat(contender, rand(1:nFitness, groupSize - length(contender))))
+            idxs = tour[j:j+groupSize-1]
+            winner = if minimize
+                findmin(fitness[idxs])[2]
+            else
+                findmax(fitness[idxs])[2]
             end
-
-            winner = first(contender)
-            winnerFitness = fitness[winner]
-            for idx = 2:groupSize
-                c = contender[idx]
-                if winnerFitness < fitness[c]
-                    winner = c
-                    winnerFitness = fitness[c]
-                end
+            selection[i] = idxs[winner]
+            j+=groupSize
+            if (j+groupSize) >= nFitness && i < N
+                tour = randperm(nFitness)
+                j = 1
             end
-
-            selection[i] = winner
         end
+
         return selection
     end
     return tournamentN

@@ -2,7 +2,8 @@ module Evolutionary
     using Random, LinearAlgebra, Statistics
     using Base: @kwdef
     using UnPack: @unpack
-    using NLSolversBase: AbstractObjective, ConstraintBounds, AbstractConstraints, nconstraints_x, nconstraints
+    using NLSolversBase: NLSolversBase, AbstractObjective, ConstraintBounds,
+                         AbstractConstraints, nconstraints_x, nconstraints
 
     import NLSolversBase: NonDifferentiable, f_calls, value, value!
     import Base: show, copy, minimum, summary, identity, getproperty, rand, getindex, length, copyto!, setindex!
