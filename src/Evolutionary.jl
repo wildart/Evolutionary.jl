@@ -66,11 +66,4 @@ module Evolutionary
     # GA selection functions
     include("selections.jl")
 
-    # deprecations
-    @deprecate isotropic(recombinant, strategy) gaussian(recombinant, strategy)
-    @deprecate anisotropic(recombinant, strategy) gaussian(recombinant, strategy)
-    @deprecate isotropicSigma(strategy) gaussian(strategy)
-    @deprecate anisotropicSigma(strategy) gaussian(strategy)
-    @deprecate averageSigma(strategy) average(strategy)
-    @deprecate strategy(kwargs...) IsotropicStrategy(N) false
 end

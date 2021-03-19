@@ -78,7 +78,7 @@
             mindepth=1,
             maxdepth=depth,
             optimizer = GA(
-                selection = uniformranking(5),
+                selection = tournament(5),
                 ɛ = 0.1,
                 mutationRate = 0.8,
                 crossoverRate = 0.2,
