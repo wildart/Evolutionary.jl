@@ -8,6 +8,7 @@ makedocs(
     pages = [
         "Home" => "index.md",
         "Tutorial" => "tutorial.md",
+        "Constraints" => "constraints.md",
         "Algorithms" => [
             "Genetic Algorithm" => "ga.md",
             "Differential Evolution" => "de.md",
@@ -24,4 +25,4 @@ makedocs(
     ]
 )
 
-deploydocs(repo = "github.com/wildart/Evolutionary.jl.git")
+# deploydocs(repo = "github.com/wildart/Evolutionary.jl.git")

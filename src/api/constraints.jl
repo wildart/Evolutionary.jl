@@ -1,9 +1,9 @@
 # Public interface for AbstractConstraints
 
 """
-    constraints(c::AbstractConstraints, f::AbstractObjective, x)
+    value(c::AbstractConstraints, x)
 
-Return a values of constraints for a variable `x` given the set of constraints object `c`.
+Return a values of constraints for a variable `x` given the set of constraints in the object `c`.
 """
 value(c::AbstractConstraints, x) = nothing
 
@@ -22,27 +22,25 @@ Set a penalty to the `fitness` given the set of `constraints` and `population`.
 penalty!(fitness, c::AbstractConstraints, population) = fitness
 
 """
-    clip!(c::AbstractConstraints, x)
+    apply!(c::AbstractConstraints, x)
 
-Clip a variable `x` values to satisfy the bound constraints `c`.
+Appliy constrains `c` to a variable `x`, and return the variable.
 """
 apply!(c::AbstractConstraints, x) = x
 
-# Auxillary functions
+# Auxiliary functions
 
 """
-    isfeasible(constraints, x) -> Bool
-    isfeasible(bounds, x) -> Bool
+    isfeasible(bounds::ConstraintBounds, x) -> Bool
 
-Return `true` if point `x` is feasible, given the `constraints` which
-specify bounds `lx`, `ux`, `lc`, and `uc`. `x` is feasible if
+Return `true` if point `x` is feasible, given the `bounds` object with bounds `lx`, `ux`, `lc`, and `uc`. `x` is feasible if
 
     lx[i] <= x[i] <= ux[i]
     lc[i] <= c(x)[i] <= uc[i]
 
 for all possible `i`.
 """
-function isfeasible(bounds::ConstraintBounds, x, c::Union{Vector,Nothing}=nothing)
+function isfeasible(bounds::ConstraintBounds, x::AbstractVector, c::Union{AbstractVector,Nothing}=nothing)
     isf = true
     for (i,j) in enumerate(bounds.eqx)
         isf &= x[j] == bounds.valx[i]
@@ -60,6 +58,12 @@ function isfeasible(bounds::ConstraintBounds, x, c::Union{Vector,Nothing}=nothin
     end
     isf
 end
+
+"""
+    isfeasible(c::AbstractConstraints, x) -> Bool
+
+Return `true` if point `x` is feasible, given the constraints object `c`.
+"""
 isfeasible(c::AbstractConstraints, x) = isfeasible(c.bounds, x, value(c, x))
 
 # Implementations
@@ -70,7 +74,16 @@ isfeasible(c::NoConstraints, x)  = true
 getproperty(c::NoConstraints, s::Symbol) =
     s == :bounds ? ConstraintBounds(Float64[], Float64[], Float64[], Float64[]) : nothing
 
-"""Box constraints"""
+"""
+This type encodes box constraints for the optimization function parameters.
+
+The constructor takes following arguments:
+
+- `lower` is the vector of value lower bounds
+- `upper` is the vector of value upper bounds
+
+*Note: Sizes of the lower and upper bound vectors must be equal.*
+"""
 struct BoxConstraints{T} <: AbstractConstraints
     bounds::ConstraintBounds{T}
 end
@@ -79,16 +92,32 @@ BoxConstraints(lower::AbstractVector{T}, upper::AbstractVector{T}) where {T} =
 BoxConstraints(lower::T, upper::T, size) where {T} =
     BoxConstraints(fill(lower, size), fill(upper, size))
 apply!(c::BoxConstraints, x) = clip!(c.bounds, x)
+function show(io::IO,c::BoxConstraints)
+    print(io, "Box Constraints:")
+    indent = "    "
+    cb = c.bounds
+    NLSolversBase.showeq(io, indent, cb.eqx, cb.valx, 'x', :bracket)
+    NLSolversBase.showineq(io, indent, cb.ineqx, cb.σx, cb.bx, 'x', :bracket)
+end
 
 """
-This type encodes constraints as a following additional penalty for an objective function:
+This type encodes constraints as the following additional penalty for an objective function:
 
 ``p(x) = \\sum^n_{i=1} r_i max(0, g_i(x))^2``
 
-where ``g_i(x)`` is an inequality constraint. The equality constraints ``h_i(x) = 0`` are transformed
-to inequality constraints as follows:
+where ``r_i`` is a penalty value for ``i``th constraint, and ``g_i(x)`` is an inequality constraint.
+The equality constraints ``h_i(x) = 0`` are transformed to inequality constraints as follows:
 
 ``h(x) - \\epsilon  \\leq 0``
+
+The constructor takes following arguments:
+
+- `penalties`: a vector of penalty values per constraint (optional)
+- `lx`: a vector of value lower bounds
+- `ux`: a vector of value upper bounds
+- `lc`: a vector of constrain function lower bounds
+- `uc`: a vector of constrain function upper bounds
+- `c`: a constraint function which returns a constrain values
 """
 struct PenaltyConstraints{T,F} <: AbstractConstraints
     coef::Vector{T}
@@ -118,18 +147,34 @@ function penalty!(fitness::AbstractVector{T}, c::PenaltyConstraints{T,F}, popula
     end
     return fitness
 end
+function show(io::IO,c::PenaltyConstraints)
+    println(io, "Penalty Constraints:")
+    println(io, "  Penalties: $(c.coef)")
+    print(io, c.bounds)
+end
 
 """
-This type encodes constraints as a following additional penalty for an objective function:
+This type encodes constraints as the following additional penalty for an objective function:
 
 ``p(x) = f_{worst} + \\sum^n_{i=1} |g_i(x)|``
 
 if ``x`` is not feasible, otherwise no penalty is applied.
+
+The constructor takes following arguments:
+
+- `lx`: a vector of value lower bounds
+- `ux`: a vector of value upper bounds
+- `lc`: a vector of constrain function lower bounds
+- `uc`: a vector of constrain function upper bounds
+- `c`: a constraint function which returns a constrain values
 """
 struct WorstFitnessConstraints{T,F} <: AbstractConstraints
     bounds::ConstraintBounds{T}
     constraints::F   # constraints(x) returns the value of the constraint-functions at x
 end
+WorstFitnessConstraints(lx::AbstractVector{T}, ux::AbstractVector{T}, lc::AbstractVector{T},
+                        uc::AbstractVector{T}, cf=(x)->nothing) where {T} =
+    WorstFitnessConstraints(ConstraintBounds(lx, ux, lc, uc), cf)
 value(c::WorstFitnessConstraints, x) = c.constraints(x)
 apply!(c::WorstFitnessConstraints, x) = clip!(c.bounds, x)
 function penalty!(fitness::AbstractVector{T}, c::WorstFitnessConstraints{T,F}, population) where {T,F}
@@ -148,6 +193,10 @@ function penalty!(fitness::AbstractVector{T}, c::WorstFitnessConstraints{T,F}, p
         end
     end
     return fitness
+end
+function show(io::IO,c::WorstFitnessConstraints)
+    print(io, "Worst Fitness ")
+    print(io, c.bounds)
 end
 
 """
@@ -184,7 +233,7 @@ function clip!(bounds::ConstraintBounds{T}, x) where {T}
 end
 
 function penalty(bounds::ConstraintBounds{T}, coeff::AbstractVector{T},
-                 x, c::Union{AbstractVector,Nothing}=nothing) where {T}
+                 x, c::Union{AbstractVector{T},Nothing}=nothing) where {T}
     penalty = 0
     xc = nconstraints_x(bounds)
     for (i,j) in enumerate(bounds.eqx)
