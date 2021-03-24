@@ -64,7 +64,7 @@ function ga( objfun        ::Function                            ,
              output        ::AbstractString            = ""      ,
              showprint     ::Bool                      = true    ,
              isbackup      ::Bool                      = true    ,
-             backuptime    ::Float64                   = 1.0     )
+             backuptime    ::Union{Integer,Float64}    = 1       )
 
     # Initialize population
     N = length(population)
@@ -105,8 +105,8 @@ function ga( objfun        ::Function                            ,
         end
 
         # create distributed arrays for parallel processing
-        population = distribute(population;procs=works)
-        fitness    = distribute(fitness;procs=works)
+        population = distribute(population, procs=works)
+        fitness    = distribute(   fitness, procs=works)
        
         # run generations
         elapsed_time = @elapsed begin
@@ -277,15 +277,28 @@ function generations_parallel( objfun ::Function                                
     end
 
     t_ref = time()
+    iter_backup = 0
+    iter_cter = 0
     # Generate and evaluate offspring
     for iter in 1:pars[:iterations]
-
+        iter_cter = iter
         # backup process
-        dt = time() - t_ref
-        if dt > pars[:backuptime]
-            file = "Backup_GA_worker$(myid())"
-            backup(iter, pars[:iterations], popul[:L], file)
-            t_ref = time()
+        if typeof(pars[:backuptime]) <: Real
+            dt = time() - t_ref
+            if dt > pars[:backuptime]
+                file = "Backup_GA_worker$(myid())"
+                backup(iter, pars[:iterations], popul[:L], file)
+                t_ref = time()
+            end
+        elseif typeof(pars[:backuptime]) <: Integer
+            dt = iter - iter_backup
+            if dt > pars[:backuptime]
+                file = "Backup_GA_worker$(myid())"
+                backup(iter, pars[:iterations], popul[:L], file)
+                iter_backup = iter
+            end
+        else
+            @error("Type of backuptime not recognized, backup unsuccessful")
         end
 
         # Select offspring
@@ -318,7 +331,8 @@ function generations_parallel( objfun ::Function                                
         elitism()
         
     end
-
+    
+    @info("Worker $(myid()-1) finished after $(iter_cter) iterations")
     return nothing
 end
     

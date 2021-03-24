@@ -238,7 +238,8 @@ function mutate(gene ::FloatGene)
         end
     end
     if !isbound(gene)
-        gene.value = val
+        @info((gene.value,val))
+        gene.value = copy(val)
     end
     return nothing
 end
