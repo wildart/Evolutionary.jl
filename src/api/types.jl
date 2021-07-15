@@ -113,16 +113,16 @@ end
 
 
 # Constructor for nondifferentiable function over bit vector
-NonDifferentiable(f, x::AbstractVector{T}) where {T<:Real}=
-    NonDifferentiable{T,typeof(x)}(f, zero(T), zeros(T, length(x)), [0,])
+NonDifferentiable(f, x::AbstractVector{TX}, F::TF = zero(f(x))) where {TF<:Real, TX<:Real}=
+    NonDifferentiable{TF,typeof(x)}(f, F, zeros(TX, length(x)), [0,])
 NonDifferentiable(f, x::AbstractVector{Bool}) = NonDifferentiable(f, BitVector(x))
 function NonDifferentiable(f, x::BitArray)
-    xs = BitArray(zero(eltype(x)) for i = 1:length(x))
-    NonDifferentiable{Real,typeof(xs)}(f, f(xs), xs, [0,])
+    xs = similar(x)
+    fzval = f(xs)
+    NonDifferentiable{typeof(fzval),typeof(xs)}(f, fzval, xs, [0,])
 end
-function NonDifferentiable(f, x::Expr)
-    val = f(x)
-    NonDifferentiable{typeof(val),typeof(x)}(f, zero(val), :(), [0,])
+function NonDifferentiable(f, x::Expr, F::TF = zero(f(x))) where {TF<:Real}
+    NonDifferentiable{TF,typeof(x)}(f, F, :(), [0,])
 end
 
 const Individual = Union{AbstractArray, Function, Nothing}

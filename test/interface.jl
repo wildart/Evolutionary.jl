@@ -204,4 +204,24 @@
     @test !Evolutionary.converged(res)
     @test length(Evolutionary.trace(res)) > 1
 
+    # Issue 83
+    f1(x) = sum(x)
+    objfun = NonDifferentiable(f1, [1; 2; 3; 4])
+    @test typeof(objfun.F) == Int
+    @test eltype(objfun.x_f) == Int
+    f2(x) = sum(x)/length(x)
+    objfun = NonDifferentiable(f2, [1; 2; 3; 4])
+    @test typeof(objfun.F) == Float64
+    @test eltype(objfun.x_f) == Int
+    objfun = NonDifferentiable(f1, BitVector(ones(10)))
+    @test typeof(objfun.F) == Int
+    @test eltype(objfun.x_f) == Bool
+    objfun = NonDifferentiable(f2, BitVector(ones(10)))
+    @test typeof(objfun.F) == Float64
+    @test eltype(objfun.x_f) == Bool
+    f3(expr::Expr) = Evolutionary.Expression(expr).([1; 2; 3; 4]) |> sum
+    objfun = NonDifferentiable(f3, Expr(:call, *, :x, :x))
+    @test typeof(objfun.F) == Int
+    @test typeof(objfun.x_f) == Expr
+
 end
