@@ -4,7 +4,7 @@ A Julia package for [evolutionary](http://www.scholarpedia.org/article/Evolution
 
 | **Documentation**                                                               | **Build Status**                                                                                |
 |:-------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------:|
-| [![][docs-stable-img]][docs-stable-url] [![][docs-dev-img]][docs-dev-url] | [![][travis-img]][travis-url] [![][coverage-img]][coverage-url] |
+| [![][docs-stable-img]][docs-stable-url] [![][docs-dev-img]][docs-dev-url] | [![][CI-img]][CI-url] [![][coverage-img]][coverage-url] |
 
 
 ## Installation
@@ -82,6 +82,9 @@ pkg> add Evolutionary
 
 [travis-img]: https://travis-ci.org/wildart/Evolutionary.jl.svg?branch=master
 [travis-url]: https://travis-ci.org/wildart/Evolutionary.jl
+
+[CI-img]: https://github.com/wildart/Evolutionary.jl/actions/workflows/CI.yml/badge.svg
+[CI-url]: https://github.com/wildart/Evolutionary.jl/actions/workflows/CI.yml
 
 [coverage-img]: https://img.shields.io/coveralls/wildart/Evolutionary.jl.svg
 [coverage-url]: https://coveralls.io/r/wildart/Evolutionary.jl?branch=master
