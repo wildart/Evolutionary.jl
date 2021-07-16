@@ -102,7 +102,7 @@ tol(::EvolutionaryOptimizationResults)
 
 ## Trace
 
-When `store_trace` and/or `show_trace` options are set to `true` in the `Option`(@ref) object, an optimization trace is either captured and/or shown on the screen. By default, only the current state minimum value is displayed in the trace. In order to extend trace record, you need to override [`trace!`](@ref) function providing specialize function behavior on one of specific parameters.
+When `store_trace` and/or `show_trace` options are set to `true` in the [`Options`](@ref) object, an optimization trace is either captured and/or shown on the screen. By default, only the current state minimum value is displayed in the trace. In order to extend trace record, you need to override [`trace!`](@ref) function providing specialize function behavior on one of specific parameters.
 
 ```@docs
 trace!(::Dict{String,Any}, Any, Any, Any, Any, Any)
@@ -119,4 +119,4 @@ end
 ## Parallelization
 
 If the objective function is heavily CPU-bound, it's possible to utilize multiple processors/threads to speed up computations.
-To enable multi-threading evaluation of the objective function, set `parallelization` option to `:thread` in the `Option`(@ref) object.
+To enable multi-threading evaluation of the objective function, set `parallelization` option to `:thread` in the [`Options`](@ref) object.

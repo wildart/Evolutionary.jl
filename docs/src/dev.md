@@ -87,7 +87,7 @@ function value!(::Val{:serial}, fitness, objfun, population::AbstractVector{IT})
 end
 ```
 
-The first symbolic value type parameter, `:serial`, corresponds to the default value of the `parallelization` of the `Option`(@ref) object.
+The first symbolic value type parameter, `:serial`, corresponds to the default value of the `parallelization` of the [`Options`](@ref) object.
 Any additional overrides with different value type parameters will be triggered by specifying
-a corresponded value type symbol in the `Option.parallelization` option.
+a corresponded value type symbol in the `Options.parallelization` field.
 A multi-threaded override of the above evaluation is provided.
