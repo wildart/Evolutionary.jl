@@ -2,9 +2,9 @@
 
 A Julia package for [evolutionary](http://www.scholarpedia.org/article/Evolution_strategies) & [genetic](http://en.wikipedia.org/wiki/Genetic_algorithm) algorithms.
 
-| **Documentation**                                                               | **Build Status**                                                                                |
-|:-------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------:|
-| [![][docs-stable-img]][docs-stable-url] [![][docs-dev-img]][docs-dev-url] | [![][CI-img]][CI-url] [![][coverage-img]][coverage-url] |
+| **Documentation** | **Build Status** | **References** |
+|:-------------------------------------------------------------------------------:|:-----------------------------------------------------------------------------------------------:|:-:|
+| [![][docs-stable-img]][docs-stable-url] [![][docs-dev-img]][docs-dev-url] | [![][CI-img]][CI-url] [![][coverage-img]][coverage-url] | [![][doi-img]][doi-url]
 
 
 ## Installation
@@ -90,3 +90,6 @@ pkg> add Evolutionary
 [coverage-url]: https://coveralls.io/r/wildart/Evolutionary.jl?branch=master
 
 [issues-url]: https://github.com/wildart/Evolutionary.jl/issues
+
+[doi-img]: https://zenodo.org/badge/DOI/10.5281/zenodo.5110647.svg
+[doi-url]: https://doi.org/10.5281/zenodo.5110647
