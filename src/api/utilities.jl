@@ -144,3 +144,20 @@ function initial_population(method::M, bounds::ConstraintBounds) where {M<:Abstr
     end
     initial_population(method,  [collect(i) for i in  eachcol(indv)])
 end
+
+
+##############
+# EVALUATION #
+##############
+
+function value!(::Val{:serial}, fitness, objfun, population::AbstractVector{IT}) where {IT}
+    for i in 1:length(population)
+        fitness[i] = value(objfun, population[i])
+    end
+end
+
+function value!(::Val{:thread}, fitness, objfun, population::AbstractVector{IT}) where {IT}
+    Threads.@threads for i in 1:length(population)
+        fitness[i] = value(objfun, population[i])
+    end
+end

@@ -22,6 +22,7 @@ show_trace::Bool  = false
 show_every::Integer = 1
 callback::TCallback = nothing
 time_limit::Float64 = NaN
+parallelization::Symbol = :serial
 ```
 """
 @kwdef struct Options{TCallback <: Union{Nothing, Function}}
@@ -34,6 +35,7 @@ time_limit::Float64 = NaN
     show_every::Integer = 1
     callback::TCallback = nothing
     time_limit::Float64 = NaN
+    parallelization::Symbol = :serial
 end
 function show(io::IO, o::Options)
     for k in fieldnames(typeof(o))

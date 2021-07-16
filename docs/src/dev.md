@@ -61,7 +61,7 @@ Following methods can be overridden for the derived types:
 value(::AbstractConstraints, x)
 ```
 
-Following auxillary functions are available for every derived type of `AbstractConstraints`.
+Following auxiliary functions are available for every derived type of `AbstractConstraints`.
 
 ```@docs
 isfeasible(::AbstractConstraints, x)
@@ -73,3 +73,21 @@ Package provides following additional constrains implementations.
 Evolutionary.NoConstraints
 MixedTypePenaltyConstraints
 ```
+
+### Parallelization
+
+For additional modes of parallelization of the objective function evaluation, add overrides of the `value!` function.
+By default, the fitness of the population is calculated by the following function:
+
+```julia
+function value!(::Val{:serial}, fitness, objfun, population::AbstractVector{IT}) where {IT}
+    for i in 1:length(population)
+        fitness[i] = value(objfun, population[i])
+    end
+end
+```
+
+The first symbolic value type parameter, `:serial`, corresponds to the default value of the `parallelization` of the `Option`(@ref) object.
+Any additional overrides with different value type parameters will be triggered by specifying
+a corresponded value type symbol in the `Option.parallelization` option.
+A multi-threaded override of the above evaluation is provided.

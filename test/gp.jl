@@ -85,6 +85,6 @@
             ),
         )
     )
-    @test minimum(res) < 1
+    @test minimum(res) < 1.1
 
 end

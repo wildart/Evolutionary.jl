@@ -8,7 +8,7 @@
                         f_calls, NonDifferentiable, BoxConstraints, PenaltyConstraints
     import Evolutionary: value, population_size, default_options, initial_state, update_state!
 
-    # objectvive function
+    # objective function
     dimension = 5
     individual = ones(dimension)
     minval = 1.0
@@ -29,7 +29,7 @@
     Evolutionary.population_size(method::TestOptimizer) = 5
     Evolutionary.default_options(method::TestOptimizer) = Dict(:iterations=>10, :abstol=>1e-10)
     Evolutionary.initial_state(method, options, d, population) = TestOptimizerState(population[end], value(d, population[end]))
-    function Evolutionary.update_state!(d, constraints, state::TestOptimizerState, population::AbstractVector, method, itr)
+    function Evolutionary.update_state!(d, constraints, state::TestOptimizerState, population::AbstractVector, method, opts, itr)
         i = rand(1:population_size(method))
         state.individual = population[i]
         state.fitness = value!(d, state.individual)
@@ -59,7 +59,7 @@
     @test tr[1].iteration == 1
     @test tr[1].value == val
     @test tr[1].metadata["time"] <= time()
-    @test !update_state!(objfun, cnstr, st, ppl, mthd, 10)
+    @test !update_state!(objfun, cnstr, st, ppl, mthd, opts, 10)
     @test !Evolutionary.trace!(tr, 2, objfun, st, ppl, mthd, opts)
     @test tr[2].iteration == 2
     @test tr[2].value >= 1

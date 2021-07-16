@@ -58,8 +58,9 @@ function initial_state(method::GA, options, objfun, population)
     return GAState(N, eliteSize, minfit, fitness, copy(population[fitidx]))
 end
 
-function update_state!(objfun, constraints, state, population::AbstractVector{IT}, method::GA, itr) where {IT}
+function update_state!(objfun, constraints, state, population::AbstractVector{IT}, method::GA, options, itr) where {IT}
     @unpack populationSize,crossoverRate,mutationRate,ɛ,selection,crossover,mutation = method
+    evaltype = options.parallelization
 
     offspring = similar(population)
 
@@ -94,10 +95,10 @@ function update_state!(objfun, constraints, state, population::AbstractVector{IT
 
     # Create new generation & evaluate it
     for i in 1:populationSize
-        o = apply!(constraints, offspring[i])
-        population[i] = o
-        state.fitpop[i] = value(objfun, o)
+        population[i] = apply!(constraints, offspring[i])
     end
+    # calculate fitness of the population
+    value!(Val(evaltype), state.fitpop, objfun, population)
     # apply penalty to fitness
     penalty!(state.fitpop, constraints, population)
 

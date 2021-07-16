@@ -115,3 +115,8 @@ function trace!(record::Dict{String,Any}, objfun, state, population, method::CMA
     record["σ"] = state.σ
 end
 ```
+
+## Parallelization
+
+If the objective function is heavily CPU-bound, it's possible to utilize multiple processors/threads to speed up computations.
+To enable multi-threading evaluation of the objective function, set `parallelization` option to `:thread` in the `Option`(@ref) object.

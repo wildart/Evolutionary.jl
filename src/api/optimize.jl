@@ -67,7 +67,7 @@ function optimize(objfun::D, constraints::C, population::AbstractArray,
         iteration += 1
 
         # perform state update
-        update_state!(objfun, constraints, state, population, method, iteration) && break
+        update_state!(objfun, constraints, state, population, method, options, iteration) && break
 
         # evaluate convergence
         converged = assess_convergence(objfun, state, method, options)

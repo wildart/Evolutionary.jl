@@ -71,8 +71,9 @@ function initial_state(method::ES, options, objfun, population)
     return ESState(N, fitness, strategies, copy(individual))
 end
 
-function update_state!(objfun, constraints, state, population::AbstractVector{IT}, method::ES, itr) where {IT}
+function update_state!(objfun, constraints, state, population::AbstractVector{IT}, method::ES, options, itr) where {IT}
     @unpack initStrategy,recombination,srecombination,mutation,smutation,μ,ρ,λ,selection = method
+    evaltype = options.parallelization
 
     @assert ρ <= μ "Number of parents involved in the procreation of an offspring should be no more then total number of parents"
     if selection == :comma
@@ -103,10 +104,9 @@ function update_state!(objfun, constraints, state, population::AbstractVector{IT
 
         # Apply constraints
         offspring[i] = apply!(constraints, off)
-
-        # Evaluate fitness
-        fitoff[i] = value(objfun, offspring[i])
     end
+    # calculate fitness of the population
+    value!(Val(evaltype), fitoff, objfun, offspring)
     # apply penalty to fitness
     penalty!(fitoff, constraints, offspring)
 
