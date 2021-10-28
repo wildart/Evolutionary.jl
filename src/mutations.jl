@@ -93,7 +93,7 @@ end
 
 Returns an in-place mutated binary `recombinant` with a bit flips at random positions.
 """
-function flip(recombinant::T) where {T <: BitVector}
+function flip(recombinant::T) where {T <: AbstractVector{Bool}}
     s = length(recombinant)
     pos = rand(1:s)
     recombinant[pos] = !recombinant[pos]
@@ -105,7 +105,7 @@ end
 
 Returns an in-place mutated binary `recombinant` with its bits inverted.
 """
-bitinversion(recombinant::T) where {T <: BitVector} = map!(!, recombinant, recombinant)
+bitinversion(recombinant::T) where {T <: AbstractVector{Bool}} = map!(!, recombinant, recombinant)
 
 
 # Real-valued mutations
