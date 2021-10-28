@@ -1,4 +1,6 @@
 @testset "Knapsack" begin
+    Random.seed!(42)
+
     mass    = [1, 5, 3, 7, 2, 10, 5]
     utility = [1, 3, 5, 2, 5,  8, 3]
 
