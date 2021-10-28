@@ -9,17 +9,17 @@ results = Evolutionary.optimize(f, x0, ga)</code></pre><pre class="documenter-ex
  * Status: success
 
  * Candidate solution
-    Minimizer:  [1.124503376831838, 2.8678350910152894]
-    Minimum:    0.03320345030918546
-    Iterations: 23
+    Minimizer:  [1.018903338838778, 2.9909767510912815]
+    Minimum:    0.0008292199482266237
+    Iterations: 18
 
  * Found with
     Algorithm: GA[P=100,x=0.8,μ=0.1,ɛ=0]
 
  * Work counters
-    Seconds run:   0.3649 (vs limit Inf)
-    Iterations:    23
-    f(x) calls:    2405
+    Seconds run:   0.4524 (vs limit Inf)
+    Iterations:    18
+    f(x) calls:    1907
 </pre><h2 id="Box-Constrained-Optimization"><a class="docs-heading-anchor" href="#Box-Constrained-Optimization">Box Constrained Optimization</a><a id="Box-Constrained-Optimization-1"></a><a class="docs-heading-anchor-permalink" href="#Box-Constrained-Optimization" title="Permalink"></a></h2><p>We want to optimize the <a href="https://www.sfu.ca/~ssurjano/booth.html">Booth function</a> in the box <span>$0.5 \leq x_i \leq 2.0$</span>, starting from the point <span>$x_0=(1,1)$</span>.</p><p>Reusing our Booth example from above, boxed minimization is performed by providing vectors of lower and upper bounds as follows:</p><pre><code class="language-julia">lower = [0.5, 0.5]
 upper = [2.0, 2.0]
 x0 = [1., 1.]
@@ -27,34 +27,34 @@ results = Evolutionary.optimize(f, lower, upper, x0, ga)</code></pre><pre class=
  * Status: success
 
  * Candidate solution
-    Minimizer:  [1.8433886402233932, 2.0]
-    Minimum:    1.8094128705021755
-    Iterations: 17
-
- * Found with
-    Algorithm: GA[P=100,x=0.8,μ=0.1,ɛ=0]
-
- * Work counters
-    Seconds run:   0.0008 (vs limit Inf)
-    Iterations:    17
-    f(x) calls:    1805
-</pre><p>The box constraints can be also defined using <a href="#Evolutionary.BoxConstraints"><code>BoxConstraints</code></a> object.</p><article class="docstring"><header><a class="docstring-binding" id="Evolutionary.BoxConstraints" href="#Evolutionary.BoxConstraints"><code>Evolutionary.BoxConstraints</code></a> — <span class="docstring-category">Type</span></header><section><div><p>This type encodes box constraints for the optimization function parameters.</p><p>The constructor takes following arguments:</p><ul><li><code>lower</code> is the vector of value lower bounds</li><li><code>upper</code> is the vector of value upper bounds</li></ul><p><em>Note: Sizes of the lower and upper bound vectors must be equal.</em></p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/wildart/Evolutionary.jl/blob/9a9c8fbb32a60c1a5ae25095be8cfe4aaa7369a6/src/api/constraints.jl#L77-L86">source</a></section></article><pre><code class="language-julia">cnst = BoxConstraints([0.5, 0.5], [2.0, 2.0])</code></pre><pre class="documenter-example-output">Box Constraints:
-    x[1]≥0.5, x[1]≤2.0, x[2]≥0.5, x[2]≤2.0</pre><p>This object can be passed as a parameter to the optimization call, <a href="../tutorial/#Evolutionary.optimize"><code>Evolutionary.optimize</code></a>:</p><pre><code class="language-julia">results = Evolutionary.optimize(f, cnst, x0, ga) # or Evolutionary.optimize(f, cnst, ga)</code></pre><pre class="documenter-example-output">
- * Status: success
-
- * Candidate solution
-    Minimizer:  [1.8002879398699365, 2.0]
-    Minimum:    1.8000004145468433
-    Iterations: 23
+    Minimizer:  [1.7916458022189807, 2.0]
+    Minimum:    1.800348963102822
+    Iterations: 16
 
  * Found with
     Algorithm: GA[P=100,x=0.8,μ=0.1,ɛ=0]
 
  * Work counters
     Seconds run:   0.0009 (vs limit Inf)
-    Iterations:    23
-    f(x) calls:    2405
-</pre><h2 id="Penalty-Constrained-Optimization"><a class="docs-heading-anchor" href="#Penalty-Constrained-Optimization">Penalty Constrained Optimization</a><a id="Penalty-Constrained-Optimization-1"></a><a class="docs-heading-anchor-permalink" href="#Penalty-Constrained-Optimization" title="Permalink"></a></h2><p>For the penalty constrained optimization, any value and linear/nonlinear constraints are transformed into the penalty to the minimized fitness function. In order to provide linear/nonlinear constraints to an optimization problem, you can use the following penalty constraint algorithm:</p><article class="docstring"><header><a class="docstring-binding" id="Evolutionary.PenaltyConstraints" href="#Evolutionary.PenaltyConstraints"><code>Evolutionary.PenaltyConstraints</code></a> — <span class="docstring-category">Type</span></header><section><div><p>This type encodes constraints as the following additional penalty for an objective function:</p><p><span>$p(x) = \sum^n_{i=1} r_i max(0, g_i(x))^2$</span></p><p>where <span>$r_i$</span> is a penalty value for <span>$i$</span>th constraint, and <span>$g_i(x)$</span> is an inequality constraint. The equality constraints <span>$h_i(x) = 0$</span> are transformed to inequality constraints as follows:</p><p><span>$h(x) - \epsilon  \leq 0$</span></p><p>The constructor takes following arguments:</p><ul><li><code>penalties</code>: a vector of penalty values per constraint (optional)</li><li><code>lx</code>: a vector of value lower bounds</li><li><code>ux</code>: a vector of value upper bounds</li><li><code>lc</code>: a vector of constrain function lower bounds</li><li><code>uc</code>: a vector of constrain function upper bounds</li><li><code>c</code>: a constraint function which returns a constrain values</li></ul></div><a class="docs-sourcelink" target="_blank" href="https://github.com/wildart/Evolutionary.jl/blob/9a9c8fbb32a60c1a5ae25095be8cfe4aaa7369a6/src/api/constraints.jl#L103-L121">source</a></section></article><p>We want to minimize the following function <span>$f(x,y) = 3x+9y$</span> that is subject to constraints <span>$\sqrt(xy) \geq 100$</span> and <span>$x,y \geq 0$</span>. The minimum of this function is near <span>$(173.41, 57.8)$</span>. We begin  by defining constraints as follows:</p><pre><code class="language-julia"># x, y ≥ 0
+    Iterations:    16
+    f(x) calls:    1703
+</pre><p>The box constraints can be also defined using <a href="#Evolutionary.BoxConstraints"><code>BoxConstraints</code></a> object.</p><article class="docstring"><header><a class="docstring-binding" id="Evolutionary.BoxConstraints" href="#Evolutionary.BoxConstraints"><code>Evolutionary.BoxConstraints</code></a> — <span class="docstring-category">Type</span></header><section><div><p>This type encodes box constraints for the optimization function parameters.</p><p>The constructor takes following arguments:</p><ul><li><code>lower</code> is the vector of value lower bounds</li><li><code>upper</code> is the vector of value upper bounds</li></ul><p><em>Note: Sizes of the lower and upper bound vectors must be equal.</em></p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/wildart/Evolutionary.jl/blob/0fd028058eb9a8c4ea0350cb2b2db6788ab8f00b/src/api/constraints.jl#L77-L86">source</a></section></article><pre><code class="language-julia">cnst = BoxConstraints([0.5, 0.5], [2.0, 2.0])</code></pre><pre class="documenter-example-output">Box Constraints:
+    x[1]≥0.5, x[1]≤2.0, x[2]≥0.5, x[2]≤2.0</pre><p>This object can be passed as a parameter to the optimization call, <a href="../tutorial/#Evolutionary.optimize"><code>Evolutionary.optimize</code></a>:</p><pre><code class="language-julia">results = Evolutionary.optimize(f, cnst, x0, ga) # or Evolutionary.optimize(f, cnst, ga)</code></pre><pre class="documenter-example-output">
+ * Status: success
+
+ * Candidate solution
+    Minimizer:  [1.8046842185547056, 2.0]
+    Minimum:    1.8001097095173413
+    Iterations: 21
+
+ * Found with
+    Algorithm: GA[P=100,x=0.8,μ=0.1,ɛ=0]
+
+ * Work counters
+    Seconds run:   0.0009 (vs limit Inf)
+    Iterations:    21
+    f(x) calls:    2204
+</pre><h2 id="Penalty-Constrained-Optimization"><a class="docs-heading-anchor" href="#Penalty-Constrained-Optimization">Penalty Constrained Optimization</a><a id="Penalty-Constrained-Optimization-1"></a><a class="docs-heading-anchor-permalink" href="#Penalty-Constrained-Optimization" title="Permalink"></a></h2><p>For the penalty constrained optimization, any value and linear/nonlinear constraints are transformed into the penalty to the minimized fitness function. In order to provide linear/nonlinear constraints to an optimization problem, you can use the following penalty constraint algorithm:</p><article class="docstring"><header><a class="docstring-binding" id="Evolutionary.PenaltyConstraints" href="#Evolutionary.PenaltyConstraints"><code>Evolutionary.PenaltyConstraints</code></a> — <span class="docstring-category">Type</span></header><section><div><p>This type encodes constraints as the following additional penalty for an objective function:</p><p><span>$p(x) = \sum^n_{i=1} r_i max(0, g_i(x))^2$</span></p><p>where <span>$r_i$</span> is a penalty value for <span>$i$</span>th constraint, and <span>$g_i(x)$</span> is an inequality constraint. The equality constraints <span>$h_i(x) = 0$</span> are transformed to inequality constraints as follows:</p><p><span>$h(x) - \epsilon  \leq 0$</span></p><p>The constructor takes following arguments:</p><ul><li><code>penalties</code>: a vector of penalty values per constraint (optional)</li><li><code>lx</code>: a vector of value lower bounds</li><li><code>ux</code>: a vector of value upper bounds</li><li><code>lc</code>: a vector of constrain function lower bounds</li><li><code>uc</code>: a vector of constrain function upper bounds</li><li><code>c</code>: a constraint function which returns a constrain values</li></ul></div><a class="docs-sourcelink" target="_blank" href="https://github.com/wildart/Evolutionary.jl/blob/0fd028058eb9a8c4ea0350cb2b2db6788ab8f00b/src/api/constraints.jl#L103-L121">source</a></section></article><p>We want to minimize the following function <span>$f(x,y) = 3x+9y$</span> that is subject to constraints <span>$\sqrt(xy) \geq 100$</span> and <span>$x,y \geq 0$</span>. The minimum of this function is near <span>$(173.41, 57.8)$</span>. We begin  by defining constraints as follows:</p><pre><code class="language-julia"># x, y ≥ 0
 lx = [0.0, 0.0] # lower bound for values
 ux = [Inf, Inf] # upper bound for values
 # √xy ≥ 100
@@ -75,18 +75,18 @@ results = Evolutionary.optimize(f, con, x0, ga)</code></pre><pre class="document
  * Status: failure (reached maximum number of iterations)
 
  * Candidate solution
-    Minimizer:  [173.115242512224, 57.70493842983475]
-    Minimum:    1038.6901734051849
+    Minimizer:  [173.1199223931228, 57.7033200260396]
+    Minimum:    1038.6896474137247
     Iterations: 1000
 
  * Found with
     Algorithm: GA[P=100,x=0.8,μ=0.1,ɛ=0]
 
  * Work counters
-    Seconds run:   0.5874 (vs limit Inf)
+    Seconds run:   0.7203 (vs limit Inf)
     Iterations:    1000
-    f(x) calls:    100139
-</pre><p>We can use worst fitness constraint algorithm which doesn&#39;t require to specify the constraint penalty value</p><article class="docstring"><header><a class="docstring-binding" id="Evolutionary.WorstFitnessConstraints" href="#Evolutionary.WorstFitnessConstraints"><code>Evolutionary.WorstFitnessConstraints</code></a> — <span class="docstring-category">Type</span></header><section><div><p>This type encodes constraints as the following additional penalty for an objective function:</p><p><span>$p(x) = f_{worst} + \sum^n_{i=1} |g_i(x)|$</span></p><p>if <span>$x$</span> is not feasible, otherwise no penalty is applied.</p><p>The constructor takes following arguments:</p><ul><li><code>lx</code>: a vector of value lower bounds</li><li><code>ux</code>: a vector of value upper bounds</li><li><code>lc</code>: a vector of constrain function lower bounds</li><li><code>uc</code>: a vector of constrain function upper bounds</li><li><code>c</code>: a constraint function which returns a constrain values</li></ul></div><a class="docs-sourcelink" target="_blank" href="https://github.com/wildart/Evolutionary.jl/blob/9a9c8fbb32a60c1a5ae25095be8cfe4aaa7369a6/src/api/constraints.jl#L156-L170">source</a></section></article><pre><code class="language-julia">con = WorstFitnessConstraints(lx, ux, lc, uc, c)</code></pre><pre class="documenter-example-output">Worst Fitness ConstraintBounds:
+    f(x) calls:    100122
+</pre><p>We can use worst fitness constraint algorithm which doesn&#39;t require to specify the constraint penalty value</p><article class="docstring"><header><a class="docstring-binding" id="Evolutionary.WorstFitnessConstraints" href="#Evolutionary.WorstFitnessConstraints"><code>Evolutionary.WorstFitnessConstraints</code></a> — <span class="docstring-category">Type</span></header><section><div><p>This type encodes constraints as the following additional penalty for an objective function:</p><p><span>$p(x) = f_{worst} + \sum^n_{i=1} |g_i(x)|$</span></p><p>if <span>$x$</span> is not feasible, otherwise no penalty is applied.</p><p>The constructor takes following arguments:</p><ul><li><code>lx</code>: a vector of value lower bounds</li><li><code>ux</code>: a vector of value upper bounds</li><li><code>lc</code>: a vector of constrain function lower bounds</li><li><code>uc</code>: a vector of constrain function upper bounds</li><li><code>c</code>: a constraint function which returns a constrain values</li></ul></div><a class="docs-sourcelink" target="_blank" href="https://github.com/wildart/Evolutionary.jl/blob/0fd028058eb9a8c4ea0350cb2b2db6788ab8f00b/src/api/constraints.jl#L156-L170">source</a></section></article><pre><code class="language-julia">con = WorstFitnessConstraints(lx, ux, lc, uc, c)</code></pre><pre class="documenter-example-output">Worst Fitness ConstraintBounds:
   Variables:
     x[1]≥0.0, x[2]≥0.0
   Linear/nonlinear constraints:
@@ -94,15 +94,15 @@ results = Evolutionary.optimize(f, con, x0, ga)</code></pre><pre class="document
  * Status: success
 
  * Candidate solution
-    Minimizer:  [170.44573431067647, 58.67394583488431]
-    Minimum:    1039.4027154459882
-    Iterations: 47
+    Minimizer:  [178.16126676163466, 56.12898993890228]
+    Minimum:    1039.6447097350244
+    Iterations: 43
 
  * Found with
     Algorithm: GA[P=100,x=0.8,μ=0.1,ɛ=0]
 
  * Work counters
-    Seconds run:   0.0138 (vs limit Inf)
-    Iterations:    47
-    f(x) calls:    4821
-</pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tutorial/">« Tutorial</a><a class="docs-footer-nextpage" href="../ga/">Genetic Algorithm »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Thursday 28 October 2021 17:29">Thursday 28 October 2021</span>. Using Julia version 1.6.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+    Seconds run:   0.0061 (vs limit Inf)
+    Iterations:    43
+    f(x) calls:    4425
+</pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tutorial/">« Tutorial</a><a class="docs-footer-nextpage" href="../ga/">Genetic Algorithm »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Thursday 28 October 2021 17:55">Thursday 28 October 2021</span>. Using Julia version 1.6.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
