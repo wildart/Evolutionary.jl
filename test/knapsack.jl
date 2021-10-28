@@ -12,7 +12,7 @@
         x -> -fitnessFun(x),
         initpop,
         GA(
-            selection = roulette,
+            selection = tournament(3),
             mutation = inversion,
             crossover = singlepoint,
             mutationRate = 0.9,
