@@ -11,19 +11,17 @@ population_size(method::AbstractOptimizer) = error("`population_size` is not imp
 
 # Options
 """
-Configurable options with defaults:
-```
-abstol::Float64 = 1e-32
-reltol::Float64 = 1e-32
-successive_f_tol::Integer = 10
-iterations::Integer = 1000
-store_trace::Bool = false
-show_trace::Bool  = false
-show_every::Integer = 1
-callback::TCallback = nothing
-time_limit::Float64 = NaN
-parallelization::Symbol = :serial
-```
+There are following options available:
+- `abstol::Float64`: the absolute tolerance used in the convergence test (*default: 1e-32*)
+- `reltol::Float64`: the relative tolerance used in the convergence test (*default: 1e-32*)
+- `successive_f_tol::Integer`: the additional number of the iterations of the optimization algorithm after the convergence test is satisfied (*default: 10*)
+- `iterations::Integer`: the total number of the iterations of the optimization algorithm (*default: 1000*)
+- `show_trace::Bool`: enable the trace information display during the optimization (*default: false*).
+- `store_trace::Bool`: enable the trace information capturing during the optimization (*default: false*). The trace can be accessed by using [`trace`](@ref) function after optimization is finished.
+- `show_every::Integer`: show every `n`s successive trace message (*default: 1*)
+- `time_limit::Float64`: the time limit for the optimization run in seconds. If the value set to `NaN` then the limit is not set. (*default: NaN*)
+- `callback`: the callback function that is called after each eteration of the optimization algorithm. The function accepts as parameter a trace dictionary, and **must** return a boolean value which if `true` terminates the optimization. (*default: nothing*)
+- `parallelization::Symbol`: allows parallelization of the population fitness evaluation if set to `:thread` using multiple threads (*default: `:serial`*)
 """
 @kwdef struct Options{TCallback <: Union{Nothing, Function}}
     abstol::Float64 = 1e-32
