@@ -15,7 +15,7 @@ module Evolutionary
            # ES mutations
            gaussian, cauchy,
            # GA mutations
-           flip, bitinversion, domainrange, inversion, insertion, swap2, scramble, shifting, PM, MIPM,
+           flip, bitinversion, domainrange, inversion, insertion, swap2, scramble, shifting, PM, MIPM, SBX,
            # ES recombinations
            average, marriage,
            # GA recombinations

@@ -244,7 +244,7 @@ Heuristic crossover (HX) recombination operation[^3] generates offspring `u` and
 
 where ``r`` is chosen uniform randomly in the interval ``[0;1)``.
 """
-function HX(v1::T, v2::T) where {T <: Vector}
+function HX(v1::T, v2::T) where {T <: AbstractVector}
     c1 = v1 .+ rand()*(v1 .- v2)
     c2 = v2 .+ rand()*(v2 .- v1)
     return c1, c2
@@ -256,7 +256,7 @@ end
 Returns a Laplace crossover (LX) recombination operation[^4], see [Recombination Interface](@ref).
 """
 function LX(μ::Real = 0.0, b::Real = 0.2) # location μ, scale b > 0
-    function lxxvr(v1::T, v2::T) where {T <: Vector}
+    function lxxvr(v1::T, v2::T) where {T <: AbstractVector}
         u = rand()
         β = u > 0.5 ? μ + b * log(u) : μ - b * log(u)
         S = β * abs.(v1 - v2)
@@ -273,7 +273,7 @@ end
 Returns a mixed integer Laplace crossover (MI-LX) recombination operation[^5], see [Recombination Interface](@ref).
 """
 function MILX(μ::Real = 0.0, b_real::Real = 0.15, b_int::Real = 0.35) # location μ, scale b > 0
-    function milxxvr(v1::T, v2::T) where {T <: Vector}
+    function milxxvr(v1::T, v2::T) where {T <: AbstractVector}
         @assert all([typeof(a) == typeof(b) for (a, b) in zip(v1, v2)]) "Types of variables in vectors do not match"
         l = length(v1)
         U, R = rand(l), rand(l)
@@ -285,6 +285,33 @@ function MILX(μ::Real = 0.0, b_real::Real = 0.15, b_int::Real = 0.35) # locatio
         return c1, c2
     end
     return milxxvr
+end
+
+"""
+    LX(μ::Real = 0.0, b::Real = 0.2)
+
+Returns a Simulated Binary Crossover (SBX) recombination operation[^6], see [Recombination Interface](@ref).
+"""
+function SBX(p::Real = 0.5, η::Integer = 2)
+    function sbxv(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
+        n = length(v1)
+        u = rand(rng, n)
+        mask = u .<= 0.5
+        mask_neg = u .> 0.5
+        β = similar(v1)
+        β[mask] = (2*u[mask]).^(1/(η+1))
+        β[mask_neg] = (2*(1 .- u[mask_neg])).^(-1/(η+1))
+        μ = (v1 + v2)./2
+        diff = v1 - v2
+        c = β.*diff./2
+        mask_set = n == 1 ? [1] : rand(rng, n) .<= p
+        c1 = copy(μ) # c2 = μ - c
+        c1[mask_set] .-= c[mask_set]
+        c2 = copy(μ) # c2 = μ + c
+        c2[mask_set] .+= c[mask_set]
+        return c1, c2
+    end
+    return sbxv
 end
 
 
