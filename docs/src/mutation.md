@@ -92,4 +92,4 @@ shrink
 
 [^8]: P. J. Angeline, "An investigation into the sensitivity of genetic programming to the frequency of leaf selection during subtree crossover", Genetic Programming 1996: Proceedings of the First Annual Conference, 21–29, 1996.
 
-[^9]  K. Deb, R. B. Agrawal, "Simulated Binary Crossover for Continuous Search Space", Complex Syst., 9., 1995
+[^9]: K. Deb, R. B. Agrawal, "Simulated Binary Crossover for Continuous Search Space", Complex Syst., 9., 1995

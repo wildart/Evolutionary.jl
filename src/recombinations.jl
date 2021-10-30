@@ -288,11 +288,12 @@ function MILX(μ::Real = 0.0, b_real::Real = 0.15, b_int::Real = 0.35) # locatio
 end
 
 """
-    LX(μ::Real = 0.0, b::Real = 0.2)
+    SBX(pm::Real = 0.5, η::Integer = 2)
 
-Returns a Simulated Binary Crossover (SBX) recombination operation[^6], see [Recombination Interface](@ref).
+Returns a Simulated Binary Crossover (SBX) recombination operation, see [Recombination Interface](@ref),
+with the mutation probability `pm` of the recombinant component, and is the crossover distribution index `η`[^6].
 """
-function SBX(p::Real = 0.5, η::Integer = 2)
+function SBX(pm::Real = 0.5, η::Integer = 2)
     function sbxv(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
         n = length(v1)
         u = rand(rng, n)
@@ -304,7 +305,7 @@ function SBX(p::Real = 0.5, η::Integer = 2)
         μ = (v1 + v2)./2
         diff = v1 - v2
         c = β.*diff./2
-        mask_set = n == 1 ? [1] : rand(rng, n) .<= p
+        mask_set = n == 1 ? [1] : rand(rng, n) .<= pm
         c1 = copy(μ) # c2 = μ - c
         c1[mask_set] .-= c[mask_set]
         c2 = copy(μ) # c2 = μ + c

@@ -250,7 +250,7 @@ function PLM(Δ::Vector, η=2; pm::Real=NaN) # index of distribution p
     end
     return mutation
 end
-PLM(lower::Vector, upper::Vector, η::Real = 2; pm::Real=NaN) = PLM(upper-lower, η; pm)
+PLM(lower::Vector, upper::Vector, η::Real = 2; pm::Real=NaN) = PLM(upper-lower, η; pm=pm)
 
 
 # Combinatorial mutations (applicable to binary vectors)
