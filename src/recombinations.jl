@@ -299,8 +299,8 @@ function SBX(p::Real = 0.5, η::Integer = 2)
         mask = u .<= 0.5
         mask_neg = u .> 0.5
         β = similar(v1)
-        β[mask] = (2*u[mask]).^(1/(η+1))
-        β[mask_neg] = (2*(1 .- u[mask_neg])).^(-1/(η+1))
+        β[mask] .= (2*u[mask]).^(1/(η+1))
+        β[mask_neg] .= (2*(1 .- u[mask_neg])).^(-1/(η+1))
         μ = (v1 + v2)./2
         diff = v1 - v2
         c = β.*diff./2

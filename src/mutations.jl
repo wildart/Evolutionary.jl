@@ -152,11 +152,11 @@ function gaussian(σ::Real = 1.0)
 end
 
 """
-    domainrange(valrange, m = 20)
+    BGA(valrange, m = 20)
 
 Returns an in-place real valued mutation function that performs the BGA mutation scheme with the mutation range `valrange` and the mutation probability `1/m` [^1].
 """
-function domainrange(valrange::Vector, m::Int = 20)
+function BGA(valrange::Vector, m::Int = 20)
     prob = 1.0 / m
     function mutation(recombinant::T) where {T <: AbstractVector}
         d = length(recombinant)
@@ -225,6 +225,33 @@ function mipmmutation(lowerBounds::Vector, upperBounds::Vector, p_real::Float64,
     end
     return mutation
 end
+
+"""
+    PLM(lower, upper, η = 2)
+
+Returns an in-place real valued mutation function that performs the Polynomial Mutation (PLM) scheme
+within `lower` and `upper` bounds, and a mutation distribution index `η`[^9].
+"""
+function PLM(Δ::Vector, η=2; pm::Real=NaN) # index of distribution p
+    function mutation(recombinant::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
+        d = length(recombinant)
+        @assert length(Δ) == d "Δ vector must have $(d) columns"
+        pm = isnan(pm) ? 1/d : pm
+        mask = rand(rng, d) .< pm
+        u = rand(rng, d)
+        mask_p = u .<= 0.5
+        mask_n = u .> 0.5
+        δpw = 1/(η+1)
+        δ = similar(recombinant)
+        δ[mask_p] .= (2* u[mask_p]).^δpw .- 1
+        δ[mask_n] .= 1 .- (2(1 .- u[mask_n])).^δpw
+        recombinant[mask] .+= (Δ.*δ)[mask]
+        return recombinant
+    end
+    return mutation
+end
+PLM(lower::Vector, upper::Vector, η::Real = 2; pm::Real=NaN) = PLM(upper-lower, η; pm)
+
 
 # Combinatorial mutations (applicable to binary vectors)
 # ------------------------------------------------------

@@ -20,6 +20,10 @@
         mut = gaussian(0.0)
         @test all(map(sum ∘ mut, [ones(3) for i in 1:10]) .== 3)
 
+        ex = PLM(ones(1000), pm=1.0)(zeros(1000)) |> extrema
+        @test ex[1] >= -1
+        @test ex[2] <= 1
+
     end
 
     @testset "DE" begin

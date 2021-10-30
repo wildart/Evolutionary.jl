@@ -49,7 +49,7 @@
             ɛ = 0.1,
             selection = susinv,
             crossover = intermediate(0.25),
-            mutation = domainrange(fill(0.5,N)),
+            mutation = BGA(fill(0.5,N)),
         ));
     # show(result)
     println("GA:INTER:DOMRNG:(N=$(N), P=$(P)) => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")

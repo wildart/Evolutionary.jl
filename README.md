@@ -36,8 +36,10 @@ pkg> add Evolutionary
       - inversion
     - real valued
       - uniform
-      - gaussian
-      - BGA
+      - Gaussian
+      - BGA (domain range)
+      - (MI)PM (power)
+      - PLM (polynomial)
     - combinatorial
       - inversion
       - insertion

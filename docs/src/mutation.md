@@ -41,9 +41,10 @@ bitinversion
 ```@docs
 uniform(::Real)
 gaussian(::Real)
-domainrange
+BGA
 PM
 MIPM
+PLM
 ```
 
 ### Combinatorial Mutations
@@ -90,3 +91,5 @@ shrink
 [^7]: K. E. Kinnear, Jr., "Fitness landscapes and difficulty in genetic programming", In Proceedings of the 1994 IEEE World Conference on Computational Intelligence, vol 1, 142-147, IEEE Press, 1994.
 
 [^8]: P. J. Angeline, "An investigation into the sensitivity of genetic programming to the frequency of leaf selection during subtree crossover", Genetic Programming 1996: Proceedings of the First Annual Conference, 21–29, 1996.
+
+[^9]  K. Deb, R. B. Agrawal, "Simulated Binary Crossover for Continuous Search Space", Complex Syst., 9., 1995

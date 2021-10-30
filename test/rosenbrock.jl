@@ -65,7 +65,7 @@
         ɛ = 0.1,
         selection = rouletteinv,
         crossover = intermediate(0.25),
-        mutation = domainrange(fill(0.5,N))
+        mutation = BGA(fill(0.5,N))
     )
     result = Evolutionary.optimize(rosenbrock, (() -> rand(N)), m)
     println("GA(p=100,x=0.8,μ=0.1,ɛ=0.1) => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
