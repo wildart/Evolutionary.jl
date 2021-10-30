@@ -15,12 +15,12 @@ module Evolutionary
            # ES mutations
            gaussian, cauchy,
            # GA mutations
-           flip, bitinversion, domainrange, inversion, insertion, swap2, scramble, shifting, PM, MIPM, SBX,
+           flip, bitinversion, domainrange, inversion, insertion, swap2, scramble, shifting, PM, MIPM,
            # ES recombinations
            average, marriage,
            # GA recombinations
            singlepoint, twopoint, uniform,
-           discrete, waverage, intermediate, line, HX, LX, MILX,
+           discrete, waverage, intermediate, line, HX, LX, MILX, SBX,
            PMX, OX1, CX, OX2, POS,
            # GA selections
            ranklinear, uniformranking, roulette, rouletteinv, sus, susinv, tournament, truncation,

@@ -5,7 +5,7 @@
 
 Returns an *one* offspring individual of a multi-parent recombination by averaging `population`.
 """
-function average(population::Vector{T}) where {T <: AbstractVector}
+function average(population::Vector{T}; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
     obj = zeros(eltype(T), length(population[1]))
     l = length(population)
     for i in 1:l
@@ -19,7 +19,7 @@ end
 
 Returns an *one* offspring individual of a multi-parent recombination by random copying from `population`.
 """
-function marriage(population::Vector{T}) where {T <: AbstractVector}
+function marriage(population::Vector{T}; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
     s = length(population)
     l = length(population[1])
     obj = zeros(eltype(T), l)
@@ -37,7 +37,7 @@ end
 
 Returns the average value of the mutation parameter ``\\sigma`` of strategies `ss`.
 """
-function average(ss::Vector{<:AbstractStrategy})
+function average(ss::Vector{<:AbstractStrategy}; rng::AbstractRNG=Random.GLOBAL_RNG)
     s = copy(first(ss))
     l = length(ss)
     s.σ = mapreduce(s->s.σ/l, +, ss)
@@ -53,7 +53,7 @@ end
 
 Returns the same parameter individuals `v1` and `v2` as an offspring pair.
 """
-identity(v1::T, v2::T) where {T <: AbstractVector} = (v1,v2)
+identity(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector} = (v1,v2)
 
 # Binary crossovers
 # -----------------
@@ -63,11 +63,11 @@ identity(v1::T, v2::T) where {T <: AbstractVector} = (v1,v2)
 
 Single point crossover between `v1` and `v2` individuals.
 """
-function singlepoint(v1::T, v2::T) where {T <: AbstractVector}
+function singlepoint(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
     l = length(v1)
     c1 = copy(v1)
     c2 = copy(v2)
-    pos = rand(1:l)
+    pos = rand(rng, 1:l)
     for i in pos:l
         vswap!(c1, c2, i)
     end
@@ -79,11 +79,11 @@ end
 
 Two point crossover between `v1` and `v2` individuals.
 """
-function twopoint(v1::T, v2::T) where {T <: AbstractVector}
+function twopoint(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
     l = length(v1)
     c1 = copy(v1)
     c2 = copy(v2)
-    from, to = rand(1:l, 2)
+    from, to = rand(rng, 1:l, 2)
     from, to = from > to ? (to, from)  : (from, to)
     for i in from:to
         vswap!(c1, c2, i)
@@ -96,11 +96,11 @@ end
 
 Uniform crossover between `v1` and `v2` individuals.
 """
-function uniform(v1::T, v2::T) where {T <: AbstractVector}
+function uniform(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
     l = length(v1)
     c1 = copy(v1)
     c2 = copy(v2)
-    xch = rand(Bool, l)
+    xch = rand(rng, Bool, l)
     for i in 1:l
         if xch[i]
             vswap!(c1, c2, i)
@@ -117,13 +117,13 @@ Returns a uniform (binomial) crossover function, see [Recombination Interface](@
 The crossover probability value must be in unit interval, ``Cr \\in [0,1]``.
 """
 function uniformbin(Cr::Real = 0.5)
-    function binxvr(v1::T, v2::T) where {T <: AbstractVector}
+    function binxvr(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
         l = length(v1)
         c1 = copy(v1)
         c2 = copy(v2)
-        j = rand(1:l)
+        j = rand(rng, 1:l)
         for i in (((1:l).+j.-2).%l).+1
-            if rand() <= Cr
+            if rand(rng) <= Cr
                 vswap!(c1, c2, i)
             end
         end
@@ -140,15 +140,15 @@ Returns an exponential crossover function, see [Recombination Interface](@ref), 
 The crossover probability value must be in unit interval, ``Cr \\in [0,1]``.
 """
 function exponential(Cr::Real = 0.5)
-    function expxvr(v1::T, v2::T) where {T <: AbstractVector}
+    function expxvr(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
         l = length(v1)
         c1 = copy(v1)
         c2 = copy(v2)
-        j = rand(1:l)
+        j = rand(rng, 1:l)
         switch = true
         for i in (((1:l).+j.-2).%l).+1
             i == j && continue
-            if switch && rand() <= Cr
+            if switch && rand(rng) <= Cr
                 c1[i] = v1[i]
             else
                 switch = false
@@ -169,11 +169,11 @@ end
 
 Returs a randomly assembled offspring and its inverse from the elements of parents `v1` and `v2`.
 """
-function discrete(v1::T, v2::T) where {T <: AbstractVector}
+function discrete(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
     l = length(v1)
     c1 = similar(v1)
     c2 = similar(v2)
-    sltc = rand(Bool, 2, l)
+    sltc = rand(rng, Bool, 2, l)
     for i in 1:l
         c1[i] = sltc[1,i] ? v1[i] : v2[i]
         c2[i] = sltc[2,i] ? v2[i] : v1[i]
@@ -183,7 +183,7 @@ end
 
 """Weighted arithmetic mean recombination"""
 function waverage(w::Vector{Float64})
-    function wavexvr(v1::T, v2::T) where {T <: AbstractVector}
+    function wavexvr(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
         c1 = (v1+v2)./w
         return c1, copy(c1)
     end
@@ -202,11 +202,11 @@ where ``\\alpha_i`` is chosen uniform randomly in the interval ``[-d;d+1]``.
 
 """
 function intermediate(d::Real = 0.0)
-    function intermxvr(v1::T, v2::T) where {T <: AbstractVector}
+    function intermxvr(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
         l = length(v1)
-        α = (1.0+2d) * rand(l) .- d
+        α = (1.0+2d) * rand(rng, l) .- d
         c1 = v2 .+ α .* (v1 - v2)
-        α = (1.0+2d) * rand(l) .- d
+        α = (1.0+2d) * rand(rng, l) .- d
         c2 = v1 .+ α .* (v2 - v1)
         return c1, c2
     end
@@ -225,8 +225,8 @@ where ``\\alpha`` is chosen uniform randomly in the interval ``[-d;d+1]``.
 
 """
 function line(d::Real = 0.0)
-    function linexvr(v1::T, v2::T) where {T <: AbstractVector}
-        α1, α2 = (1.0+2d) * rand(2) .- d
+    function linexvr(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
+        α1, α2 = (1.0+2d) * rand(rng, 2) .- d
         c1 = v2 .+ α2 * (v1 - v2)
         c2 = v1 .+ α1 * (v2 - v1)
         return c1, c2
@@ -244,9 +244,9 @@ Heuristic crossover (HX) recombination operation[^3] generates offspring `u` and
 
 where ``r`` is chosen uniform randomly in the interval ``[0;1)``.
 """
-function HX(v1::T, v2::T) where {T <: AbstractVector}
-    c1 = v1 .+ rand()*(v1 .- v2)
-    c2 = v2 .+ rand()*(v2 .- v1)
+function HX(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
+    c1 = v1 .+ rand(rng)*(v1 .- v2)
+    c2 = v2 .+ rand(rng)*(v2 .- v1)
     return c1, c2
 end
 
@@ -256,8 +256,8 @@ end
 Returns a Laplace crossover (LX) recombination operation[^4], see [Recombination Interface](@ref).
 """
 function LX(μ::Real = 0.0, b::Real = 0.2) # location μ, scale b > 0
-    function lxxvr(v1::T, v2::T) where {T <: AbstractVector}
-        u = rand()
+    function lxxvr(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
+        u = rand(rng)
         β = u > 0.5 ? μ + b * log(u) : μ - b * log(u)
         S = β * abs.(v1 - v2)
         c1 = v1 + S
@@ -273,10 +273,10 @@ end
 Returns a mixed integer Laplace crossover (MI-LX) recombination operation[^5], see [Recombination Interface](@ref).
 """
 function MILX(μ::Real = 0.0, b_real::Real = 0.15, b_int::Real = 0.35) # location μ, scale b > 0
-    function milxxvr(v1::T, v2::T) where {T <: AbstractVector}
+    function milxxvr(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
         @assert all([typeof(a) == typeof(b) for (a, b) in zip(v1, v2)]) "Types of variables in vectors do not match"
         l = length(v1)
-        U, R = rand(l), rand(l)
+        U, R = rand(rng, l), rand(rng, l)
         B = (isa(x, Integer) ? b_int : b_real for x in v1)
         βs = broadcast((u, r, b) -> r > 0.5 ? μ + b * log.(u) : μ - b * log.(u), U, R, B)
         S = βs .* abs.(v1 - v2)
@@ -319,9 +319,9 @@ end
 # ----------------------
 
 """Partially mapped crossover"""
-function PMX(v1::T, v2::T) where {T <: AbstractVector}
+function PMX(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
     s = length(v1)
-    from, to = rand(1:s, 2)
+    from, to = rand(rng, 1:s, 2)
     from, to = from > to ? (to, from)  : (from, to)
     c1 = similar(v1)
     c2 = similar(v2)
@@ -361,9 +361,9 @@ function PMX(v1::T, v2::T) where {T <: AbstractVector}
 end
 
 """Order crossover"""
-function OX1(v1::T, v2::T) where {T <: AbstractVector}
+function OX1(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
     s = length(v1)
-    from, to = rand(1:s, 2)
+    from, to = rand(rng, 1:s, 2)
     from, to = from > to ? (to, from)  : (from, to)
     c1 = zero(v1)
     c2 = zero(v2)
@@ -387,7 +387,7 @@ function OX1(v1::T, v2::T) where {T <: AbstractVector}
 end
 
 """Cycle crossover"""
-function CX(v1::T, v2::T) where {T <: AbstractVector}
+function CX(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
     s = length(v1)
     c1 = zero(v1)
     c2 = zero(v2)
@@ -425,14 +425,14 @@ function CX(v1::T, v2::T) where {T <: AbstractVector}
 end
 
 """Order-based crossover"""
-function OX2(v1::T, v2::T) where {T <: AbstractVector}
+function OX2(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
     s = length(v1)
     c1 = copy(v1)
     c2 = copy(v2)
     Z = zero(eltype(T))
 
     for i in 1:s
-        if rand(Bool)
+        if rand(rng, Bool)
             idx1 = inmap(v2[i],v1,1,s)
             idx2 = inmap(v1[i],v2,1,s)
             c1[idx1] = Z
@@ -454,14 +454,14 @@ function OX2(v1::T, v2::T) where {T <: AbstractVector}
 end
 
 """Position-based crossover"""
-function POS(v1::T, v2::T) where {T <: AbstractVector}
+function POS(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
     s = length(v1)
     c1 = zero(v1)
     c2 = zero(v2)
     Z = zero(eltype(T))
 
     for i in 1:s
-        if rand(Bool)
+        if rand(rng, Bool)
             c1[i] = v2[i]
             c2[i] = v1[i]
         end
@@ -489,9 +489,9 @@ end
 
 Perform an arbitrary subtree swap between the expressions `t1` and `t2`.
 """
-function crosstree(t1::Expr, t2::Expr)
+function crosstree(t1::Expr, t2::Expr; rng::AbstractRNG=Random.GLOBAL_RNG)
     tt1, tt2 = copy(t1), copy(t2)
-    i, j = rand(1:nodes(t1)-1), rand(1:nodes(t2)-1)
+    i, j = rand(rng, 1:nodes(t1)-1), rand(rng, 1:nodes(t2)-1)
     ex1 = tt1[i]
     ex2 = tt2[j]
     tt1[i] = ex2

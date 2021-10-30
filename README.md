@@ -58,6 +58,9 @@ pkg> add Evolutionary
     - weighted average
     - intermediate
     - line
+    - HX
+    - (MI)LX
+    - SBX
   - permutation
     - PMX
     - OX1
