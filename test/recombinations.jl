@@ -28,11 +28,11 @@
 
     @testset "GA" begin
         @test identity(pop[1], pop[2]) == (pop[1], pop[2])
-        @test compare((singlepoint(pop[1], pop[2]) for i in 1:100),
+        @test compare((SPX(pop[1], pop[2]) for i in 1:100),
                       [([0.0, 1.0],[1.0, 0.0]),([1.0, 1.0],[0.0, 0.0])])
-        @test compare((twopoint(pop[1], pop[2]) for i in 1:100),
+        @test compare((TPX(pop[1], pop[2]) for i in 1:100),
                       [([0.0, 1.0],[1.0, 0.0]),([1.0, 1.0],[0.0, 0.0]),([0.0, 0.0], [1.0, 1.0])])
-        @test compare((uniform(pop[1], pop[2]) for i in 1:100),
+        @test compare((UX(pop[1], pop[2]) for i in 1:100),
                       [([0.0, 1.0],[1.0, 0.0]),([1.0, 1.0],[0.0, 0.0]),([0.0, 0.0], [1.0, 1.0]),([1.0, 0.0], [0.0, 1.0])])
         @test compare((discrete(pop[1], pop[2]) for i in 1:100),
                       ([p1,p2],[p3,p4]) for p1 in [0,1.], p2 in [0,1.], p3 in [0,1.], p4 in [0,1.])
@@ -58,19 +58,19 @@
         v1 = collect(1:10)
         v2 = fill(0,10)
 
-        xvr = uniformbin(0.0)
+        xvr = BINX(0.0)
         @test first( xvr(v1, v2) )== v1
-        xvr = uniformbin(1.0)
+        xvr = BINX(1.0)
         @test last( xvr(v1, v2) )== v1
-        xvr = uniformbin(0.5)
+        xvr = BINX(0.5)
         m1, m2 = xvr(v1, v2)
         @test m1.+m2 == v1
 
-        xvr = exponential(0.0)
+        xvr = EXPX(0.0)
         @test sum(first( xvr(v1, v2) )) <= 10
-        xvr = exponential(1.0)
+        xvr = EXPX(1.0)
         @test first( xvr(v1, v2) )== v1
-        xvr = exponential(0.05)
+        xvr = EXPX(0.05)
         @test sum(first( xvr(v1, v2) )) <= 19
     end
 

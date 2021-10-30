@@ -7,7 +7,7 @@ The constructor takes following keyword arguments:
 - `F`: the differentiation (mutation) scale factor (default: 0.9). It's usually defined in range ``F \\in (0, 1+]``
 - `n`: the number of differences used in the perturbation (default: 1)
 - `selection`: the selection strategy function (default: [`random`](@ref))
-- `recombination`: the recombination functions (default: [`uniformbin(0.5)`](@ref))
+- `recombination`: the recombination functions (default: [`BINX(0.5)`](@ref))
 - `K`: the recombination scale factor (default: 0.5*(F+1))
 """
 @kwdef struct DE <: AbstractOptimizer
@@ -16,7 +16,7 @@ The constructor takes following keyword arguments:
     n::Integer = 1
     K::Real = 0.5*(F+1)
     selection::Function = random
-    recombination::Function = uniformbin(0.5)
+    recombination::Function = BINX(0.5)
 end
 population_size(method::DE) = method.populationSize
 default_options(method::DE) = (abstol=1e-10,)

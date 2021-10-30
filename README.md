@@ -51,16 +51,19 @@ pkg> add Evolutionary
 
 - Crossovers
   - binary
-    - N-point
-    - uniform
+    - SPX (single point)
+    - TPX (two point)
+    - UX (uniform)
+    - BINX (binary)
+    - EXPX (exponential)
   - real valued
     - discrete
     - weighted average
     - intermediate
     - line
-    - HX
-    - (MI)LX
-    - SBX
+    - HX (heuristic)
+    - (MI)LX (Laplace)
+    - SBX (simulated binary)
   - permutation
     - PMX
     - OX1

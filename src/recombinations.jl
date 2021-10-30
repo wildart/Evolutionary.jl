@@ -63,7 +63,7 @@ identity(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractV
 
 Single point crossover between `v1` and `v2` individuals.
 """
-function singlepoint(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
+function SPX(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
     l = length(v1)
     c1 = copy(v1)
     c2 = copy(v2)
@@ -79,7 +79,7 @@ end
 
 Two point crossover between `v1` and `v2` individuals.
 """
-function twopoint(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
+function TPX(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
     l = length(v1)
     c1 = copy(v1)
     c2 = copy(v2)
@@ -92,11 +92,11 @@ function twopoint(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: 
 end
 
 """
-    uniform(v1, v2)
+    UX(v1, v2)
 
 Uniform crossover between `v1` and `v2` individuals.
 """
-function uniform(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
+function UX(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
     l = length(v1)
     c1 = copy(v1)
     c2 = copy(v2)
@@ -110,13 +110,13 @@ function uniform(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: A
 end
 
 """
-    uniformbin(Cr::Real=0.5)
+    BINX(Cr::Real=0.5)
 
 Returns a uniform (binomial) crossover function, see [Recombination Interface](@ref), function with the propbabilty `Cr` [^2].
 
 The crossover probability value must be in unit interval, ``Cr \\in [0,1]``.
 """
-function uniformbin(Cr::Real = 0.5)
+function BINX(Cr::Real = 0.5)
     function binxvr(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
         l = length(v1)
         c1 = copy(v1)
@@ -133,13 +133,13 @@ function uniformbin(Cr::Real = 0.5)
 end
 
 """
-    exponential(Cr::Real=0.5)
+    EXPX(Cr::Real=0.5)
 
 Returns an exponential crossover function, see [Recombination Interface](@ref), function with the propbabilty `Cr` [^2].
 
 The crossover probability value must be in unit interval, ``Cr \\in [0,1]``.
 """
-function exponential(Cr::Real = 0.5)
+function EXPX(Cr::Real = 0.5)
     function expxvr(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
         l = length(v1)
         c1 = copy(v1)

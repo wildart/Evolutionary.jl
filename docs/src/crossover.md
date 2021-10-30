@@ -27,11 +27,11 @@ marriage
 Binary crossovers:
 
 ```@docs
-singlepoint
-twopoint
-uniform
-uniformbin
-exponential
+SPX
+TPX
+UX
+BINX
+EXPX
 ```
 
 Real valued crossovers:

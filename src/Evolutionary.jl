@@ -15,11 +15,11 @@ module Evolutionary
            # ES mutations
            gaussian, cauchy,
            # GA mutations
-           flip, bitinversion, domainrange, inversion, insertion, swap2, scramble, shifting, PM, MIPM,
+           flip, bitinversion, uniform, domainrange, inversion, insertion, swap2, scramble, shifting, PM, MIPM,
            # ES recombinations
            average, marriage,
            # GA recombinations
-           singlepoint, twopoint, uniform,
+           SPX, TPX, UX,
            discrete, waverage, intermediate, line, HX, LX, MILX, SBX,
            PMX, OX1, CX, OX2, POS,
            # GA selections
@@ -27,7 +27,7 @@ module Evolutionary
            # DE selections
            random, permutation, randomoffset, best,
            # DE recombinations
-           uniformbin, exponential,
+           BINX, EXPX,
            # GP exports
            Terminal, subtree, point, hoist, shrink,
            # Optimization methods
@@ -65,5 +65,11 @@ module Evolutionary
 
     # GA selection functions
     include("selections.jl")
+
+    @deprecate uniform(v1, v2) UX(v1, v2)
+    @deprecate uniformbin BINX
+    @deprecate exponential EXPX
+    @deprecate singlepoint SPX
+    @deprecate twopoint TPX
 
 end

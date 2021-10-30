@@ -14,7 +14,7 @@
         GA(
             selection = tournament(3),
             mutation = inversion,
-            crossover = singlepoint,
+            crossover = SPX,
             mutationRate = 0.9,
             crossoverRate = 0.2,
             ɛ = 0.1,                                # Elitism
@@ -41,7 +41,7 @@
         GA(
             selection = roulette,
             mutation = flip,
-            crossover = singlepoint,
+            crossover = SPX,
             mutationRate = 0.9,
             crossoverRate = 0.1,
             ɛ = 0.1,                                # Elitism

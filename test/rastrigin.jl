@@ -75,7 +75,7 @@
     # Testing: DE
     Random.seed!(9874984737486)
     selections = [:rand=>random, :perm=>permutation, :rndoff=>randomoffset, :best=>best]
-    mutations = [:exp=>exponential(0.5), :bin=>uniformbin(0.5)]
+    mutations = [:exp=>EXPX(0.5), :bin=>BINX(0.5)]
 
     @testset "DE settings" for (sn,ss) in selections, (mn,ms) in mutations, n in 1:2
         result = Evolutionary.optimize( rastrigin, initState,

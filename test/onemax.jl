@@ -16,7 +16,7 @@
         GA(
             selection = uniformranking(5),
             mutation =  flip,
-            crossover = twopoint,
+            crossover = TPX,
             mutationRate = 0.6,
             crossoverRate = 0.2,
             populationSize = N,
