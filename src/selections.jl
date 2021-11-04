@@ -121,21 +121,19 @@ function truncation(fitness::Vector{<:Real}, N::Int)
 end
 
 """Tournament selection"""
-function tournament(groupSize :: Int, minimize::Bool=true)
+function tournament(groupSize :: Int; select=argmin)
     @assert groupSize > 0 "Group size must be positive"
-    function tournamentN(fitness::Vector{<:Real}, N::Int)
+    function tournamentN(fitness::AbstractVecOrMat{<:Real}, N::Int)
         selection = fill(0,N)
 
-        nFitness = length(fitness)
+        sFitness = size(fitness)
+        d, nFitness = length(sFitness) == 1 ? (1, sFitness[1]) : sFitness
         tour = randperm(nFitness)
         j = 1
         for i in 1:N
             idxs = tour[j:j+groupSize-1]
-            winner = if minimize
-                findmin(fitness[idxs])[2]
-            else
-                findmax(fitness[idxs])[2]
-            end
+            selected = d == 1 ? view(fitness, idxs) : view(fitness, :, idxs)
+            winner = select(selected)
             selection[i] = idxs[winner]
             j+=groupSize
             if (j+groupSize) >= nFitness && i < N
@@ -211,4 +209,17 @@ function randexcl(itr, exclude, dims)
         push!(idxs, j)
     end
     return idxs
+end
+
+function twowaycomp(rc::AbstractMatrix)
+    ra, ca, rb, cb = rc
+    if ra < rb
+        return 1
+    elseif ra > rb
+        return 2
+    elseif ca < cb
+        return 1
+    else
+        return 2
+    end
 end
