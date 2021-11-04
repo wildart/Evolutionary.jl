@@ -232,10 +232,9 @@ end
 Returns an in-place real valued mutation function that performs the Polynomial Mutation (PLM) scheme
 within `lower` and `upper` bounds, and a mutation distribution index `η`[^9].
 """
-function PLM(Δ::Vector, η=2; pm::Real=NaN) # index of distribution p
+function PLM(Δ::Union{Real, Vector}=1.0; η=2, pm::Real=NaN) # index of distribution p
     function mutation(recombinant::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
         d = length(recombinant)
-        @assert length(Δ) == d "Δ vector must have $(d) columns"
         pm = isnan(pm) ? 1/d : pm
         mask = rand(rng, d) .< pm
         u = rand(rng, d)
@@ -250,7 +249,7 @@ function PLM(Δ::Vector, η=2; pm::Real=NaN) # index of distribution p
     end
     return mutation
 end
-PLM(lower::Vector, upper::Vector, η::Real = 2; pm::Real=NaN) = PLM(upper-lower, η; pm=pm)
+PLM(lower::Vector, upper::Vector; η::Real = 2, pm::Real=NaN) = PLM(upper-lower; η=η, pm=pm)
 
 
 # Combinatorial mutations (applicable to binary vectors)
