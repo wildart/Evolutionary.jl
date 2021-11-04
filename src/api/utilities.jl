@@ -62,7 +62,10 @@ relchange(objfun::O, state::S) where {O<:AbstractObjective, S<:AbstractOptimizer
     relchange(value(objfun), value(state))
 relchange(curr::T, prev) where T = abs(curr - prev)/abs(curr)
 
-function assess_convergence(objfun, state::AbstractOptimizerState, method, options::Options)
+# convergence for a single objective
+function assess_convergence(objfun::NonDifferentiable{TF, TX},
+                            state::AbstractOptimizerState, method,
+                            options::Options) where {TF<:Real, TX}
     converged = false
 
     if abschange(objfun, state) ≤ options.abstol
@@ -71,6 +74,15 @@ function assess_convergence(objfun, state::AbstractOptimizerState, method, optio
     if relchange(objfun, state) ≤ options.reltol
         converged = true
     end
+
+    return converged
+end
+
+# convergence for multiple objectives
+function assess_convergence(objfun::NonDifferentiable{TF, TX},
+                            state::AbstractOptimizerState, method,
+                            options::Options) where {TF<:AbstractArray, TX}
+    converged = false
 
     return converged
 end
@@ -150,14 +162,49 @@ end
 # EVALUATION #
 ##############
 
+# function value(obj::NonDifferentiable{TF, TX}, F, x) where {TF<:Real, TX}
+#     F[] = value(obj, x)
+# end
+
+function value!(::Val{:serial}, fitness::AbstractVector, objfun, population::AbstractVector{IT}) where {IT}
+    for i in 1:length(population)
+        fitness[i] = value(objfun, population[i])
+    end
+end
+
 function value!(::Val{:serial}, fitness, objfun, population::AbstractVector{IT}) where {IT}
     for i in 1:length(population)
+        fv = @view fitness[:,i]
+        value(objfun, fv, population[i])
+    end
+end
+
+function value!(::Val{:thread}, fitness::AbstractVector, objfun, population::AbstractVector{IT}) where {IT}
+    Threads.@threads for i in 1:length(population)
         fitness[i] = value(objfun, population[i])
     end
 end
 
 function value!(::Val{:thread}, fitness, objfun, population::AbstractVector{IT}) where {IT}
     Threads.@threads for i in 1:length(population)
-        fitness[i] = value(objfun, population[i])
+        fv = @view fitness[:,i]
+        value(objfun, fv, population[i])
     end
+end
+
+########
+# MISC #
+########
+
+function objective_function_params(f, ptype)
+    m = try
+        which(f, (ptype,))
+    catch
+        try
+            which(f, (AbstractVector, ptype))
+        catch
+            @error "Objective function defined with an incorrect number parameters"
+        end
+    end
+    m.nargs-1
 end

@@ -150,7 +150,7 @@
     #############
     # OBJECTIVE #
     #############
-    objfun= NonDifferentiable(sum, BitVector(ones(dimension)))
+    objfun = NonDifferentiable(sum, BitVector(ones(dimension))) # SOO
     @test value(objfun) == 0.0
     @test 0 <= value(objfun,rand(Bool,dimension)) <= dimension
     @test f_calls(objfun) == 1
@@ -159,6 +159,35 @@
     v = value!(objfun,rand(Bool,dimension))
     @test 0 <= v <= dimension
     @test value(objfun) == v
+    F = [-1]
+    @test value(objfun, F, rand(Bool,dimension)) >= 0
+    @test F[] >= 0
+    fitness = fill(-1, dimension)
+    value!(Val(:serial), fitness, objfun, [rand(Bool,dimension) for i in 1:dimension])
+    @test all(fitness.>=0)
+    fitness = fill(-1, dimension)
+    value!(Val(:thread), fitness, objfun, [rand(Bool,dimension) for i in 1:dimension])
+    @test all(fitness.>=0)
+
+    mof(F,x) = copyto!(F,x.+1)
+    objfun = NonDifferentiable(mof, zeros(dimension), zeros(dimension)) # MOO
+    @test all(iszero.(objfun.F))
+    @test all(isnan.(objfun.x_f))
+    @test value(objfun) == zeros(dimension)
+    @test value(objfun, zeros(dimension)) == ones(dimension)
+    @test all(iszero.(objfun.F))
+    @test value!(objfun, zeros(dimension)) == ones(dimension)
+    @test objfun.F == ones(dimension)
+    @test all(iszero.(objfun.x_f))
+    F = zeros(dimension)
+    @test value(objfun, F, zeros(dimension)) == ones(dimension)
+    @test F == ones(dimension)
+    fitness = zeros(dimension, dimension)
+    value!(Val(:serial), fitness, objfun, [zeros(dimension) for i in 1:dimension])
+    @test fitness == ones(dimension, dimension)
+    fitness = zeros(dimension, dimension)
+    value!(Val(:thread), fitness, objfun, [zeros(dimension) for i in 1:dimension])
+    @test fitness == ones(dimension, dimension)
 
 
     ###############

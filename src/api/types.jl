@@ -111,16 +111,22 @@ end
 
 # Miscellaneous
 
-
-# Constructor for nondifferentiable function over bit vector
-NonDifferentiable(f, x::AbstractVector{TX}, F::TF = zero(f(x))) where {TF<:Real, TX<:Real}=
+# Constructor for non-differentiable function for function that returns a value
+function NonDifferentiable(f, x::AbstractVector{TX}, F::TF = zero(f(x))) where {TF<:Real, TX<:Real}
+    xnans = NLSolversBase.x_of_nans(x)
+    NonDifferentiable{TF,typeof(x)}(f, F, xnans, [0,])
+end
+# Constructor for non-differentiable function over integers
+NonDifferentiable(f, x::AbstractVector{TX}, F::TF = zero(f(x))) where {TF<:Real, TX<:Integer} =
     NonDifferentiable{TF,typeof(x)}(f, F, zeros(TX, length(x)), [0,])
+# Constructor for non-differentiable function over bit vector
 NonDifferentiable(f, x::AbstractVector{Bool}) = NonDifferentiable(f, BitVector(x))
 function NonDifferentiable(f, x::BitArray)
     xs = similar(x)
     fzval = f(xs)
     NonDifferentiable{typeof(fzval),typeof(xs)}(f, fzval, xs, [0,])
 end
+# Constructor for non-differentiable function for expression
 function NonDifferentiable(f, x::Expr, F::TF = zero(f(x))) where {TF<:Real}
     NonDifferentiable{TF,typeof(x)}(f, F, :(), [0,])
 end
