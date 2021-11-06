@@ -14,7 +14,7 @@ UnPack = "3a884ed6-31ef-47d7-9d2a-63182c4928ed"
 NLSolversBase = "^7.8"
 StackViews = "^0.1"
 UnPack = "^1.0.1"
-julia = "^1.1"
+julia = "^1.5"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
