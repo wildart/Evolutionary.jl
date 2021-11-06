@@ -5,7 +5,7 @@ module Evolutionary
     using NLSolversBase: NLSolversBase, AbstractObjective, ConstraintBounds,
                          AbstractConstraints, nconstraints_x, nconstraints
 
-    import NLSolversBase: NonDifferentiable, f_calls, value, value!
+    import NLSolversBase: NonDifferentiable, f_calls, value, value!, value!!
     import Base: show, copy, minimum, summary, identity, getproperty, rand, getindex, length, copyto!, setindex!
 
     export AbstractStrategy, strategy, mutationwrapper,
@@ -33,10 +33,11 @@ module Evolutionary
            # Optimization methods
            ES, CMAES, GA, DE, TreeGP,
            # re-export
-           NonDifferentiable, value, value!
+           NonDifferentiable, value, value!, value!!, f_calls
 
     # optimize API
     include("api/types.jl")
+    include("api/nondifferentiable.jl")
     include("api/results.jl")
     include("api/utilities.jl")
     include("api/constraints.jl")

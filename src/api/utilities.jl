@@ -60,7 +60,7 @@ abschange(objfun::O, state::S) where {O<:AbstractObjective, S<:AbstractOptimizer
 abschange(curr, prev) = Float64(abs(curr - prev))
 relchange(objfun::O, state::S) where {O<:AbstractObjective, S<:AbstractOptimizerState} =
     relchange(value(objfun), value(state))
-relchange(curr, prev) = abs(curr - prev)/abs(curr)
+relchange(curr, prev) = Float64(abs(curr - prev)/abs(curr))
 
 maxdiff(x::AbstractArray, y::AbstractArray) = mapreduce((a, b) -> abs(a - b), max, x, y)
 abschange(curr::T, prev) where {T<:AbstractArray} = maxdiff(curr, curr)
@@ -161,40 +161,6 @@ function initial_population(method::M, bounds::ConstraintBounds) where {M<:Abstr
     initial_population(method,  [collect(i) for i in  eachcol(indv)])
 end
 
-
-##############
-# EVALUATION #
-##############
-
-# function value(obj::NonDifferentiable{TF, TX}, F, x) where {TF<:Real, TX}
-#     F[] = value(obj, x)
-# end
-
-function value!(::Val{:serial}, fitness::AbstractVector, objfun, population::AbstractVector{IT}) where {IT}
-    for i in 1:length(population)
-        fitness[i] = value(objfun, population[i])
-    end
-end
-
-function value!(::Val{:serial}, fitness, objfun, population::AbstractVector{IT}) where {IT}
-    for i in 1:length(population)
-        fv = @view fitness[:,i]
-        value(objfun, fv, population[i])
-    end
-end
-
-function value!(::Val{:thread}, fitness::AbstractVector, objfun, population::AbstractVector{IT}) where {IT}
-    Threads.@threads for i in 1:length(population)
-        fitness[i] = value(objfun, population[i])
-    end
-end
-
-function value!(::Val{:thread}, fitness, objfun, population::AbstractVector{IT}) where {IT}
-    Threads.@threads for i in 1:length(population)
-        fv = @view fitness[:,i]
-        value(objfun, fv, population[i])
-    end
-end
 
 ########
 # MISC #
