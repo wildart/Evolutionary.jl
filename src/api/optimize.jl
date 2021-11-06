@@ -2,7 +2,7 @@ after_while!(objfun, state, method, options) = nothing
 
 # Optimization interface
 function optimize(f, lower, upper, method::M,
-                  options::Options = Options(;default_options(method)...)
+                  options::Options = Options(;default_options(method)...); kwargs...
                  ) where {M<:AbstractOptimizer}
     bounds = ConstraintBounds(lower,upper,[],[])
     optimize(f, bounds, method, options)
@@ -15,38 +15,38 @@ Perform optimization of the function `f` using aloruthm `algo` with the populati
 individuals similar to the original individual `indiv`.
 """
 function optimize(f, individual, method::M,
-                  options::Options = Options(;default_options(method)...)
+                  options::Options = Options(;default_options(method)...); kwargs...
                  ) where {M<:AbstractOptimizer}
-    optimize(f, NoConstraints(), individual, method, options)
+    optimize(f, NoConstraints(), individual, method, options; kwargs...)
 end
 
 function optimize(f, individual::ConstraintBounds, method::M,
-                  options::Options = Options(;default_options(method)...)
+                  options::Options = Options(;default_options(method)...); kwargs...
                  ) where {M<:AbstractOptimizer}
-    optimize(f, BoxConstraints(individual), individual, method, options)
+    optimize(f, BoxConstraints(individual), individual, method, options; kwargs...)
 end
 function optimize(f, lower, upper, individual, method::M,
-                  options::Options = Options(;default_options(method)...)
+                  options::Options = Options(;default_options(method)...); kwargs...
                  ) where {M<:AbstractOptimizer}
-    optimize(f, BoxConstraints(lower,upper), individual, method, options)
+    optimize(f, BoxConstraints(lower,upper), individual, method, options; kwargs...)
 end
 function optimize(f, constraints::C, method::M,
-                  options::Options = Options(;default_options(method)...)
+                  options::Options = Options(;default_options(method)...); kwargs...
                  ) where {M<:AbstractOptimizer, C<:AbstractConstraints}
-    optimize(f, constraints, constraints.bounds, method, options)
+    optimize(f, constraints, constraints.bounds, method, options; kwargs...)
 end
 function optimize(f, constraints::C, individual, method::M,
-                  options::Options = Options(;default_options(method)...)
+                  options::Options = Options(;default_options(method)...); kwargs...
                  ) where {M<:AbstractOptimizer, C<:AbstractConstraints}
     population = initial_population(method, individual)
     @assert length(population) > 0 "Population is empty"
     objfun = NonDifferentiable(f, first(population))
-    optimize(objfun, constraints, population, method, options)
+    optimize(objfun, constraints, population, method, options; kwargs...)
 end
 
 function optimize(objfun::D, constraints::C, population::AbstractArray,
                   method::M, options::Options = Options(;default_options(method)...),
-                  state = initial_state(method, options, objfun, population)
+                  state = initial_state(method, options, objfun, population); kwargs...
                  ) where {D<:AbstractObjective, C<:AbstractConstraints, M<:AbstractOptimizer}
 
     # setup trace
@@ -105,6 +105,9 @@ function optimize(objfun::D, constraints::C, population::AbstractArray,
         iteration == options.iterations,
         converged,
         options.abstol,
+        options.reltol,
+        abschange(objfun, state),
+        relchange(objfun, state),
         tr,
         f_calls(objfun),
         options.time_limit,

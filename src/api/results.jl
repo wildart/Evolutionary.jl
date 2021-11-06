@@ -53,11 +53,21 @@ Returns a number of an objective function calls.
 f_calls(r::OptimizationResults) = r.f_calls
 
 """
-    tol(result)
+    abstol(result)
 
 Returns an absolute tollerance value of the optimization `result`.
 """
-tol(r::OptimizationResults) = error("`tol` is not implemented for $(summary(r)).")
+tol(r::OptimizationResults) = error("`abstol` is not implemented for $(summary(r)).")
+
+"""
+    reltol(result)
+
+Returns a relative tollerance value of the optimization `result`.
+"""
+reltol(r::OptimizationResults) = error("`reltol` is not implemented for $(summary(r)).")
+
+abschange(r::OptimizationResults) = error("`abschange` is not implemented for $(summary(r)).")
+relchange(r::OptimizationResults) = error("`relchange` is not implemented for $(summary(r)).")
 
 time_limit(r::OptimizationResults) = r.time_limit
 time_run(  r::OptimizationResults) = r.time_run
@@ -74,6 +84,9 @@ mutable struct EvolutionaryOptimizationResults{O<:AbstractOptimizer, T, Tx, Tf} 
     iteration_converged::Bool
     converged::Bool
     abstol::T
+    reltol::T
+    abschange::T
+    relchange::T
     trace::OptimizationTrace
     f_calls::Int
     time_limit::Float64
@@ -87,7 +100,10 @@ Returns `true` if the optimization sucesfully coverged to a minimum value.
 """
 converged(r::EvolutionaryOptimizationResults) = r.converged
 
-tol(r::EvolutionaryOptimizationResults) = r.abstol
+abstol(r::EvolutionaryOptimizationResults) = r.abstol
+reltol(r::EvolutionaryOptimizationResults) = r.reltol
+abschange(r::EvolutionaryOptimizationResults) = r.abschange
+relchange(r::EvolutionaryOptimizationResults) = r.relchange
 
 function show(io::IO, r::EvolutionaryOptimizationResults)
     failure_string = "failure"
@@ -116,6 +132,12 @@ function show(io::IO, r::EvolutionaryOptimizationResults)
     print(io, "\n")
     print(io, " * Found with\n")
     print(io, "    Algorithm: $(summary(r))\n")
+    print(io, "\n")
+    print(io, " * Convergence measures\n")
+    sgn = abschange(r)<=abstol(r) ? "≤" : "≰"
+    print(io, "    |f(x) - f(x')|         = $(abschange(r)) $sgn $(abstol(r))\n" )
+    sgn = relchange(r)<=reltol(r) ? "≤" : "≰"
+    print(io, "    |f(x) - f(x')|/|f(x')| = $(relchange(r)) $sgn $(reltol(r))\n")
     print(io, "\n")
     print(io, " * Work counters\n")
     tr = round(time_run(r); digits=4)

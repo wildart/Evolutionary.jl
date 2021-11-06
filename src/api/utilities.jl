@@ -57,35 +57,39 @@ trace!(record::Dict{String,Any}, objfun, state, population, method, options) = (
 
 abschange(objfun::O, state::S) where {O<:AbstractObjective, S<:AbstractOptimizerState} =
     abschange(value(objfun), value(state))
-abschange(curr::T, prev) where T = abs(curr - prev)
+abschange(curr, prev) = Float64(abs(curr - prev))
 relchange(objfun::O, state::S) where {O<:AbstractObjective, S<:AbstractOptimizerState} =
     relchange(value(objfun), value(state))
-relchange(curr::T, prev) where T = abs(curr - prev)/abs(curr)
+relchange(curr, prev) = abs(curr - prev)/abs(curr)
+
+maxdiff(x::AbstractArray, y::AbstractArray) = mapreduce((a, b) -> abs(a - b), max, x, y)
+abschange(curr::T, prev) where {T<:AbstractArray} = maxdiff(curr, curr)
+relchange(curr::T, prev) where {T<:AbstractArray} = maxdiff(curr, prev)/maximum(abs, curr)
 
 # convergence for a single objective
-function assess_convergence(objfun::NonDifferentiable{TF, TX},
-                            state::AbstractOptimizerState, method,
-                            options::Options) where {TF<:Real, TX}
+function assess_convergence(x, x_previous, options::Options)
     converged = false
 
-    if abschange(objfun, state) ≤ options.abstol
+    if abschange(x, x_previous) ≤ options.abstol
         converged = true
     end
-    if relchange(objfun, state) ≤ options.reltol
+    if relchange(x, x_previous) ≤ options.reltol * abs(x)
         converged = true
     end
 
     return converged
 end
 
-# convergence for multiple objectives
-function assess_convergence(objfun::NonDifferentiable{TF, TX},
-                            state::AbstractOptimizerState, method,
-                            options::Options) where {TF<:AbstractArray, TX}
-    converged = false
+# default convergence
+assess_convergence(objfun::AbstractObjective, state::AbstractOptimizerState,
+                   method, options::Options) = false
 
-    return converged
-end
+# convergence for a single objective
+# it's assumed that `objfun` holds previous value
+assess_convergence(objfun::NonDifferentiable{TF, TX},
+                            state::AbstractOptimizerState, method,
+                            options::Options) where {TF<:Real, TX} =
+    assess_convergence(value(objfun), value(state), options)
 
 
 ##############

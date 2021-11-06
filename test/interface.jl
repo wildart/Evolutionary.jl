@@ -94,16 +94,19 @@
     res = Evolutionary.EvolutionaryOptimizationResults(
         mthd, individual, value(objfun),
         opts.iterations, opts.show_trace, opts.store_trace,
-        opts.abstol, tr, f_calls(objfun), 1.0, 1.0
+        opts.abstol, opts.reltol, 1.0, 2.0, tr, f_calls(objfun), 1.0, 1.0
     );
     @test summary(res) == summary(mthd)
     @test Evolutionary.minimizer(res) == individual
     @test minimum(res) == value(objfun)
     @test Evolutionary.iterations(res) == opts.iterations
     @test Evolutionary.iteration_limit_reached(res) == opts.show_trace
-    @test Evolutionary.tol(res) == opts.abstol
     @test Evolutionary.converged(res) == opts.store_trace
     @test f_calls(res) == f_calls(objfun)
+    @test Evolutionary.abstol(res) == opts.abstol
+    @test Evolutionary.reltol(res) == opts.reltol
+    @test Evolutionary.abschange(res) == 1.0
+    @test Evolutionary.relchange(res) == 2.0
     @test Evolutionary.time_run(res) == 1.0
     @test Evolutionary.time_limit(res) == 1.0
     @test length(Evolutionary.trace(res)) >= 1
@@ -159,9 +162,6 @@
     v = value!(objfun,rand(Bool,dimension))
     @test 0 <= v <= dimension
     @test value(objfun) == v
-    F = [-1]
-    @test value(objfun, F, rand(Bool,dimension)) >= 0
-    @test F[] >= 0
     fitness = fill(-1, dimension)
     value!(Val(:serial), fitness, objfun, [rand(Bool,dimension) for i in 1:dimension])
     @test all(fitness.>=0)
