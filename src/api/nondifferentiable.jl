@@ -63,7 +63,7 @@ end
 
 function value!(::Val{:serial}, fitness, objfun, population::AbstractVector{IT}) where {IT}
     for i in 1:length(population)
-        fv = @view fitness[:,i]
+        fv = view(fitness, :, i)
         value(objfun, fv, population[i])
     end
 end
@@ -76,7 +76,7 @@ end
 
 function value!(::Val{:thread}, fitness, objfun, population::AbstractVector{IT}) where {IT}
     Threads.@threads for i in 1:length(population)
-        fv = @view fitness[:,i]
+        fv = view(fitness, :, i)
         value(objfun, fv, population[i])
     end
 end

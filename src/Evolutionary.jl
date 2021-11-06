@@ -2,6 +2,7 @@ module Evolutionary
     using Random, LinearAlgebra, Statistics
     using Base: @kwdef
     using UnPack: @unpack
+    using StackViews
     using NLSolversBase: NLSolversBase, AbstractObjective, ConstraintBounds,
                          AbstractConstraints, nconstraints_x, nconstraints
 
@@ -31,7 +32,7 @@ module Evolutionary
            # GP exports
            Terminal, subtree, point, hoist, shrink,
            # Optimization methods
-           ES, CMAES, GA, DE, TreeGP,
+           ES, CMAES, GA, DE, TreeGP, NSGA2,
            # re-export
            NonDifferentiable, value, value!, value!!, f_calls
 
@@ -43,6 +44,7 @@ module Evolutionary
     include("api/constraints.jl")
     include("api/optimize.jl")
     include("api/expressions.jl")
+    include("api/moea.jl")
 
     # Evolution Strategy
     include("es.jl")
@@ -50,6 +52,7 @@ module Evolutionary
 
     # Genetic Algorithms
     include("ga.jl")
+    include("nsga2.jl")
 
     # Differential Evolution
     include("de.jl")

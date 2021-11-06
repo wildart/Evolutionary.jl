@@ -40,7 +40,22 @@ function optimize(f, constraints::C, individual, method::M,
                  ) where {M<:AbstractOptimizer, C<:AbstractConstraints}
     population = initial_population(method, individual)
     @assert length(population) > 0 "Population is empty"
-    objfun = NonDifferentiable(f, first(population))
+    val = first(population)
+    objfun = try
+        nd = NonDifferentiable(f, val)
+        value(nd, val)
+        nd
+    catch
+        params = Dict(kwargs...)
+        @assert getkey(params, :F, nothing) !== nothing "Specify a sample of a multi-objective function return value in the `F` parameter."
+        try
+            nd = NonDifferentiable(f, val, params[:F])
+            value(nd, val)
+            nd
+        catch
+            error("Multi-objective function must have two parameters")
+        end
+    end
     optimize(objfun, constraints, population, method, options; kwargs...)
 end
 
@@ -58,6 +73,7 @@ function optimize(objfun::D, constraints::C, population::AbstractArray,
     t0 = time()
     stopped, stopped_by_callback = false, false
     converged, counter_tol = false, 0 # tolerance convergence
+    is_moo = ismmo(objfun)
 
     options.show_trace && print_header(method)
     trace!(tr, iteration, objfun, state, population, method, options, time()-t0)
@@ -73,7 +89,7 @@ function optimize(objfun::D, constraints::C, population::AbstractArray,
         converged = assess_convergence(objfun, state, method, options)
 
         # update the function value
-        value!(objfun, minimizer(state))
+        !is_moo && value!(objfun, minimizer(state))
 
         # check convergence persistence
         counter_tol = converged ? counter_tol+1 : 0
@@ -100,7 +116,7 @@ function optimize(objfun::D, constraints::C, population::AbstractArray,
     return EvolutionaryOptimizationResults(
         method,
         minimizer(state),
-        value(objfun),
+        is_moo ? NaN : value(objfun),
         iteration,
         iteration == options.iterations,
         converged,

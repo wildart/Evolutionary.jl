@@ -18,9 +18,10 @@ pkg> add Evolutionary
 
 ## Algorithms
 
-- (μ/ρ(+/,)λ)-SA-ES
-- (μ/μ<sub>I</sub>,λ)-CMA-ES
+- (μ/ρ(+/,)λ)-SA-ES (ES)
+- (μ/μ<sub>I</sub>,λ)-CMA-ES (CMAES)
 - Genetic Algorithms (GA)
+  - Multi-objective: NSGA-II (NSGA2)
 - Differential Evolution (DE)
 - Genetic Programming (TreeGP)
 

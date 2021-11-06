@@ -15,6 +15,7 @@ makedocs(
             "Evolution Strategy" => "es.md",
             "CMA-ES" => "cmaes.md",
             "Genetic Programming" => "gp.md",
+            "Multi-objective EA" => "moea.md",
         ],
         "Operations" => [
             "Selection" => "selection.md",

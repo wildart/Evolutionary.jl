@@ -18,6 +18,7 @@ for tests in [
     "n-queens.jl",
     "knapsack.jl",
     "onemax.jl",
+    "moea.jl",
     "regression.jl",
     "gp.jl"
 ]
