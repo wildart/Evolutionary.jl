@@ -13,6 +13,7 @@ module Evolutionary
            IsotropicStrategy, AnisotropicStrategy, NoStrategy,
            isfeasible, BoxConstraints, apply!, penalty, penalty!,
            PenaltyConstraints, WorstFitnessConstraints, MixedTypePenaltyConstraints,
+           EvolutionaryObjective, ismultiobjective,
            # ES mutations
            gaussian, cauchy,
            # GA mutations
@@ -39,6 +40,7 @@ module Evolutionary
     # optimize API
     include("api/types.jl")
     include("api/nondifferentiable.jl")
+    include("api/objective.jl")
     include("api/results.jl")
     include("api/utilities.jl")
     include("api/constraints.jl")

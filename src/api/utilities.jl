@@ -166,15 +166,14 @@ end
 # MISC #
 ########
 
-function objective_function_params(f, ptype)
-    m = try
-        which(f, (ptype,))
+default_values(x::AbstractArray{T}) where {T} = fill!(similar(x), zero(T))
+default_values(x::AbstractArray{T}) where {T<:AbstractFloat} = fill!(similar(x), T(NaN))
+
+function funargnum(f)
+    fobj = try
+        first(methods(f))
     catch
-        try
-            which(f, (AbstractVector, ptype))
-        catch
-            @error "Objective function defined with an incorrect number parameters"
-        end
+        @error "Cannot find function $f"
     end
-    m.nargs-1
+    fobj.nargs
 end
