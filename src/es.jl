@@ -106,7 +106,7 @@ function update_state!(objfun, constraints, state, population::AbstractVector{IT
         offspring[i] = apply!(constraints, off)
     end
     # calculate fitness of the population
-    value!(Val(evaltype), fitoff, objfun, offspring)
+    value!(objfun, fitoff, offspring)
     # apply penalty to fitness
     penalty!(fitoff, constraints, offspring)
 

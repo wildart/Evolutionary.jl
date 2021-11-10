@@ -86,9 +86,9 @@ assess_convergence(objfun::AbstractObjective, state::AbstractOptimizerState,
 
 # convergence for a single objective
 # it's assumed that `objfun` holds previous value
-assess_convergence(objfun::NonDifferentiable{TF, TX},
-                            state::AbstractOptimizerState, method,
-                            options::Options) where {TF<:Real, TX} =
+assess_convergence(objfun::EvolutionaryObjective{TC,TF,TX,TP},
+                   state::AbstractOptimizerState, method,
+                   options::Options) where {TC, TF<:Real, TX, TP} =
     assess_convergence(value(objfun), value(state), options)
 
 

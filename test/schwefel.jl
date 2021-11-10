@@ -25,7 +25,7 @@
 
     bounds = Evolutionary.ConstraintBounds(fill(-1.0f0,N),fill(1.0f0,N),[],[])
     opts = Evolutionary.Options(store_trace=true, iterations=10)
-    result = Evolutionary.optimize(schwefel, bounds, CMAES(mu = 3, lambda = 12), opts)
+    result = Evolutionary.optimize(schwefel, bounds, CMAES(mu = 3, lambda = 12, weights=zeros(Float32,12)), opts)
     @test Evolutionary.iterations(result) == 10
     @test !Evolutionary.converged(result)
     @test haskey(Evolutionary.trace(result)[end].metadata, "σ")

@@ -5,7 +5,7 @@
     #########
 
     using Evolutionary: AbstractOptimizer, AbstractOptimizerState, Options, value!,
-                        f_calls, NonDifferentiable, BoxConstraints, PenaltyConstraints
+                        f_calls, BoxConstraints, PenaltyConstraints, EvolutionaryObjective
     import Evolutionary: value, population_size, default_options, initial_state, update_state!
 
     # objective function
@@ -13,7 +13,7 @@
     individual = ones(dimension)
     minval = 1.0
     func = x->sum(x)+1
-    objfun = NonDifferentiable(func, individual)
+    objfun = EvolutionaryObjective(func, individual)
 
     # state
     mutable struct TestOptimizerState <: AbstractOptimizerState
@@ -169,7 +169,7 @@
     con_c!(x) = [sum(x)]
     cb = Evolutionary.ConstraintBounds(fill(0, 3), fill(1, 3), [1], [1])
     c = PenaltyConstraints(1, cb, con_c!)
-    objfun = NonDifferentiable(sum, zeros(3))
+    objfun = EvolutionaryObjective(sum, zeros(3))
     x, y = [0, 1, 0], [0, -1, 3]
     @test isfeasible(c, x)    # feasible
     @test !isfeasible(c, y) # not feasible
@@ -192,25 +192,5 @@
     @test Evolutionary.iterations(res) == 7
     @test !Evolutionary.converged(res)
     @test length(Evolutionary.trace(res)) > 1
-
-    # Issue 83
-    f1(x) = sum(x)
-    objfun = NonDifferentiable(f1, [1; 2; 3; 4])
-    @test typeof(objfun.F) == Int
-    @test eltype(objfun.x_f) == Int
-    f2(x) = sum(x)/length(x)
-    objfun = NonDifferentiable(f2, [1; 2; 3; 4])
-    @test typeof(objfun.F) == Float64
-    @test eltype(objfun.x_f) == Int
-    objfun = NonDifferentiable(f1, BitVector(ones(10)))
-    @test typeof(objfun.F) == Int
-    @test eltype(objfun.x_f) == Bool
-    objfun = NonDifferentiable(f2, BitVector(ones(10)))
-    @test typeof(objfun.F) == Float64
-    @test eltype(objfun.x_f) == Bool
-    f3(expr::Expr) = Evolutionary.Expression(expr).([1; 2; 3; 4]) |> sum
-    objfun = NonDifferentiable(f3, Expr(:call, *, :x, :x))
-    @test typeof(objfun.F) == Int
-    @test typeof(objfun.x_f) == Expr
 
 end
