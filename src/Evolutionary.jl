@@ -11,7 +11,7 @@ module Evolutionary
 
     export AbstractStrategy, strategy, mutationwrapper,
            IsotropicStrategy, AnisotropicStrategy, NoStrategy,
-           isfeasible, BoxConstraints, apply!, penalty, penalty!,
+           isfeasible, BoxConstraints, apply!, penalty, penalty!, bounds,
            PenaltyConstraints, WorstFitnessConstraints, MixedTypePenaltyConstraints,
            EvolutionaryObjective, ismultiobjective,
            # ES mutations

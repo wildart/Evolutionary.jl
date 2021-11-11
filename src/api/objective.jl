@@ -8,6 +8,11 @@ mutable struct EvolutionaryObjective{TC,TF,TX,TP} <: AbstractObjective
     f_calls::Int
 end
 
+"""
+    EvolutionaryObjective(f, x[, F])
+
+Constructor for an objective function object around the function `f` with initial paramter `x`, and objective value `F`.
+"""
 function EvolutionaryObjective(f, x::AbstractArray,
                                F::Union{Real, AbstractArray{<:Real}} = zero(f(x));
                                eval::Symbol = :serial)
@@ -21,7 +26,11 @@ function EvolutionaryObjective(f, x::AbstractArray,
     EvolutionaryObjective{typeof(fn),typeof(F),typeof(x),Val{eval}}(fn, F, defval, 0)
 end
 
-# Constructor for non-differentiable function for expression
+"""
+    EvolutionaryObjective(f, x::Expr[, F])
+
+Constructor for an objective object for a Julia evaluatable expression.
+"""
 function EvolutionaryObjective(f, x::Expr, F::TF = zero(f(x));
                                eval::Symbol = :serial) where {TF<:Real}
     EvolutionaryObjective{typeof(f),TF,typeof(x),Val{eval}}(f, F, :(), 0)
