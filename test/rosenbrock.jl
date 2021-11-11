@@ -8,7 +8,7 @@
     end
 
     # Objective function
-    rosenbrock(x::AbstractVector) = (1.0 - x[1])^2 + 100 * (x[2] - x[1]^2)^2
+    rosenbrock(x::AbstractVector) = (1 - x[1])^2 + 100 * (x[2] - x[1]^2)^2
 
     # Parameters
     N = 2
@@ -43,7 +43,8 @@
     result = Evolutionary.optimize(rosenbrock, (() -> rand(Float32,N)), CMAES(mu = 5, lambda = 100, weights=zeros(Float32,100)))
     println("(5/5,100)-CMA-ES => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
     test_result(result, N, 1e-2)
-    result = Evolutionary.optimize(rosenbrock, fill(0.0, N), fill(0.5, N), (() -> rand(N)), CMAES(mu = 5, lambda = 100))
+    bc = BoxConstraints(fill(0.0, N), fill(0.5, N))
+    result = Evolutionary.optimize(rosenbrock, bc, (() -> rand(N)), CMAES(mu = 5, lambda = 100))
     println("(5/5,100)-CMA-ES [box] => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
     @test Evolutionary.minimizer(result) ≈ [0.5, 0.25] atol=1e-5
 

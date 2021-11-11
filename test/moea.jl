@@ -1,7 +1,3 @@
-using Evolutionary
-using Test
-using Random
-
 @testset "Multi-objective EA" begin
 
     # domination
@@ -21,27 +17,24 @@ using Random
     @test Evolutionary.spread(R) ≈ 0.0
     @test Evolutionary.spread(R[1:1,1:4]) ≈ 3.75
 
-    # Problems
-
-    invalid(x::AbstractVector) = [ x[1]^2,  (x[1]-2)^2 ]
-    @test_throws AssertionError Evolutionary.optimize(invalid, [5.0], NSGA2())
-    @test_throws ErrorException Evolutionary.optimize(invalid, [5.0], NSGA2(); F=zeros(2))
-
     # Schaffer F2
-    function schafferf2(F, x::AbstractVector)
+
+    schafferf2(x::AbstractVector) = [ x[1]^2,  (x[1]-2)^2 ]
+    Random.seed!(42)
+    result = Evolutionary.optimize(schafferf2, [5.0], NSGA2())
+    println("NSGA2:2RLT:SBX:PLM => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
+    @test isnan(Evolutionary.minimum(result))
+    mvs = vcat(Evolutionary.minimizer(result)...)
+    @test 1-sum(0 .<= mvs .<= 2)/length(mvs) ≈ 0.0 atol=0.1 # PO ∈ [0,2]
+
+
+    function schafferf2!(F, x::AbstractVector) # in-place update
         F[1] = x[1]^2
         F[2] = (x[1]-2)^2
         F
     end
-
     Random.seed!(42)
-    result = Evolutionary.optimize(
-        schafferf2, [5.0],
-        NSGA2(
-            populationSize = 100,
-            mutationRate = 0.1,
-        ); F = zeros(2)
-    );
+    result = Evolutionary.optimize(schafferf2!, zeros(2), [5.0], NSGA2())
     println("NSGA2:2RLT:SBX:PLM => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
     @test isnan(Evolutionary.minimum(result))
     mvs = vcat(Evolutionary.minimizer(result)...)

@@ -57,7 +57,7 @@ f_calls(r::OptimizationResults) = r.f_calls
 
 Returns an absolute tollerance value of the optimization `result`.
 """
-tol(r::OptimizationResults) = error("`abstol` is not implemented for $(summary(r)).")
+abstol(r::OptimizationResults) = error("`abstol` is not implemented for $(summary(r)).")
 
 """
     reltol(result)

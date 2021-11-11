@@ -28,6 +28,13 @@ Appliy constrains `c` to a variable `x`, and return the variable.
 """
 apply!(c::AbstractConstraints, x) = x
 
+"""
+    bounds(c::AbstractConstraints)
+
+Return bounds for the constraint `c`.
+"""
+bounds(c::AbstractConstraints) = error("`bounds` is not implemented for $(c).")
+
 # Auxiliary functions
 
 """
@@ -92,10 +99,11 @@ BoxConstraints(lower::AbstractVector{T}, upper::AbstractVector{T}) where {T} =
 BoxConstraints(lower::T, upper::T, size) where {T} =
     BoxConstraints(fill(lower, size), fill(upper, size))
 apply!(c::BoxConstraints, x) = clip!(c.bounds, x)
+bounds(c::BoxConstraints) = c.bounds
 function show(io::IO,c::BoxConstraints)
     print(io, "Box Constraints:")
     indent = "    "
-    cb = c.bounds
+    cb = bounds(c)
     NLSolversBase.showeq(io, indent, cb.eqx, cb.valx, 'x', :bracket)
     NLSolversBase.showineq(io, indent, cb.ineqx, cb.σx, cb.bx, 'x', :bracket)
 end
@@ -140,6 +148,7 @@ PenaltyConstraints(lx::AbstractVector{T}, ux::AbstractVector{T},
                    cf=(x)->nothing) where {T} =
     PenaltyConstraints(one(T), ConstraintBounds(lx, ux, lc, uc), cf)
 value(c::PenaltyConstraints, x) = c.constraints(x)
+bounds(c::PenaltyConstraints) = c.bounds
 penalty(c::PenaltyConstraints, x) = penalty(c.bounds, c.coef, x, value(c, x))
 function penalty!(fitness::AbstractVector{T}, c::PenaltyConstraints{T,F}, population) where {T,F}
     for (i,x) in enumerate(population)
@@ -150,7 +159,7 @@ end
 function show(io::IO,c::PenaltyConstraints)
     println(io, "Penalty Constraints:")
     println(io, "  Penalties: $(c.coef)")
-    print(io, c.bounds)
+    print(io, bounds(c))
 end
 
 """
@@ -177,6 +186,7 @@ WorstFitnessConstraints(lx::AbstractVector{T}, ux::AbstractVector{T}, lc::Abstra
     WorstFitnessConstraints(ConstraintBounds(lx, ux, lc, uc), cf)
 value(c::WorstFitnessConstraints, x) = c.constraints(x)
 apply!(c::WorstFitnessConstraints, x) = clip!(c.bounds, x)
+bounds(c::WorstFitnessConstraints) = c.bounds
 function penalty!(fitness::AbstractVector{T}, c::WorstFitnessConstraints{T,F}, population) where {T,F}
     worst = maximum(fitness)
     for (i,x) in enumerate(population)

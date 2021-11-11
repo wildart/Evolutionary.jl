@@ -74,16 +74,29 @@ Evolutionary.NoConstraints
 MixedTypePenaltyConstraints
 ```
 
+### Objective
+
+Internally, the objective function is wrapped into [`EvolutionaryObjective`](@ref) type object.
+
+```@docs
+Evolutionary.EvolutionaryObjective
+Evolutionary.EvolutionaryObjective(f, x::AbstractArray)
+Evolutionary.EvolutionaryObjective(f, x::Expr)
+Evolutionary.ismultiobjective
+```
+
 ### Parallelization
 
 For additional modes of parallelization of the objective function evaluation, add overrides of the `value!` function.
 By default, the fitness of the population is calculated by the following function:
 
 ```julia
-function value!(::Val{:serial}, fitness, objfun, population::AbstractVector{IT}) where {IT}
-    for i in 1:length(population)
-        fitness[i] = value(objfun, population[i])
+function value!(obj::EvolutionaryObjective{TC,TF,TX,Val{:serial}}, fitness, population::AbstractVector{IT}) where {IT}
+    n = length(xs)
+    for i in 1:n
+        F[i] = value(obj, xs[i])
     end
+    F
 end
 ```
 

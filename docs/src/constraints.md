@@ -42,7 +42,7 @@ vectors of lower and upper bounds as follows:
 lower = [0.5, 0.5]
 upper = [2.0, 2.0]
 x0 = [1., 1.]
-results = Evolutionary.optimize(f, lower, upper, x0, ga)
+results = Evolutionary.optimize(f, BoxConstraints(lower, upper), x0, ga)
 ```
 
 The box constraints can be also defined using [`BoxConstraints`](@ref) object.
@@ -108,4 +108,15 @@ con = WorstFitnessConstraints(lx, ux, lc, uc, c)
 ```
 ```@example cntr
 results = Evolutionary.optimize(f, con, x0, ga)
+```
+
+## Auxiliary Functions
+
+```@docs
+value(c::Evolutionary.AbstractConstraints, x)
+isfeasible
+penalty
+penalty!
+apply!
+bounds
 ```

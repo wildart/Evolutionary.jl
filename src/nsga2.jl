@@ -57,7 +57,7 @@ function initial_state(method::NSGA2, options, objfun, parents)
     fitpop = fill(typemax(T), d, method.populationSize*2)
 
     # Evaluate parents fitness
-    value!(Val(options.parallelization), fitpop, objfun, parents)
+    value!(objfun, fitpop, parents)
 
     # setup initial state
     allpop = StackView(parents, offspring)
@@ -94,7 +94,7 @@ function update_state!(objfun, constraints, state, parents::AbstractVector{IT}, 
 
     # calculate fitness of the offspring
     offfit = @view state.fitpop[:, populationSize+1:end]
-    value!(Val(options.parallelization), offfit, objfun, state.offspring)
+    value!(objfun, offfit, state.offspring)
     # apply penalty to fitness
     penalty!(offfit, constraints, state.offspring)
 

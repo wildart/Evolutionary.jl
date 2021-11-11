@@ -6,7 +6,7 @@ using Statistics
 Random.seed!(9874984737486)
 
 for tests in [
-    "nondifferentiable.jl",
+    "objective.jl",
     "interface.jl",
     "selections.jl",
     "recombinations.jl",

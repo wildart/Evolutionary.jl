@@ -13,12 +13,40 @@ To show how the **Evolutionary** package can be used, we minimize the
 a classical test problem for numerical optimization. We'll assume that you've already
 installed the **Evolutionary** package using Julia's package manager.
 
+### Objective Function Definition
+
 First, we load **Evolutionary** and define the Rosenbrock function:
 
 ```julia
 using Evolutionary
 f(x) = (1.0 - x[1])^2 + 100.0 * (x[2] - x[1]^2)^2 # Rosenbrock
 ```
+
+There are various ways to define your objective function:
+
+- For single-objective optimization, the objective function has to have one parameter and return a scalar value, e.g.
+
+```julia
+soofun(x) = x[1] + x[2]
+```
+
+- For multi-objective optimization, the objective function has to return an vector of values, e.g.
+
+```julia
+moofun(x) = [ x[1], x[2]+1 ]
+```
+
+- If multi-objective function has one parameter, the resulting value array will be copied. To reduce, additional data copy, the function can be defined with two parameters to perform in-place change of the result, e.g.
+
+```julia
+function moofun(F, x)
+    F[1] = x
+    F[2] = x +1
+    F
+end
+```
+
+### Perform Optimization
 
 Once we've defined this function, we can find the minimizer (the input that minimizes the objective) and the minimum (the value of the objective at the minimizer) using any of our favorite optimization algorithms. With a function defined,
 we just specify a form of an individual `x` of the population for an evolutionary algorithm, and call `optimize` with a starting individual `x0` and a particular optimization algorithm, e.g. [`CMAES()`](@ref):
@@ -44,6 +72,8 @@ There are different algorithms available in `Evolutionary`, and they are all lis
 - [`ES()`](@ref)
 - [`CMAES()`](@ref)
 - [`DE()`](@ref)
+- [`NSGA2()`](@ref)
+- [`TreeGP()`](@ref)
 
 ### General options
 
@@ -90,14 +120,14 @@ iterations(::OptimizationResults)
 iteration_limit_reached(::OptimizationResults)
 trace(::OptimizationResults)
 f_calls(::OptimizationResults)
-tol(::OptimizationResults)
+abstol(::OptimizationResults)
+reltol(::OptimizationResults)
 ```
 
 An implementation of the result object for evolutionary optimizations.
 ```@docs
 EvolutionaryOptimizationResults
 converged(::EvolutionaryOptimizationResults)
-tol(::EvolutionaryOptimizationResults)
 ```
 
 ## Trace

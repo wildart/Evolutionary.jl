@@ -40,7 +40,7 @@ bitinversion
 
 ```@docs
 uniform(::Real)
-gaussian(::Real)
+gaussian
 BGA
 PM
 MIPM

@@ -1,69 +1,71 @@
-after_while!(objfun, state, method, options) = nothing
-
 # Optimization interface
-function optimize(f, lower, upper, method::M,
-                  options::Options = Options(;default_options(method)...); kwargs...
-                 ) where {M<:AbstractOptimizer}
-    bounds = ConstraintBounds(lower,upper,[],[])
-    optimize(f, bounds, method, options)
-end
 
 """
-    optimize(f, indiv, algo)
+    optimize(f[, F], indiv, algo[, opts])
+    optimize(f[, F], constr, algo[, opts])
+    optimize(f[, F], constr, indiv, algo[, opts])
+    optimize(f[, F], constr, algo, poplt[, opts])
 
-Perform optimization of the function `f` using aloruthm `algo` with the population composed of
-individuals similar to the original individual `indiv`.
+Perform optimization of the function `f` using the alorithm `algo` with the population, composed of
+the initial population `poplt`, or individuals similar to the original individual `indiv`,
+or generated from the constraints `constr`, with the options `opts`.
+- For multi-objective optimization, the objective value `F` *must* be provided.
 """
-function optimize(f, individual, method::M,
-                  options::Options = Options(;default_options(method)...); kwargs...
-                 ) where {M<:AbstractOptimizer}
-    optimize(f, NoConstraints(), individual, method, options; kwargs...)
-end
-
-function optimize(f, individual::ConstraintBounds, method::M,
-                  options::Options = Options(;default_options(method)...); kwargs...
-                 ) where {M<:AbstractOptimizer}
-    optimize(f, BoxConstraints(individual), individual, method, options; kwargs...)
-end
-function optimize(f, lower, upper, individual, method::M,
-                  options::Options = Options(;default_options(method)...); kwargs...
-                 ) where {M<:AbstractOptimizer}
-    optimize(f, BoxConstraints(lower,upper), individual, method, options; kwargs...)
-end
+optimize(f, individual, method::M,
+         opts::Options = Options(;default_options(method)...)) where {M<:AbstractOptimizer} =
+    optimize(f, NoConstraints(), individual, method, opts)
+optimize(f, F::AbstractVector, individual, method::M,
+         opts::Options = Options(;default_options(method)...)) where {M<:AbstractOptimizer} =
+    optimize(f, F, NoConstraints(), individual, method, opts)
+optimize(f, bounds::ConstraintBounds, method::M,
+         opts::Options = Options(;default_options(method)...)) where {M<:AbstractOptimizer} =
+    optimize(f, BoxConstraints(bounds), method, opts)
+optimize(f, F, bounds::ConstraintBounds, method::M,
+         opts::Options = Options(;default_options(method)...)) where {M<:AbstractOptimizer} =
+    optimize(f, F, BoxConstraints(bounds), method, opts)
 function optimize(f, constraints::C, method::M,
-                  options::Options = Options(;default_options(method)...); kwargs...
-                 ) where {M<:AbstractOptimizer, C<:AbstractConstraints}
-    optimize(f, constraints, constraints.bounds, method, options; kwargs...)
+                  opts::Options = Options(;default_options(method)...)
+                  ) where {M<:AbstractOptimizer, C<:AbstractConstraints}
+    population = initial_population(method, bounds(constraints))
+    optimize(f, constraints, method, population, opts)
+end
+function optimize(f, F, constraints::C, method::M,
+                  opts::Options = Options(;default_options(method)...)
+                  ) where {M<:AbstractOptimizer, C<:AbstractConstraints}
+    population = initial_population(method, bounds(constraints))
+    optimize(f, F, constraints, method, population, opts)
 end
 function optimize(f, constraints::C, individual, method::M,
-                  options::Options = Options(;default_options(method)...); kwargs...
-                 ) where {M<:AbstractOptimizer, C<:AbstractConstraints}
+                  opts::Options = Options(;default_options(method)...)
+                  ) where {M<:AbstractOptimizer, C<:AbstractConstraints}
     population = initial_population(method, individual)
+    optimize(f, constraints, method, population, opts)
+end
+function optimize(f, F, constraints::C, individual, method::M,
+                  opts::Options = Options(;default_options(method)...)
+                  ) where {M<:AbstractOptimizer, C<:AbstractConstraints}
+    population = initial_population(method, individual)
+    optimize(f, F, constraints, method, population, opts)
+end
+function optimize(f, constraints::C, method::M, population,
+                  opts::Options = Options(;default_options(method)...)
+                 ) where {M<:AbstractOptimizer, C<:AbstractConstraints}
     @assert length(population) > 0 "Population is empty"
-    val = first(population)
-    objfun = try
-        nd = NonDifferentiable(f, val)
-        value(nd, val)
-        nd
-    catch
-        params = Dict(kwargs...)
-        @assert getkey(params, :F, nothing) !== nothing "Specify a sample of a multi-objective function return value in the `F` parameter."
-        try
-            nd = NonDifferentiable(f, val, params[:F])
-            value(nd, val)
-            nd
-        catch
-            error("Multi-objective function must have two parameters")
-        end
-    end
-    optimize(objfun, constraints, population, method, options; kwargs...)
+    objfun = EvolutionaryObjective(f, first(population); eval=opts.parallelization)
+    optimize(objfun, constraints, method, population, opts)
+end
+function optimize(f, F, constraints::C, method::M, population,
+                  opts::Options = Options(;default_options(method)...)
+                 ) where {M<:AbstractOptimizer, C<:AbstractConstraints}
+    @assert length(population) > 0 "Population is empty"
+    objfun = EvolutionaryObjective(f, first(population), F; eval=opts.parallelization)
+    optimize(objfun, constraints, method, population, opts)
 end
 
-function optimize(objfun::D, constraints::C, population::AbstractArray,
-                  method::M, options::Options = Options(;default_options(method)...),
-                  state = initial_state(method, options, objfun, population); kwargs...
+function optimize(objfun::D, constraints::C, method::M, population::AbstractArray,
+                  options::Options = Options(;default_options(method)...),
+                  state = initial_state(method, options, objfun, population)
                  ) where {D<:AbstractObjective, C<:AbstractConstraints, M<:AbstractOptimizer}
-
     # setup trace
     tr = OptimizationTrace{typeof(value(objfun)), typeof(method)}()
     tracing = options.store_trace || options.show_trace || options.callback !== nothing
@@ -73,7 +75,7 @@ function optimize(objfun::D, constraints::C, population::AbstractArray,
     t0 = time()
     stopped, stopped_by_callback = false, false
     converged, counter_tol = false, 0 # tolerance convergence
-    is_moo = ismmo(objfun)
+    is_moo = ismultiobjective(objfun)
 
     options.show_trace && print_header(method)
     trace!(tr, iteration, objfun, state, population, method, options, time()-t0)
@@ -130,3 +132,5 @@ function optimize(objfun::D, constraints::C, population::AbstractArray,
         _time-t0,
     )
 end
+
+after_while!(objfun, state, method, options) = nothing

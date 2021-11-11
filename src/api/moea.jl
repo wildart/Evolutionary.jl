@@ -140,7 +140,7 @@ end
 """
     igd(S,R)
 
-Calculate an inverted generational distance, [gd](@ref), between set `S` and the refernce set `R`.
+Calculate an inverted generational distance, [`gd`](@ref), between set `S` and the refernce set `R`.
 Parameters are column-major matrices.
 """
 igd(S,R) = gd(R,S)
