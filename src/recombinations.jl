@@ -481,6 +481,20 @@ function POS(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: Abstr
     return c1,c2
 end
 
+# Combinatorial crossovers
+# ----------------------
+
+function SXO(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
+    l = length(v1) # get number of available elements
+    K = sum(v1) # get required subset size
+    pooled = union(findall(v1),findall(v2)) # pool parents selections
+    c1 = falses(l) # init child 1
+    c2 = falses(l) # init child 2
+    c1[shuffle(pooled)[1:K]] .= true # fill child 1 with sample from pool w/o replacement
+    c2[shuffle(pooled)[1:K]] .= true # fill child 2 with sample from pool w/o replacement
+    return c1, c2
+end
+
 # ===================
 # Genetic Programming
 # ===================
