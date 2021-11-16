@@ -484,6 +484,7 @@ end
 # Combinatorial crossovers
 # ----------------------
 
+"""Subset crossover"""
 function SXO(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
     l = length(v1) # get number of available elements
     K = sum(v1) # get required subset size
