@@ -491,8 +491,8 @@ function SXO(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: Abstr
     pooled = findall(v1 .| v2) # pool parents selections
     c1 = falses(l) # init child 1
     c2 = falses(l) # init child 2
-    c1[shuffle(pooled)[1:K]] .= true # fill child 1 with sample from pool w/o replacement
-    c2[shuffle(pooled)[1:K]] .= true # fill child 2 with sample from pool w/o replacement
+    c1[shuffle(rng, pooled)[1:K]] .= true # fill child 1 with sample from pool w/o replacement
+    c2[shuffle(rng, pooled)[1:K]] .= true # fill child 2 with sample from pool w/o replacement
     return c1, c2
 end
 
