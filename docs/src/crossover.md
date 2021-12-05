@@ -32,6 +32,7 @@ TPX
 UX
 BINX
 EXPX
+SXO
 ```
 
 Real valued crossovers:
@@ -56,12 +57,6 @@ OX1
 CX
 OX2
 POS
-```
-
-Combinatorial crossovers:
-
-```@docs
-SXO
 ```
 
 Tree (expression) crossovers:
