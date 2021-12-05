@@ -484,10 +484,17 @@ end
 # Combinatorial crossovers
 # ----------------------
 
-"""Subset crossover"""
-function SXO(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
+"""
+    SXO(v1, v2)
+
+Subset crossover[^7]. Produces two offsprings by first pooling the unique items
+of the two parents, and then creating each offspring by sampling without
+replacement from the pool of items.
+"""
+function SXO(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector{Bool}}
     l = length(v1) # get number of available elements
     K = sum(v1) # get required subset size
+    @assert (sum(v2)==K) "v1 and v2 must have the same number of true entries"
     pooled = findall(v1 .| v2) # pool parents selections
     c1 = falses(l) # init child 1
     c2 = falses(l) # init child 2

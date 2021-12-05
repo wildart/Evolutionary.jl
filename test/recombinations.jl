@@ -52,6 +52,11 @@
         @test CX([8,4,7,3,6,2,5,1,9,0],collect(0:9)) == ([8,1,2,3,4,5,6,7,9,0],[0,4,7,3,6,2,5,1,8,9])
         @test SBX(0.0)(pop[1], pop[2]) == ([0.5, 0.5], [0.5, 0.5])
         @test sum(sum.(SBX()(pop[1], pop[2]) .- (pop[2], pop[1]))) ≈ 0 atol=1e-10
+        @test compare(
+            (SXO([true,false], [false,true]) for i in 1:100),
+            [ ([true,false], [true,false]), ([true,false], [false,true]),
+              ([false,true], [true,false]), ([false,true], [false,true]) ]
+        )
     end
 
     @testset "DE" begin
