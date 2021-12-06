@@ -116,7 +116,7 @@ susinv(fitness::Vector{<:Real}, N::Int; kwargs...) =
 """
     truncation(fitness, N)
 
-Truncation selection returns first `N` of best `fitness` inividuals
+Truncation selection returns first `N` of best `fitness` individuals
 """
 function truncation(fitness::Vector{<:Real}, N::Int; kwargs...)
     λ = length(fitness)
