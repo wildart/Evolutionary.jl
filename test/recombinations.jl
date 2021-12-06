@@ -53,7 +53,7 @@
         @test SBX(0.0)(pop[1], pop[2]) == ([0.5, 0.5], [0.5, 0.5])
         @test sum(sum.(SBX()(pop[1], pop[2]) .- (pop[2], pop[1]))) ≈ 0 atol=1e-10
         @test compare(
-            (SXO([true,false], [false,true]) for i in 1:100),
+            (SXO(1)([true,false], [false,true]) for i in 1:100),
             [ ([true,false], [true,false]), ([true,false], [false,true]),
               ([false,true], [true,false]), ([false,true], [false,true]) ]
         )

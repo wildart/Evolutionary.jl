@@ -160,6 +160,26 @@ function EXPX(Cr::Real = 0.5)
     return expxvr
 end
 
+"""
+    SXO(k::Int)
+
+Subset crossover[^7]. Produces two offsprings by first pooling the unique items
+of the two parents, and then creating each offspring by sampling without 
+replacement at most `k` elements from the pool of items.
+"""
+function SXO(k::Int)
+    function SXO(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector{Bool}}
+        l = length(v1) # get number of available elements
+        pooled = findall(v1 .| v2) # pool parents selections
+        K = min(k,length(pooled)) # cannot sample more than the items in pool
+        c1 = falses(l) # init child 1
+        c2 = falses(l) # init child 2
+        c1[shuffle(rng, pooled)[1:K]] .= true # fill child 1 with sample from pool w/o replacement
+        c2[shuffle(rng, pooled)[1:K]] .= true # fill child 2 with sample from pool w/o replacement
+        return c1, c2
+    end
+    return SXO
+end
 
 # Real valued crossovers
 # ----------------------
@@ -481,27 +501,7 @@ function POS(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: Abstr
     return c1,c2
 end
 
-# Combinatorial crossovers
-# ----------------------
 
-"""
-    SXO(v1, v2)
-
-Subset crossover[^7]. Produces two offsprings by first pooling the unique items
-of the two parents, and then creating each offspring by sampling without
-replacement from the pool of items.
-"""
-function SXO(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector{Bool}}
-    l = length(v1) # get number of available elements
-    K = sum(v1) # get required subset size
-    @assert (sum(v2)==K) "v1 and v2 must have the same number of true entries"
-    pooled = findall(v1 .| v2) # pool parents selections
-    c1 = falses(l) # init child 1
-    c2 = falses(l) # init child 2
-    c1[shuffle(rng, pooled)[1:K]] .= true # fill child 1 with sample from pool w/o replacement
-    c2[shuffle(rng, pooled)[1:K]] .= true # fill child 2 with sample from pool w/o replacement
-    return c1, c2
-end
 
 # ===================
 # Genetic Programming
