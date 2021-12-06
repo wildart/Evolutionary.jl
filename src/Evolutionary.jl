@@ -5,7 +5,6 @@ module Evolutionary
     using StackViews
     using NLSolversBase: NLSolversBase, AbstractObjective, ConstraintBounds,
                          AbstractConstraints, nconstraints_x, nconstraints
-
     import NLSolversBase: f_calls, value, value!, value!!
     import Base: show, copy, minimum, summary, identity, getproperty, rand, getindex, length, copyto!, setindex!
 
@@ -17,15 +16,17 @@ module Evolutionary
            # ES mutations
            gaussian, cauchy,
            # GA mutations
-           flip, bitinversion, uniform, BGA, inversion, insertion, swap2, scramble, shifting, PM, MIPM, PLM,
+           flip, bitinversion, uniform, BGA, inversion, insertion, swap2, scramble,
+           shifting, PM, MIPM, PLM,
            # ES recombinations
            average, marriage,
            # GA recombinations
-           SPX, TPX, UX,
-           discrete, waverage, intermediate, line, HX, LX, MILX, SBX,
+           SPX, TPX, UX, SHFX,
+           DC, AX, WAX, IC, LC, HX, LX, MILX, SBX,
            PMX, OX1, CX, OX2, POS,
            # GA selections
-           ranklinear, uniformranking, roulette, rouletteinv, sus, susinv, tournament, truncation,
+           ranklinear, uniformranking, roulette, rouletteinv, sus, susinv,
+           tournament, truncation,
            # DE selections
            random, permutation, randomoffset, best,
            # DE recombinations
@@ -77,5 +78,9 @@ module Evolutionary
     @deprecate singlepoint SPX
     @deprecate twopoint TPX
     @deprecate domainrange BGA
+    @deprecate waverage WAX
+    @deprecate intermediate IC
+    @deprecate line LC
+    @deprecate discrete DC
 
 end
