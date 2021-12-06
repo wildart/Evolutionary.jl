@@ -1,7 +1,7 @@
 # Collection of protected function for GP
 
 """Protected division"""
-pdiv(x, y, undef=10e6) = ifelse(y==0 , x+undef  , div(x,y))
+pdiv(x, y, undef=10e6) = ifelse(y==0 , x+undef  , /(x,y))
 """Protected exponential"""
 pexp(x, undef=10e15)   = ifelse(x>=32, x+undef  , exp(x))
 """Protected natural log"""
