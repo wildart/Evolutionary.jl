@@ -41,10 +41,11 @@
     # Testing: ES
     for muts in [inversion, insertion, swap2, scramble, shifting]
         for sel in [:plus, :comma]
+            μ = 20
             result = Evolutionary.optimize(nqueens, generatePositions,
-                ES(mutation = mutationwrapper(muts), μ = 15, ρ = 1, λ = P, selection=sel),
+                ES(mutation = mutationwrapper(muts), μ=μ, ρ=1, λ=P, selection=sel),
                 Evolutionary.Options(show_trace=false))
-            println("(15$(sel == :plus ? "+" : ",")$(P))-ES:$(string(muts)) => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
+            println("($μ$(sel == :plus ? "+" : ",")$(P))-ES:$(string(muts)) => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
             # show(result)
             @test nqueens(Evolutionary.minimizer(result)) == 0
         end
