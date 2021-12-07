@@ -83,7 +83,8 @@
         Random.seed!(rng, 1)
         off = [mut(copy(ex), rng=rng) for i in 1:10]
         @testset "Offspring Height" for i in 1:10
-            @test all(o->Evolutionary.height(o) <= H, map(o->mut(o,rng=rng), off))
+            map(o->mut(o,rng=rng), off) # mutate offspring
+            @test all(o->Evolutionary.height(o) <= H, off)
         end
 
         # subtree mutation does not produce offspring expression longer then the parent
@@ -91,7 +92,9 @@
         Random.seed!(rng, 2)
         off = [mut(copy(ex), rng=rng) for i in 1:10]
         @testset "Offspring Height (Growth)" for i in 1:5
-            @test all(o->Evolutionary.height(o) <= 3i, map(o->mut(o,rng=rng), off))
+            map(o->mut(o,rng=rng), off) # mutate offspring
+            h = map(Evolutionary.height, off)
+            @test all(h .<= 3+i)
         end
 
         # hoist
@@ -103,7 +106,7 @@
         @testset "Hoist Mutation" for i in 1:10
             n = length(off[i])
             m = length(mut(off[i], rng=rng))
-            @test n > m
+            @test n >= m
         end
 
         # shrink
