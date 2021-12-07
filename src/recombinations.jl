@@ -181,14 +181,14 @@ function EXPX(Cr::Real = 0.5)
 end
 
 """
-    SXO(k::Int)
+    BSX(k::Int)
 
-Subset crossover[^7]. Produces two offsprings by first pooling the unique items
-of the two parents, and then creating each offspring by sampling without 
+Binary Subset Crossover[^7]. Produces two offsprings by first pooling the unique
+items of the two parents, and then creating each offspring by sampling without 
 replacement at most `k` elements from the pool of items.
 """
-function SXO(k::Int)
-    function SXO(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector{Bool}}
+function BSX(k::Int)
+    function BSX(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector{Bool}}
         l = length(v1) # get number of available elements
         pooled = findall(v1 .| v2) # pool parents selections
         K = min(k,length(pooled)) # cannot sample more than the items in pool
@@ -198,7 +198,7 @@ function SXO(k::Int)
         c2[shuffle(rng, pooled)[1:K]] .= true # fill child 2 with sample from pool w/o replacement
         return c1, c2
     end
-    return SXO
+    return BSX
 end
 
 # Real valued crossovers

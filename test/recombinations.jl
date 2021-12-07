@@ -53,7 +53,7 @@
         Random.seed!(rng, 18)
         @test POS([1:8;], [2,4,6,8,7,5,3,1], rng=rng) == ([1,4,6,2,3,5,7,8], [4,2,3,8,7,6,5,1])
         
-        xo = SXO(3)                                                                 
+        xo = BSX(3)                                                                 
         @testset "BSX" for i in 1:100
             off1, off2 = xo(Bool[1,0,1,0,1,0], Bool[1,1,1,1,0,0])
             @test off1[end] == 0 && off2[end] == 0

@@ -32,7 +32,7 @@ SHFX
 UX
 BINX
 EXPX
-SXO
+BSX
 ```
 
 Real-valued crossovers:
