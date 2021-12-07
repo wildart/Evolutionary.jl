@@ -1,30 +1,39 @@
 @testset "Selections" begin
 
+    rng = StableRNG(42)
+
     @testset "Rank" begin
-        Random.seed!(2);
         fitness = [5, 1, 3, 4, 2.0]
+
         s = ranklinear(1.0)
-        @test s(fitness, 2) == [2,3]
+        Random.seed!(rng, 2)
+        @test s(fitness, 2, rng=rng) == [5,1]
 
         s = ranklinear(2.0)
-        @test s([1,2], 2) == [2,2]
+        Random.seed!(rng, 2)
+        @test s([1,2], 2, rng=rng) == [2,2]
     end
 
     @testset "Uniform" begin
-        Random.seed!(2);
         s = uniformranking(2)
-        @test sort(unique(s([1.0,2.0,3.0], 10))) == [1,2]
-        @test sort(unique(s([5,2,3], 5))) == [2,3]
+        Random.seed!(rng, 2);
+        @test sort(unique(s([1.0,2.0,3.0], 10, rng=rng))) == [1,2]
+        Random.seed!(rng, 2);
+        @test sort(unique(s([5,2,3], 5, rng=rng))) == [2,3]
         @test_throws AssertionError s([1.], 4)
     end
 
     @testset "Roulette" begin
-        Random.seed!(2);
-        @test roulette([30.0, -0.1,-0.2, -30.0], 2) == [1, 4]
-        @test roulette([0.0,0.0,3.0], 2) == [3, 3]
-        @test roulette([0,2,0], 2) == [2,2]
-        @test rouletteinv([0.0,0.0,3.0], 2) == [1, 1]
-        @test rouletteinv([1,2,0], 2) == [3,3]
+        Random.seed!(rng, 2);
+        @test roulette([30.0, -0.1,-0.2, -30.0], 2, rng=rng) == [4,1]
+        Random.seed!(rng, 2);
+        @test roulette([0.0,0.0,3.0], 2, rng=rng) == [3, 3]
+        Random.seed!(rng, 2);
+        @test roulette([0,2,0], 2, rng=rng) == [2,2]
+        Random.seed!(rng, 2);
+        @test rouletteinv([0.0,0.0,3.0], 2, rng=rng) == [1, 1]
+        Random.seed!(rng, 2);
+        @test rouletteinv([1,2,0], 2, rng=rng) == [3,3]
     end
 
     @testset "Truncation" begin
@@ -34,52 +43,63 @@
     end
 
     @testset "Tournament" begin
-        Random.seed!(2);
         @test_throws AssertionError tournament(0)
         t = tournament(3, select=argmax)
-        @test all(t([0,2,0],100) .== 2)
+        Random.seed!(rng, 2);
+        @test all(t([0,2,0],100,rng=rng) .== 2)
         t = tournament(3)
-        @test all(i->i∈[1,3], t([0,2,0],100))
+        Random.seed!(rng, 2);
+        @test all(i->i∈[1,3], t([0,2,0],100,rng=rng))
         t = tournament(2)
-        @test all(t([0.0,0.0,1.0],100) .< 3.0)
+        Random.seed!(rng, 2);
+        @test all(t([0.0,0.0,1.0],100,rng=rng) .< 3.0)
         fitness = [0 0 1 1; 0 1 0 1]
         t = tournament(2, select=Evolutionary.twowaycomp)
-        @test all(t(fitness,100) .< 4)
-        @test mean(t(fitness,100)) < 2
+        Random.seed!(rng, 2);
+        @test all(t(fitness,100,rng=rng) .< 4)
+        @test mean(t(fitness,100,rng=rng)) < 2
     end
 
     @testset "SUS" begin
-        @test sort(unique(sus([1.0,0.0,2.0], 5))) == [1,3]
-        @test sort(unique(sus([0,1,2], 5))) == [2,3]
+        Random.seed!(rng, 2);
+        @test sort(unique(sus([1.0,0.0,2.0], 5, rng=rng))) == [1,3]
+        Random.seed!(rng, 2);
+        @test sort(unique(sus([0,1,2], 5, rng=rng))) == [2,3]
     end
 
     @testset "DE" begin
         N = 5
-        rng = collect(1:10)
-        idxs = random(rng, N)
-        @test length(idxs) == N
-        @test all(i-> i ∈ rng, idxs)
-        @test !all(length(unique(random(rng, N))) == N for i in 1:100)
+        col = collect(1:10)
 
-        idxs = randomoffset(rng, N)
+        Random.seed!(rng, 1)
+        idxs = random(col, N, rng=rng)
         @test length(idxs) == N
-        @test all(i-> i ∈ rng, idxs)
-        @test all( let idxs = randomoffset(rng, N); let l = (idxs[1] - 1 + N)%10; idxs[N] == (l == 0 ? 10 : l) end end for i in 1:100 )
+        @test all(i-> i ∈ col, idxs)
+        @test !all(length(unique(random(col, N, rng=rng))) == N for i in 1:100)
 
-        idxs = best(reverse(rng), N)
+        Random.seed!(rng, 1)
+        idxs = randomoffset(col, N, rng=rng)
         @test length(idxs) == N
-        @test all(i-> i ∈ rng, idxs)
+        @test all(i-> i ∈ col, idxs)
+        @test all( let idxs = randomoffset(col, N, rng=rng); let l = (idxs[1] - 1 + N)%10; idxs[N] == (l == 0 ? 10 : l) end end for i in 1:100 )
+
+        idxs = best(reverse(col), N)
+        @test length(idxs) == N
+        @test all(i-> i ∈ col, idxs)
         @test idxs == fill(10, N)
 
-        idxs = permutation(rng, N)
+        Random.seed!(rng, 1)
+        idxs = permutation(col, N, rng=rng)
         @test length(idxs) == N
-        @test all(i-> i ∈ rng, idxs)
-        @test all(length(unique(permutation(rng, N))) == N for i in 1:100)
+        @test all(i-> i ∈ col, idxs)
+        @test all(length(unique(permutation(col, N, rng=rng))) == N for i in 1:100)
 
+        Random.seed!(rng, 1)
         @testset "Mutually Exclusive Indices" for i in idxs
-            targets = Evolutionary.randexcl(rng, [i], 4)
+            targets = Evolutionary.randexcl(rng, col, [i], 4)
             @test length(unique(push!(targets, i))) == N
         end
     end
 
 end
+

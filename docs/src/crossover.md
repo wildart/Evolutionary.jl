@@ -10,7 +10,6 @@ All recombination operations have following call interface: `recombination(i1, i
 
 ## Operations
 
-
 List of the ES strategy recombination operations:
 
 ```@docs
@@ -29,27 +28,29 @@ Binary crossovers:
 ```@docs
 SPX
 TPX
+SHFX
 UX
 BINX
 EXPX
 SXO
 ```
 
-Real valued crossovers:
+Real-valued crossovers:
 
 ```@docs
 identity
-discrete
-waverage
-intermediate
-line
+DC
+AX
+WAX
+IC
+LC
 HX
 LX
 MILX
 SBX
 ```
 
-Permutation crossovers:
+Combinatorial crossovers:
 
 ```@docs
 PMX

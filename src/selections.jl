@@ -17,14 +17,15 @@ Linear ranking allows values of selective pressure in [1.0, 2.0].
 """
 function ranklinear(sp::Real)
     @assert 1.0 <= sp <= 2.0 "Selective pressure has to be in range [1.0, 2.0]."
-    function rank(fitness::Vector{<:Real}, N::Int)
+    function rank(fitness::Vector{<:Real}, N::Int;
+                  rng::AbstractRNG=Random.GLOBAL_RNG)
         λ = length(fitness)
         idx = sortperm(fitness)
         ranks = zeros(λ)
         for i in 1:λ
             ranks[i] = ( 2 - sp + 2*(sp - 1)*(idx[i] - 1) / (λ - 1) ) / λ
         end
-        return pselection(ranks, N)
+        return pselection(rng, ranks, N)
     end
     return rank
 end
@@ -37,7 +38,8 @@ Returns a (μ, λ)-uniform ranking selection function, see [Selection Interface]
 In uniform ranking, the best ``\\mu`` individuals are assigned a selection probability of ``1/\\mu`` while the rest them are discarded [^2].
 """
 function uniformranking(μ::Int)
-    function uniformrank(fitness::Vector{<:Real}, N::Int)
+    function uniformrank(fitness::Vector{<:Real}, N::Int;
+                         rng::AbstractRNG=Random.GLOBAL_RNG)
         λ = length(fitness)
         idx = sortperm(fitness)
         @assert μ <= λ "μ should be no larger then $(λ)"
@@ -45,7 +47,7 @@ function uniformranking(μ::Int)
         for i in 1:μ
             ranks[idx[i]] = 1/μ
         end
-        return pselection(ranks, N)
+        return pselection(rng, ranks, N)
     end
     return uniformrank
 end
@@ -60,10 +62,11 @@ In roulette selection, the fitness level is used to associate a probability of s
 *Note:* Best used in maximization context.
 
 """
-function roulette(fitness::Vector{<:Real}, N::Int)
+function roulette(fitness::Vector{<:Real}, N::Int;
+                  rng::AbstractRNG=Random.GLOBAL_RNG)
     absf = abs.(fitness)
     prob = absf./sum(absf)
-    return pselection(prob, N)
+    return pselection(rng, prob, N)
 end
 
 """
@@ -71,7 +74,8 @@ end
 
 Fitness proportionate selection (FPS) or roulette wheel for inverse `fitness` values. Best used in minimization to 0.
 """
-rouletteinv(fitness::Vector{<:Real}, N::Int) = roulette(1.0 ./ fitness, N)
+rouletteinv(fitness::Vector{<:Real}, N::Int; kwargs...) =
+    roulette(1.0 ./ fitness, N; kwargs...)
 
 """
     sus(fitness, N)
@@ -84,10 +88,10 @@ Consider ``N`` the number of individuals to be selected, then the distance betwe
 *Note*: Best used in maximization context.
 
 """
-function sus(fitness::Vector{<:Real}, N::Int)
+function sus(fitness::Vector{<:Real}, N::Int; rng::AbstractRNG=Random.GLOBAL_RNG)
     F = sum(abs, fitness)
     P = F/N
-    start = P*rand()
+    start = P*rand(rng)
     pointers = [start+P*i for i = 0:(N-1)]
     selected = Array{Int}(undef, N)
     i = c = 1
@@ -106,14 +110,15 @@ end
 
 Inverse fitness SUS. Best used in minimization to 0.
 """
-susinv(fitness::Vector{<:Real}, N::Int) = sus(1.0 ./ fitness, N)
+susinv(fitness::Vector{<:Real}, N::Int; kwargs...) =
+    sus(1.0 ./ fitness, N; kwargs...)
 
 """
     truncation(fitness, N)
 
-Truncation selection returns first `N` of best `fitness` inividuals
+Truncation selection returns first `N` of best `fitness` individuals
 """
-function truncation(fitness::Vector{<:Real}, N::Int)
+function truncation(fitness::Vector{<:Real}, N::Int; kwargs...)
     λ = length(fitness)
     @assert λ >= N "Cannot select more then $(λ) elements"
     idx = sortperm(fitness)
@@ -121,14 +126,14 @@ function truncation(fitness::Vector{<:Real}, N::Int)
 end
 
 """Tournament selection"""
-function tournament(groupSize :: Int; select=argmin)
+function tournament(groupSize::Int; select=argmin)
     @assert groupSize > 0 "Group size must be positive"
-    function tournamentN(fitness::AbstractVecOrMat{<:Real}, N::Int)
+    function tournamentN(fitness::AbstractVecOrMat{<:Real}, N::Int;
+                         rng::AbstractRNG=Random.GLOBAL_RNG)
         selection = fill(0,N)
-
         sFitness = size(fitness)
         d, nFitness = length(sFitness) == 1 ? (1, sFitness[1]) : sFitness
-        tour = randperm(nFitness)
+        tour = randperm(rng, nFitness)
         j = 1
         for i in 1:N
             idxs = tour[j:j+groupSize-1]
@@ -137,11 +142,10 @@ function tournament(groupSize :: Int; select=argmin)
             selection[i] = idxs[winner]
             j+=groupSize
             if (j+groupSize) >= nFitness && i < N
-                tour = randperm(nFitness)
+                tour = randperm(rng, nFitness)
                 j = 1
             end
         end
-
         return selection
     end
     return tournamentN
@@ -150,19 +154,21 @@ end
 """
     random(fitness, N)
 
-Returns a colection on size `N` of uniformly selected individuals from the population.
+Returns a collection on size `N` of uniformly selected individuals from the population.
 """
-random(fitness::Vector{<:Real}, N::Int) = rand(1:length(fitness),N)
+random(fitness::Vector{<:Real}, N::Int; rng::AbstractRNG=Random.GLOBAL_RNG) =
+    rand(rng, 1:length(fitness), N)
 
 """
     permutation(fitness, N)
 
 Returns a permutation on size `N` of the individuals from the population.
 """
-function permutation(fitness::Vector{<:Real}, N::Int)
+function permutation(fitness::Vector{<:Real}, N::Int;
+                     rng::AbstractRNG=Random.GLOBAL_RNG)
     λ = length(fitness)
     @assert λ >= N "Cannot select more then $(λ) elements"
-    return randperm(λ)[1:N]
+    return randperm(rng, λ)[1:N]
 end
 
 """
@@ -170,10 +176,11 @@ end
 
 Returns a cycle selection on size `N` from an arbitrary position.
 """
-function randomoffset(fitness::Vector{<:Real}, N::Int)
+function randomoffset(fitness::Vector{<:Real}, N::Int;
+                      rng::AbstractRNG=Random.GLOBAL_RNG)
     λ = length(fitness)
     @assert λ >= N "Cannot select more then $(λ) elements"
-    rg = rand(1:λ)
+    rg = rand(rng, 1:λ)
     return [(i+rg)%λ+1 for i in 1:N]
 end
 
@@ -182,17 +189,16 @@ end
 
 Returns a collection of best individuals of size `N`.
 """
-best(fitness::Vector{<:Real}, N::Int) = fill(last(findmin(fitness)),N)
+best(fitness::Vector{<:Real}, N::Int; kwargs...) = fill(last(findmin(fitness)),N)
 
 
-# Utils: selection
-function pselection(prob::Vector{<:Real}, N::Int)
+# Utilities: selection
+function pselection(rng::AbstractRNG, prob::Vector{<:Real}, N::Int)
     cp = cumsum(prob)
-    # println(cp)
     selected = Array{Int}(undef, N)
     for i in 1:N
         j = 1
-        r = rand()
+        r = rand(rng)
         while cp[j] < r
             j += 1
         end
@@ -200,8 +206,9 @@ function pselection(prob::Vector{<:Real}, N::Int)
     end
     return selected
 end
+pselection(prob, N::Int) = pselection(Random.GLOBAL_RNG, prob, N)
 
-function randexcl(itr, exclude, dims)
+function randexcl(rng::AbstractRNG, itr, exclude, dims::Int)
     idxs = Int[]
     while length(idxs) < dims
         j = rand(itr)
@@ -210,6 +217,7 @@ function randexcl(itr, exclude, dims)
     end
     return idxs
 end
+randexcl(itr, exclude, dims::Int) = randexcl(Random.GLOBAL_RNG, itr, exclude, dims)
 
 function twowaycomp(rc::AbstractMatrix)
     ra, ca, rb, cb = rc
@@ -223,3 +231,4 @@ function twowaycomp(rc::AbstractMatrix)
         return 2
     end
 end
+

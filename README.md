@@ -26,7 +26,7 @@ pkg> add Evolutionary
 - Genetic Programming (TreeGP)
 
 ## Operators
-
+a
 - Mutations
   - ES
     - (an)isotropic Gaussian
@@ -56,23 +56,25 @@ pkg> add Evolutionary
   - binary
     - SPX (single point)
     - TPX (two point)
+    - SHFX (shuffle)
     - UX (uniform)
     - BINX (binary)
     - EXPX (exponential)
   - real valued
-    - discrete
-    - weighted average
-    - intermediate
-    - line
+    - DC (discrete)
+    - AX (average)
+    - WAX (weighted average)
+    - IC (intermediate)
+    - LC (line)
     - HX (heuristic)
     - (MI)LX (Laplace)
     - SBX (simulated binary)
-  - permutation
-    - PMX
-    - OX1
-    - OX2
-    - CX
-    - POS
+  - combinatorial
+    - PMX (partially-mapped)
+    - OX1 (order)
+    - OX2 (order-based)
+    - CX (cycle)
+    - POS (position-based)
 
 - Selections
   - rank-based fitness assignment

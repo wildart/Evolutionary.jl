@@ -1,5 +1,7 @@
 @testset "Recombinations" begin
 
+    rng = StableRNG(42)
+
     compare(iter1, iter2) = length(setdiff(Set(iter1), Set(iter2))) == 0
 
     pop = [
@@ -7,53 +9,52 @@
         [0.0, 1.0],
         [0.0, 0.0]
     ]
+
     @testset "ES" begin
         @test average(pop) ≈ [1/3.,1/3.]
-        @test compare( (marriage(pop) for i in 1:100), ([p1,p2] for p1 in [0,1.], p2 in [0,1.]))
-    end
-
-    @testset "ES Strategies" begin
-        ss = [IsotropicStrategy{Float64}(1.0,1,0),
-              IsotropicStrategy{Float64}(2.0,0,0), IsotropicStrategy{Float64}(3.0,0,0)]
-        @test average(ss).σ == ss[2].σ
-        @test gaussian(ss[1]).σ == ss[1].σ
-        @test ss[1].σ != 1.0
-        ss = [AnisotropicStrategy{Float64}(fill(1.0,3),1,1),
-              AnisotropicStrategy{Float64}(fill(2.0,3),0,0),
-              AnisotropicStrategy{Float64}(fill(3.0,3),0,0)]
-        @test average(ss).σ == ss[2].σ
-        @test gaussian(ss[1]).σ == ss[1].σ
-        @test ss[1].σ != fill(1.0,3)
+        @test compare( (marriage(pop, rng=rng) for i in 1:100), ([p1,p2] for p1 in [0,1.], p2 in [0,1.]))
     end
 
     @testset "GA" begin
+
         @test identity(pop[1], pop[2]) == (pop[1], pop[2])
-        @test compare((SPX(pop[1], pop[2]) for i in 1:100),
-                      [([0.0, 1.0],[1.0, 0.0]),([1.0, 1.0],[0.0, 0.0])])
-        @test compare((TPX(pop[1], pop[2]) for i in 1:100),
-                      [([0.0, 1.0],[1.0, 0.0]),([1.0, 1.0],[0.0, 0.0]),([0.0, 0.0], [1.0, 1.0])])
-        @test compare((UX(pop[1], pop[2]) for i in 1:100),
-                      [([0.0, 1.0],[1.0, 0.0]),([1.0, 1.0],[0.0, 0.0]),([0.0, 0.0], [1.0, 1.0]),([1.0, 0.0], [0.0, 1.0])])
-        @test compare((discrete(pop[1], pop[2]) for i in 1:100),
-                      ([p1,p2],[p3,p4]) for p1 in [0,1.], p2 in [0,1.], p3 in [0,1.], p4 in [0,1.])
+        Random.seed!(rng, 4)
+        @test SPX([0:4;], [5:9;], rng=rng) == ([0, 1, 7, 8, 9], [5, 6, 2, 3, 4])
+        Random.seed!(rng, 1)
+        @test TPX([0:4;], [5:9;], rng=rng) == ([0, 1, 7, 8, 4], [5, 6, 2, 3, 9])
+        Random.seed!(rng, 3)
+        @test UX([0:4;], [5:9;], rng=rng)  == ([0, 6, 7, 8, 9], [5, 1, 2, 3, 4])
+        Random.seed!(rng ,2)
+        @test SHFX([0:4;], [5:9;], rng=rng) == ([5, 6, 2, 8, 9], [0, 1, 7, 3, 4])
 
-        @test waverage([1.0,0.5])(pop[1], pop[2]) == ([1.0, 2.0], [1.0, 2.0])
+        Random.seed!(rng, 3)
+        @test DC([0:4;], [5:9;], rng=rng)  == ([5, 1, 2, 3, 9], [5, 6, 7, 3, 9])
+        @test AX(pop[1],pop[2]) == ([0.5, 0.5], [0.5, 0.5])
+        @test WAX([1.0,0.5])(pop[1], pop[2]) == ([1.0, 2.0], [1.0, 2.0])
 
+        Random.seed!(rng, 1)
         @test map(sum, HX(pop[1], pop[2])) |> collect ≈ [1.0, 1.0]
+        Random.seed!(rng, 1)
         @test map(abs∘first∘diff, LX()(pop[1], pop[2])) |> collect ≈ [1.0, 1.0]
-        @test mapslices(diff, hcat(MILX(1., 0., 1.)(Real[0, 0.0], Real[1, 0.0])...), dims=2) |> vec ≈ [1.0, 0.0]
+        Random.seed!(rng, 1)
+        @test mapslices(diff, hcat(MILX(1., 0., 1.)(Real[0, 0.0], Real[1, 0.0], rng=rng)...), dims=2) |> vec ≈ [1.0, 0.0]
+        Random.seed!(rng, 1)
+        @test sum(sum.(SBX(0.5)(pop[1], pop[2], rng=rng) .- ([0.5, 0.7684], [0.5, 0.2316]))) ≈ 0 atol=1e-10
+        @test SBX(0.0)(pop[1], pop[2], rng=rng) == ([0.5, 0.5], [0.5, 0.5])
 
-        @test PMX(pop[1], pop[2]) == ([0.0, 1.0], [1.0, 0.0])
-        @test sum(PMX(collect(1:9), collect(9:-1:1))) == fill(10,9)
-        @test sum(OX1(collect(1:9), collect(9:-1:1))) == fill(10,9)
-        @test sum(OX2(collect(1:9), collect(9:-1:1))) == fill(10,9)
-        @test sum(CX(collect(1:9), collect(9:-1:1))) == fill(10,9)
-        @test sum(POS(collect(1:9), collect(9:-1:1))) == fill(10,9)
+        Random.seed!(rng, 2)
+        @test PMX([0:4;], [3,2,1,0,4], rng=rng) == ([3, 2, 1, 0, 4], [0, 1, 2, 3, 4])
+        @test CX([1:8;],[2,4,6,8,7,5,3,1]) == ([1,2,6,4,7,5,3,8],[2,4,3,8,5,6,7,1])
         @test CX([8,4,7,3,6,2,5,1,9,0],collect(0:9)) == ([8,1,2,3,4,5,6,7,9,0],[0,4,7,3,6,2,5,1,8,9])
-        @test SBX(0.0)(pop[1], pop[2]) == ([0.5, 0.5], [0.5, 0.5])
-        @test sum(sum.(SBX()(pop[1], pop[2]) .- (pop[2], pop[1]))) ≈ 0 atol=1e-10
+        Random.seed!(rng, 18)
+        @test OX1([1:8;], [2,4,6,8,7,5,3,1], rng=rng) == ([3,4,6,8,7,5,1,2], [8,7,3,4,5,6,1,2])
+        Random.seed!(rng, 18)
+        @test OX2([1:8;], [2,4,6,8,7,5,3,1], rng=rng) == ([1,2,3,4,6,5,7,8], [2,4,3,8,7,5,6,1])
+        Random.seed!(rng, 18)
+        @test POS([1:8;], [2,4,6,8,7,5,3,1], rng=rng) == ([1,4,6,2,3,5,7,8], [4,2,3,8,7,6,5,1])
+        Random.seed!(rng, 18)
         @test compare(
-            (SXO(1)([true,false], [false,true]) for i in 1:100),
+            (SXO(1)([true,false], [false,true], rng=rng) for i in 1:100),
             [ ([true,false], [true,false]), ([true,false], [false,true]),
               ([false,true], [true,false]), ([false,true], [false,true]) ]
         )
@@ -80,3 +81,4 @@
     end
 
 end
+

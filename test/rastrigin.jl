@@ -53,7 +53,7 @@
     @test m.ɛ == 10
 
     selections = [:roulette=>rouletteinv, :sus=>susinv, :rank=>ranklinear(1.5)]
-    crossovers = [:discrete=>discrete, :intermediate0=>intermediate(0.), :intermediate0_25=>intermediate(0.5), :line=>line(0.2)]
+    crossovers = [:discrete=>DC, :intermediate0=>IC(0.), :intermediate0_5=>IC(0.5), :line=>LC(0.1)]
     mutations = [:domrng0_5=>BGA(fill(0.5,N)), :uniform=>uniform(2.0), :gaussian=>gaussian(0.3)]
 
     @testset "GA settings" for (sn,ss) in selections, (xn,xovr) in crossovers, (mn,ms) in mutations

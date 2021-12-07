@@ -50,34 +50,35 @@ show(io::IO,m::TreeGP) = print(io, summary(m))
 
 Returns a random terminal given the specification from the `TreeGP` object `t`.
 """
-function randterm(t::TreeGP)
-    term = rand(keys(t.terminals))
+function randterm(rng::AbstractRNG, t::TreeGP)
+    term = rand(rng, keys(t.terminals))
     if isa(term, Symbol)
         term
     else
         dim = t.terminals[term]
-        dim == 1 ? rand() : rand(dim)
+        dim == 1 ? rand(rng) : rand(rng, dim)
     end
 end
+randterm(t::TreeGP) = randterm(Random.GLOBAL_RNG, t)
 
 """
     rand(t::TreeGP, maxdepth=2; mindepth=maxdepth-1)::Expr
 
 Create a ranodm expression tree given the specification from the `TreeGP` object `t`.
 """
-function rand(t::TreeGP, maxdepth::Int=2; mindepth::Int=maxdepth-1)
+function rand(rng::AbstractRNG, t::TreeGP, maxdepth::Int=2; mindepth::Int=maxdepth-1)
     @assert maxdepth > mindepth "`maxdepth` must be larger then `mindepth`"
     tl = length(t.terminals)
     fl = length(t.functions)
-    root = if (maxdepth == 0  || ( t.initialization == :grow && rand() < tl/(tl+fl) ) ) && mindepth <= 0
-        randterm(t)
+    root = if (maxdepth == 0  || ( t.initialization == :grow && rand(rng) < tl/(tl+fl) ) ) && mindepth <= 0
+        randterm(rng, t)
     else
-        rand(keys(t.functions))
+        rand(rng, keys(t.functions))
     end
     if isa(root, Function)
         args = Any[]
         for i in 1:t.functions[root]
-            arg = rand(t, maxdepth-1, mindepth=mindepth-1)
+            arg = rand(rng, t, maxdepth-1, mindepth=mindepth-1)
             push!(args, arg)
         end
         Expr(:call, root, args...)
@@ -85,6 +86,8 @@ function rand(t::TreeGP, maxdepth::Int=2; mindepth::Int=maxdepth-1)
         return root
     end
 end
+rand(t::TreeGP, maxdepth::Int=2; kwargs...) =
+    rand(Random.GLOBAL_RNG, t, maxdepth; kwargs...)
 
 """
     initial_population(m::TreeGP, expr::{Expr,Nothing}=nothing)

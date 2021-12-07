@@ -5,7 +5,7 @@
 
 Returns an *one* offspring individual of a multi-parent recombination by averaging `population`.
 """
-function average(population::Vector{T}; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
+function average(population::Vector{T}; kwargs...) where {T <: AbstractVector}
     obj = zeros(eltype(T), length(population[1]))
     l = length(population)
     for i in 1:l
@@ -21,10 +21,11 @@ Returns an *one* offspring individual of a multi-parent recombination by random 
 """
 function marriage(population::Vector{T}; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
     s = length(population)
-    l = length(population[1])
+    l = length(first(population))
     obj = zeros(eltype(T), l)
+    idxs = rand(rng, 1:s, l)
     for i in 1:l
-        obj[i] = population[rand(1:s)][i]
+        obj[i] = population[idxs[i]][i]
     end
     return obj
 end
@@ -37,7 +38,7 @@ end
 
 Returns the average value of the mutation parameter ``\\sigma`` of strategies `ss`.
 """
-function average(ss::Vector{<:AbstractStrategy}; rng::AbstractRNG=Random.GLOBAL_RNG)
+function average(ss::Vector{<:AbstractStrategy}; kwargs...)
     s = copy(first(ss))
     l = length(ss)
     s.σ = mapreduce(s->s.σ/l, +, ss)
@@ -53,13 +54,13 @@ end
 
 Returns the same parameter individuals `v1` and `v2` as an offspring pair.
 """
-identity(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector} = (v1,v2)
+identity(v1::T, v2::T; kwargs...) where {T <: AbstractVector} = (v1,v2)
 
 # Binary crossovers
 # -----------------
 
 """
-    singlepoint(v1, v2)
+    SPX(v1, v2)
 
 Single point crossover between `v1` and `v2` individuals.
 """
@@ -75,7 +76,7 @@ function SPX(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: Abstr
 end
 
 """
-    twopoint(v1, v2)
+    TPX(v1, v2)
 
 Two point crossover between `v1` and `v2` individuals.
 """
@@ -87,6 +88,25 @@ function TPX(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: Abstr
     from, to = from > to ? (to, from)  : (from, to)
     for i in from:to
         vswap!(c1, c2, i)
+    end
+    return c1, c2
+end
+
+"""
+    SHFX(v1, v2)
+
+Shuffle crossover between the parents `v1` and `v2` that performs recombination similar to (SPX)[@ref] preliminary shuffling these parents.
+"""
+function SHFX(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
+    l = length(v1)
+    # shuffle and perform 1-point XO
+    prm = randperm(rng, l)
+    tmp1, tmp2 = SPX(view(v1,prm), view(v2,prm), rng=rng)
+    # unshuffle offspring
+    c1, c2 = similar(tmp1), similar(tmp2)
+    for (i,j) in enumerate(prm)
+        c1[j] = tmp1[i]
+        c2[j] = tmp2[i]
     end
     return c1, c2
 end
@@ -185,11 +205,11 @@ end
 # ----------------------
 
 """
-    discrete(v1, v2)
+    DC(v1, v2)
 
-Returs a randomly assembled offspring and its inverse from the elements of parents `v1` and `v2`.
+Returns a randomly assembled offspring and its inverse from the elements of parents `v1` and `v2`.
 """
-function discrete(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
+function DC(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
     l = length(v1)
     c1 = similar(v1)
     c2 = similar(v2)
@@ -201,8 +221,12 @@ function discrete(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: 
     return c1, c2
 end
 
-"""Weighted arithmetic mean recombination"""
-function waverage(w::Vector{Float64})
+"""
+    WAX(w::Vector{<:Real})(v1, v2)
+
+Returns a weighted average recombination operation, see [Recombination Interface](@ref), which generate an offspring as weighted average of the parents `v1` and `v2` with the weights `w`.
+"""
+function WAX(w::Vector{<:Real})
     function wavexvr(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
         c1 = (v1+v2)./w
         return c1, copy(c1)
@@ -211,7 +235,17 @@ function waverage(w::Vector{Float64})
 end
 
 """
-    intermediate(d::Real=0.0)
+    AX(v1, v2)
+
+Average crossover generates an offspring by taking average of the parents `v1` and `v2`. 
+"""
+function AX(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
+    c1 = (v1+v2)./2
+    return c1, copy(c1)
+end
+
+"""
+    IC(d::Real=0.0)
 
 Returns an extended intermediate recombination operation, see [Recombination Interface](@ref), which generates offspring `u` and `v` as
 
@@ -221,7 +255,7 @@ Returns an extended intermediate recombination operation, see [Recombination Int
 where ``\\alpha_i`` is chosen uniform randomly in the interval ``[-d;d+1]``.
 
 """
-function intermediate(d::Real = 0.0)
+function IC(d::Real = 0.0)
     function intermxvr(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
         l = length(v1)
         α = (1.0+2d) * rand(rng, l) .- d
@@ -234,7 +268,7 @@ function intermediate(d::Real = 0.0)
 end
 
 """
-    line(d::Real=0.0)
+    LC(d::Real=0.0)
 
 Returns a extended line recombination operation, see [Recombination Interface](@ref), which generates offspring `u` and `v` as
 
@@ -244,7 +278,7 @@ Returns a extended line recombination operation, see [Recombination Interface](@
 where ``\\alpha`` is chosen uniform randomly in the interval ``[-d;d+1]``.
 
 """
-function line(d::Real = 0.0)
+function LC(d::Real = 0.0)
     function linexvr(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
         α1, α2 = (1.0+2d) * rand(rng, 2) .- d
         c1 = v2 .+ α2 * (v1 - v2)
@@ -336,10 +370,16 @@ function SBX(pm::Real = 0.5, η::Integer = 2)
 end
 
 
-# Permutation crossovers
-# ----------------------
+# Combinatorial crossovers
+# ------------------------
 
-"""Partially mapped crossover"""
+"""
+    PMX(v1, v2)
+
+Partially mapped crossover which maps ordering and values information from
+the parents `v1` and `v2` to  the offspring. A portion of one parent is mapped onto
+a portion of the other parent string and the remaining information is exchanged.
+"""
 function PMX(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
     s = length(v1)
     from, to = rand(rng, 1:s, 2)
@@ -381,7 +421,12 @@ function PMX(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: Abstr
     return c1, c2
 end
 
-"""Order crossover"""
+"""
+    OX1(v1, v2)
+
+Order crossover constructs an offspring by choosing a substring of one parent
+and preserving the relative order of the elements of the other parent.
+"""
 function OX1(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
     s = length(v1)
     from, to = rand(rng, 1:s, 2)
@@ -407,8 +452,13 @@ function OX1(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: Abstr
     return c1, c2
 end
 
-"""Cycle crossover"""
-function CX(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
+"""
+    CX(v1, v2)
+
+Cycle crossover creates an offspring from the parents `v1` and `v2` such that
+every position is occupied by a corresponding element from one of the parents.
+"""
+function CX(v1::T, v2::T; kwargs...) where {T <: AbstractVector}
     s = length(v1)
     c1 = zero(v1)
     c2 = zero(v2)
@@ -445,7 +495,13 @@ function CX(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: Abstra
     return c1,c2
 end
 
-"""Order-based crossover"""
+"""
+    OX2(v1, v2)
+
+Order-based crossover selects at random several positions in the parent `v1`, and
+the order of the elements in the selected positions of the parent `v1` is imposed on
+the parent `v2`.
+"""
 function OX2(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
     s = length(v1)
     c1 = copy(v1)
@@ -474,7 +530,14 @@ function OX2(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: Abstr
     return c1,c2
 end
 
-"""Position-based crossover"""
+"""
+    POS(v1, v2)
+
+Position-based crossover is a modification of the [OX1](@ref) operator.
+It selects a random set of positions in the parents `v1` and `v2`, then imposes
+the position of the selected elements of one parent on the corresponding elements
+of the other parent.
+"""
 function POS(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
     s = length(v1)
     c1 = zero(v1)
@@ -540,3 +603,4 @@ function inmap(v::T, c::AbstractVector{T}, from::Int, to::Int) where {T}
     end
     return exists
 end
+
