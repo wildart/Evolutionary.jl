@@ -52,9 +52,12 @@ Returns a random terminal given the specification from the `TreeGP` object `t`.
 """
 function randterm(rng::AbstractRNG, t::TreeGP)
     term = rand(rng, keys(t.terminals))
-    if isa(term, Symbol)
+    if isa(term, Symbol) || isa(term, Real)
         term
+    elseif isa(term, Function)
+        term()
     else
+        # Code shouldn't reach branch but left as a catchall
         dim = t.terminals[term]
         dim == 1 ? rand(rng) : rand(rng, dim)
     end
