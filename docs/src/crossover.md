@@ -10,6 +10,8 @@ All recombination operations have following call interface: `recombination(i1, i
 
 ## Operations
 
+### ES Crossovers
+
 List of the ES strategy recombination operations:
 
 ```@docs
@@ -23,7 +25,7 @@ average(population::Vector{T}) where {T <: AbstractVector}
 marriage
 ```
 
-Binary crossovers:
+### Binary Crossovers
 
 ```@docs
 SPX
@@ -35,7 +37,7 @@ EXPX
 BSX
 ```
 
-Real-valued crossovers:
+### Real-valued Crossovers
 
 ```@docs
 identity
@@ -50,7 +52,7 @@ MILX
 SBX
 ```
 
-Combinatorial crossovers:
+### Combinatorial Crossovers
 
 ```@docs
 PMX
@@ -58,9 +60,10 @@ OX1
 CX
 OX2
 POS
+SSX
 ```
 
-Tree (expression) crossovers:
+### Tree (expression) Crossovers
 
 ```@docs
 Evolutionary.crosstree

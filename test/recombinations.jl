@@ -59,6 +59,12 @@
             @test off1[end] == 0 && off2[end] == 0
             @test sum(off1) == 3 && sum(off2) == 3
         end
+
+        Random.seed!(rng, 1)
+        off1, off2 = SSX([0:4;], [5:9;], rng=rng)
+        @test all(i -> i in 0:9, off1)
+        @test all(i -> i in 0:9, off2)
+
     end
 
     @testset "DE" begin

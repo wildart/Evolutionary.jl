@@ -80,7 +80,7 @@
             optimizer = GA(
                 selection = tournament(5),
                 ɛ = 0.1,
-                mutationRate = 0.8,
+                mutationRate = 0.85,
                 crossoverRate = 0.2,
             ),
         )

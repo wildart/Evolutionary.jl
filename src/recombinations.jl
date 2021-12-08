@@ -95,7 +95,7 @@ end
 """
     SHFX(v1, v2)
 
-Shuffle crossover between the parents `v1` and `v2` that performs recombination similar to (SPX)[@ref] preliminary shuffling these parents.
+Shuffle crossover between the parents `v1` and `v2` that performs recombination similar to [`SPX`](@ref) preliminary shuffling these parents.
 """
 function SHFX(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
     l = length(v1)
@@ -132,7 +132,7 @@ end
 """
     BINX(Cr::Real=0.5)
 
-Returns a uniform (binomial) crossover function, see [Recombination Interface](@ref), function with the propbabilty `Cr` [^2].
+Returns a uniform (binomial) crossover function, see [Recombination Interface](@ref), function with the probability `Cr` [^2].
 
 The crossover probability value must be in unit interval, ``Cr \\in [0,1]``.
 """
@@ -155,7 +155,7 @@ end
 """
     EXPX(Cr::Real=0.5)
 
-Returns an exponential crossover function, see [Recombination Interface](@ref), function with the propbabilty `Cr` [^2].
+Returns an exponential crossover function, see [Recombination Interface](@ref), function with the probability `Cr` [^2].
 
 The crossover probability value must be in unit interval, ``Cr \\in [0,1]``.
 """
@@ -183,7 +183,7 @@ end
 """
     BSX(k::Int)
 
-Binary Subset Crossover[^7]. Produces two offsprings by first pooling the unique
+Binary Subset Crossover[^7]. Produces an offspring by first pooling the unique
 items of the two parents, and then creating each offspring by sampling without 
 replacement at most `k` elements from the pool of items.
 """
@@ -200,6 +200,7 @@ function BSX(k::Int)
     end
     return BSX
 end
+
 
 # Real valued crossovers
 # ----------------------
@@ -533,7 +534,7 @@ end
 """
     POS(v1, v2)
 
-Position-based crossover is a modification of the [OX1](@ref) operator.
+Position-based crossover is a modification of the [`OX1`](@ref) operator.
 It selects a random set of positions in the parents `v1` and `v2`, then imposes
 the position of the selected elements of one parent on the corresponding elements
 of the other parent.
@@ -549,7 +550,7 @@ function POS(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: Abstr
             c1[i] = v2[i]
             c2[i] = v1[i]
         end
-    end
+end
 
     for i in 1:s
         if !in(v1[i],c1)
@@ -564,6 +565,24 @@ function POS(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: Abstr
     return c1,c2
 end
 
+"""
+    SSX(v1, v2)
+
+Subset crossover operator creates new offspring by pooling the unique indices of
+the two parent vectors `v1` and `v2`, and then sampling a set of unique indices
+from this pool, uniformly at random.
+"""
+function SSX(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
+    l = length(v1)
+    pool = unique([v1;v2])
+    p = length(pool)
+    c1, c2 = if l <= p
+        pool[randperm(p)[1:l]], pool[randperm(p)[1:l]] 
+    else
+        rand(pool, l), rand(pool, l)
+    end 
+    return c1, c2
+end
 
 
 # ===================

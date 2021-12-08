@@ -57,6 +57,7 @@ insertion
 swap2
 scramble
 shifting
+Evolutionary.replace
 ```
 
 ## Differential Evolution

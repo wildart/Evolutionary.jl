@@ -6,7 +6,7 @@ module Evolutionary
     using NLSolversBase: NLSolversBase, AbstractObjective, ConstraintBounds,
                          AbstractConstraints, nconstraints_x, nconstraints
     import NLSolversBase: f_calls, value, value!, value!!
-    import Base: show, copy, minimum, summary, identity, getproperty, rand, getindex, length, copyto!, setindex!
+    import Base: show, copy, minimum, summary, identity, getproperty, rand, getindex, length, copyto!, setindex!, replace
 
     export AbstractStrategy, strategy, mutationwrapper,
            IsotropicStrategy, AnisotropicStrategy, NoStrategy,
@@ -17,14 +17,14 @@ module Evolutionary
            gaussian, cauchy,
            # GA mutations
            flip, bitinversion, uniform, BGA, inversion, insertion, swap2, scramble,
-           shifting, PM, MIPM, PLM,
+           shifting, PM, MIPM, PLM, replace,
            # ES recombinations
            average, marriage,
            # GA recombinations
            SPX, TPX, UX, SHFX,
            DC, AX, WAX, IC, LC, HX, LX, MILX, SBX,
            PMX, OX1, CX, OX2, POS,
-           BSX,
+           BSX, SSX,
            # GA selections
            ranklinear, uniformranking, roulette, rouletteinv, sus, susinv,
            tournament, truncation,

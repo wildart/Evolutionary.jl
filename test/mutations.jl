@@ -62,6 +62,8 @@
         @test scramble([0:5;], rng=rng) == [0,4,1,5,3,2]
         Random.seed!(rng, 2)
         @test shifting([0:5;], rng=rng) == [2,3,4,5,0,1]
+        Random.seed!(rng, 2)
+        @test replace([0:9;])([0:5;], rng=rng) == [7,1,2,3,4,9]
 
     end
 

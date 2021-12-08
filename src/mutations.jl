@@ -356,6 +356,36 @@ function shifting(recombinant::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <
     return recombinant
 end
 
+"""
+    replace(pool,[minchange=1])(recombinant)
+
+Replacement mutation operator changes an arbitrary number, no smaller then `minchange`,
+of elements in the individual by replacing them with elements from the predefined `pool` that are not in the individual.
+"""
+function replace(pool::Vector{P}; minchange=1) where {P}
+    function rplc(recombinant::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector}
+        l = length(recombinant)
+        p = length(pool)
+        # how many values to change
+        nchg = max(minchange, rand(rng, 1:min(l, p-l)))
+        # select new elements
+        idxs = randperm(rng, p)
+        new_vals = P[]
+        for i in idxs
+            if pool[i] ∉ recombinant
+                push!(new_vals, pool[i])
+            end
+            length(new_vals) == nchg && break
+        end
+        # update arbitrary positions with new values
+        new_idxs = randperm(rng, l)[1:nchg]
+        recombinant[new_idxs] .= new_vals
+        return recombinant
+    end
+    return rplc
+end
+
+
 # Differential Evolution
 # ======================
 
@@ -375,6 +405,7 @@ function differentiation(recombinant::T, mutators::AbstractVector{T}; F::Real = 
     end
     return recombinant
 end
+
 
 # Genetic Programming
 # ======================
