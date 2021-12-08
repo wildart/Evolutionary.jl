@@ -9,9 +9,9 @@ results = Evolutionary.optimize(f, x0, ga)</code></pre><pre class="documenter-ex
  * Status: success
 
  * Candidate solution
-    Minimizer:  [1.119464314421848, 2.980403325315107]
-    Minimum:    0.05454993394550861
-    Iterations: 22
+    Minimizer:  [0.8043498390448445, 3.1213161974987838]
+    Minimum:    0.07509875774987503
+    Iterations: 16
 
  * Found with
     Algorithm: GA[P=100,x=0.8,μ=0.1,ɛ=0]
@@ -21,9 +21,9 @@ results = Evolutionary.optimize(f, x0, ga)</code></pre><pre class="documenter-ex
     |f(x) - f(x&#39;)|/|f(x&#39;)| = 0.0 ≤ 1.0e-32
 
  * Work counters
-    Seconds run:   0.3579 (vs limit Inf)
-    Iterations:    22
-    f(x) calls:    2322
+    Seconds run:   0.35 (vs limit Inf)
+    Iterations:    16
+    f(x) calls:    1716
 </pre><h2 id="Box-Constrained-Optimization"><a class="docs-heading-anchor" href="#Box-Constrained-Optimization">Box Constrained Optimization</a><a id="Box-Constrained-Optimization-1"></a><a class="docs-heading-anchor-permalink" href="#Box-Constrained-Optimization" title="Permalink"></a></h2><p>We want to optimize the <a href="https://www.sfu.ca/~ssurjano/booth.html">Booth function</a> in the box <span>$0.5 \leq x_i \leq 2.0$</span>, starting from the point <span>$x_0=(1,1)$</span>.</p><p>Reusing our Booth example from above, boxed minimization is performed by providing vectors of lower and upper bounds as follows:</p><pre><code class="language-julia">lower = [0.5, 0.5]
 upper = [2.0, 2.0]
 x0 = [1., 1.]
@@ -31,9 +31,9 @@ results = Evolutionary.optimize(f, BoxConstraints(lower, upper), x0, ga)</code><
  * Status: success
 
  * Candidate solution
-    Minimizer:  [1.7993805494740212, 2.0]
-    Minimum:    1.8000019185947707
-    Iterations: 36
+    Minimizer:  [1.7767738437430343, 2.0]
+    Minimum:    1.802697271672365
+    Iterations: 25
 
  * Found with
     Algorithm: GA[P=100,x=0.8,μ=0.1,ɛ=0]
@@ -43,17 +43,17 @@ results = Evolutionary.optimize(f, BoxConstraints(lower, upper), x0, ga)</code><
     |f(x) - f(x&#39;)|/|f(x&#39;)| = 0.0 ≤ 1.0e-32
 
  * Work counters
-    Seconds run:   0.0015 (vs limit Inf)
-    Iterations:    36
-    f(x) calls:    3736
-</pre><p>The box constraints can be also defined using <a href="#Evolutionary.BoxConstraints"><code>BoxConstraints</code></a> object.</p><article class="docstring"><header><a class="docstring-binding" id="Evolutionary.BoxConstraints" href="#Evolutionary.BoxConstraints"><code>Evolutionary.BoxConstraints</code></a> — <span class="docstring-category">Type</span></header><section><div><p>This type encodes box constraints for the optimization function parameters.</p><p>The constructor takes following arguments:</p><ul><li><code>lower</code> is the vector of value lower bounds</li><li><code>upper</code> is the vector of value upper bounds</li></ul><p><em>Note: Sizes of the lower and upper bound vectors must be equal.</em></p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/wildart/Evolutionary.jl/blob/c50d834645fc063ba69504ea1503d13f73330992/src/api/constraints.jl#L84-L93">source</a></section></article><pre><code class="language-julia">cnst = BoxConstraints([0.5, 0.5], [2.0, 2.0])</code></pre><pre class="documenter-example-output">Box Constraints:
+    Seconds run:   0.0009 (vs limit Inf)
+    Iterations:    25
+    f(x) calls:    2625
+</pre><p>The box constraints can be also defined using <a href="#Evolutionary.BoxConstraints"><code>BoxConstraints</code></a> object.</p><article class="docstring"><header><a class="docstring-binding" id="Evolutionary.BoxConstraints" href="#Evolutionary.BoxConstraints"><code>Evolutionary.BoxConstraints</code></a> — <span class="docstring-category">Type</span></header><section><div><p>This type encodes box constraints for the optimization function parameters.</p><p>The constructor takes following arguments:</p><ul><li><code>lower</code> is the vector of value lower bounds</li><li><code>upper</code> is the vector of value upper bounds</li></ul><p><em>Note: Sizes of the lower and upper bound vectors must be equal.</em></p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/wildart/Evolutionary.jl/blob/8b44d266b12712be706de36b3fc74333ebb03a99/src/api/constraints.jl#L84-L93">source</a></section></article><pre><code class="language-julia">cnst = BoxConstraints([0.5, 0.5], [2.0, 2.0])</code></pre><pre class="documenter-example-output">Box Constraints:
     x[1]≥0.5, x[1]≤2.0, x[2]≥0.5, x[2]≤2.0</pre><p>This object can be passed as a parameter to the optimization call, <a href="../tutorial/#Evolutionary.optimize"><code>Evolutionary.optimize</code></a>:</p><pre><code class="language-julia">results = Evolutionary.optimize(f, cnst, x0, ga) # or Evolutionary.optimize(f, cnst, ga)</code></pre><pre class="documenter-example-output">
  * Status: success
 
  * Candidate solution
-    Minimizer:  [1.7795508703189487, 2.0]
-    Minimum:    1.8020908345235624
-    Iterations: 17
+    Minimizer:  [1.7948466537605845, 2.0]
+    Minimum:    1.8001327848873154
+    Iterations: 34
 
  * Found with
     Algorithm: GA[P=100,x=0.8,μ=0.1,ɛ=0]
@@ -63,10 +63,10 @@ results = Evolutionary.optimize(f, BoxConstraints(lower, upper), x0, ga)</code><
     |f(x) - f(x&#39;)|/|f(x&#39;)| = 0.0 ≤ 1.0e-32
 
  * Work counters
-    Seconds run:   0.0006 (vs limit Inf)
-    Iterations:    17
-    f(x) calls:    1817
-</pre><h2 id="Penalty-Constrained-Optimization"><a class="docs-heading-anchor" href="#Penalty-Constrained-Optimization">Penalty Constrained Optimization</a><a id="Penalty-Constrained-Optimization-1"></a><a class="docs-heading-anchor-permalink" href="#Penalty-Constrained-Optimization" title="Permalink"></a></h2><p>For the penalty constrained optimization, any value and linear/nonlinear constraints are transformed into the penalty to the minimized fitness function. In order to provide linear/nonlinear constraints to an optimization problem, you can use the following penalty constraint algorithm:</p><article class="docstring"><header><a class="docstring-binding" id="Evolutionary.PenaltyConstraints" href="#Evolutionary.PenaltyConstraints"><code>Evolutionary.PenaltyConstraints</code></a> — <span class="docstring-category">Type</span></header><section><div><p>This type encodes constraints as the following additional penalty for an objective function:</p><p><span>$p(x) = \sum^n_{i=1} r_i max(0, g_i(x))^2$</span></p><p>where <span>$r_i$</span> is a penalty value for <span>$i$</span>th constraint, and <span>$g_i(x)$</span> is an inequality constraint. The equality constraints <span>$h_i(x) = 0$</span> are transformed to inequality constraints as follows:</p><p><span>$h(x) - \epsilon  \leq 0$</span></p><p>The constructor takes following arguments:</p><ul><li><code>penalties</code>: a vector of penalty values per constraint (optional)</li><li><code>lx</code>: a vector of value lower bounds</li><li><code>ux</code>: a vector of value upper bounds</li><li><code>lc</code>: a vector of constrain function lower bounds</li><li><code>uc</code>: a vector of constrain function upper bounds</li><li><code>c</code>: a constraint function which returns a constrain values</li></ul></div><a class="docs-sourcelink" target="_blank" href="https://github.com/wildart/Evolutionary.jl/blob/c50d834645fc063ba69504ea1503d13f73330992/src/api/constraints.jl#L111-L129">source</a></section></article><p>We want to minimize the following function <span>$f(x,y) = 3x+9y$</span> that is subject to constraints <span>$\sqrt(xy) \geq 100$</span> and <span>$x,y \geq 0$</span>. The minimum of this function is near <span>$(173.41, 57.8)$</span>. We begin  by defining constraints as follows:</p><pre><code class="language-julia"># x, y ≥ 0
+    Seconds run:   0.0012 (vs limit Inf)
+    Iterations:    34
+    f(x) calls:    3534
+</pre><h2 id="Penalty-Constrained-Optimization"><a class="docs-heading-anchor" href="#Penalty-Constrained-Optimization">Penalty Constrained Optimization</a><a id="Penalty-Constrained-Optimization-1"></a><a class="docs-heading-anchor-permalink" href="#Penalty-Constrained-Optimization" title="Permalink"></a></h2><p>For the penalty constrained optimization, any value and linear/nonlinear constraints are transformed into the penalty to the minimized fitness function. In order to provide linear/nonlinear constraints to an optimization problem, you can use the following penalty constraint algorithm:</p><article class="docstring"><header><a class="docstring-binding" id="Evolutionary.PenaltyConstraints" href="#Evolutionary.PenaltyConstraints"><code>Evolutionary.PenaltyConstraints</code></a> — <span class="docstring-category">Type</span></header><section><div><p>This type encodes constraints as the following additional penalty for an objective function:</p><p><span>$p(x) = \sum^n_{i=1} r_i max(0, g_i(x))^2$</span></p><p>where <span>$r_i$</span> is a penalty value for <span>$i$</span>th constraint, and <span>$g_i(x)$</span> is an inequality constraint. The equality constraints <span>$h_i(x) = 0$</span> are transformed to inequality constraints as follows:</p><p><span>$h(x) - \epsilon  \leq 0$</span></p><p>The constructor takes following arguments:</p><ul><li><code>penalties</code>: a vector of penalty values per constraint (optional)</li><li><code>lx</code>: a vector of value lower bounds</li><li><code>ux</code>: a vector of value upper bounds</li><li><code>lc</code>: a vector of constrain function lower bounds</li><li><code>uc</code>: a vector of constrain function upper bounds</li><li><code>c</code>: a constraint function which returns a constrain values</li></ul></div><a class="docs-sourcelink" target="_blank" href="https://github.com/wildart/Evolutionary.jl/blob/8b44d266b12712be706de36b3fc74333ebb03a99/src/api/constraints.jl#L111-L129">source</a></section></article><p>We want to minimize the following function <span>$f(x,y) = 3x+9y$</span> that is subject to constraints <span>$\sqrt(xy) \geq 100$</span> and <span>$x,y \geq 0$</span>. The minimum of this function is near <span>$(173.41, 57.8)$</span>. We begin  by defining constraints as follows:</p><pre><code class="language-julia"># x, y ≥ 0
 lx = [0.0, 0.0] # lower bound for values
 ux = [Inf, Inf] # upper bound for values
 # √xy ≥ 100
@@ -87,22 +87,22 @@ results = Evolutionary.optimize(f, con, x0, ga)</code></pre><pre class="document
  * Status: failure (reached maximum number of iterations)
 
  * Candidate solution
-    Minimizer:  [173.09818804308279, 57.710479193789126]
-    Minimum:    1038.6888768733504
+    Minimizer:  [173.11520191134684, 57.70513509843433]
+    Minimum:    1038.6918216199497
     Iterations: 1000
 
  * Found with
     Algorithm: GA[P=100,x=0.8,μ=0.1,ɛ=0]
 
  * Convergence measures
-    |f(x) - f(x&#39;)|         = 0.2716148649906245 ≰ 1.0e-15
-    |f(x) - f(x&#39;)|/|f(x&#39;)| = 0.0002614978084758513 ≰ 1.0e-32
+    |f(x) - f(x&#39;)|         = 0.26866457690675816 ≰ 1.0e-15
+    |f(x) - f(x&#39;)|/|f(x&#39;)| = 0.00025865667882870913 ≰ 1.0e-32
 
  * Work counters
-    Seconds run:   0.6428 (vs limit Inf)
+    Seconds run:   0.5983 (vs limit Inf)
     Iterations:    1000
     f(x) calls:    101100
-</pre><p>We can use worst fitness constraint algorithm which doesn&#39;t require to specify the constraint penalty value</p><article class="docstring"><header><a class="docstring-binding" id="Evolutionary.WorstFitnessConstraints" href="#Evolutionary.WorstFitnessConstraints"><code>Evolutionary.WorstFitnessConstraints</code></a> — <span class="docstring-category">Type</span></header><section><div><p>This type encodes constraints as the following additional penalty for an objective function:</p><p><span>$p(x) = f_{worst} + \sum^n_{i=1} |g_i(x)|$</span></p><p>if <span>$x$</span> is not feasible, otherwise no penalty is applied.</p><p>The constructor takes following arguments:</p><ul><li><code>lx</code>: a vector of value lower bounds</li><li><code>ux</code>: a vector of value upper bounds</li><li><code>lc</code>: a vector of constrain function lower bounds</li><li><code>uc</code>: a vector of constrain function upper bounds</li><li><code>c</code>: a constraint function which returns a constrain values</li></ul></div><a class="docs-sourcelink" target="_blank" href="https://github.com/wildart/Evolutionary.jl/blob/c50d834645fc063ba69504ea1503d13f73330992/src/api/constraints.jl#L165-L179">source</a></section></article><pre><code class="language-julia">con = WorstFitnessConstraints(lx, ux, lc, uc, c)</code></pre><pre class="documenter-example-output">Worst Fitness ConstraintBounds:
+</pre><p>We can use worst fitness constraint algorithm which doesn&#39;t require to specify the constraint penalty value</p><article class="docstring"><header><a class="docstring-binding" id="Evolutionary.WorstFitnessConstraints" href="#Evolutionary.WorstFitnessConstraints"><code>Evolutionary.WorstFitnessConstraints</code></a> — <span class="docstring-category">Type</span></header><section><div><p>This type encodes constraints as the following additional penalty for an objective function:</p><p><span>$p(x) = f_{worst} + \sum^n_{i=1} |g_i(x)|$</span></p><p>if <span>$x$</span> is not feasible, otherwise no penalty is applied.</p><p>The constructor takes following arguments:</p><ul><li><code>lx</code>: a vector of value lower bounds</li><li><code>ux</code>: a vector of value upper bounds</li><li><code>lc</code>: a vector of constrain function lower bounds</li><li><code>uc</code>: a vector of constrain function upper bounds</li><li><code>c</code>: a constraint function which returns a constrain values</li></ul></div><a class="docs-sourcelink" target="_blank" href="https://github.com/wildart/Evolutionary.jl/blob/8b44d266b12712be706de36b3fc74333ebb03a99/src/api/constraints.jl#L165-L179">source</a></section></article><pre><code class="language-julia">con = WorstFitnessConstraints(lx, ux, lc, uc, c)</code></pre><pre class="documenter-example-output">Worst Fitness ConstraintBounds:
   Variables:
     x[1]≥0.0, x[2]≥0.0
   Linear/nonlinear constraints:
@@ -110,9 +110,9 @@ results = Evolutionary.optimize(f, con, x0, ga)</code></pre><pre class="document
  * Status: success
 
  * Candidate solution
-    Minimizer:  [175.3006286505195, 57.04671679304594]
-    Minimum:    1039.322337088972
-    Iterations: 30
+    Minimizer:  [172.50489290749456, 57.96937180933962]
+    Minimum:    1039.2390250065403
+    Iterations: 56
 
  * Found with
     Algorithm: GA[P=100,x=0.8,μ=0.1,ɛ=0]
@@ -122,8 +122,8 @@ results = Evolutionary.optimize(f, con, x0, ga)</code></pre><pre class="document
     |f(x) - f(x&#39;)|/|f(x&#39;)| = 0.0 ≤ 1.0e-32
 
  * Work counters
-    Seconds run:   0.0023 (vs limit Inf)
-    Iterations:    30
-    f(x) calls:    3130
-</pre><h2 id="Auxiliary-Functions"><a class="docs-heading-anchor" href="#Auxiliary-Functions">Auxiliary Functions</a><a id="Auxiliary-Functions-1"></a><a class="docs-heading-anchor-permalink" href="#Auxiliary-Functions" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-binding" id="NLSolversBase.value-Tuple{NLSolversBase.AbstractConstraints, Any}" href="#NLSolversBase.value-Tuple{NLSolversBase.AbstractConstraints, Any}"><code>NLSolversBase.value</code></a> — <span class="docstring-category">Method</span></header><section><div><pre><code class="language-julia">value(c::AbstractConstraints, x)</code></pre><p>Return a values of constraints for a variable <code>x</code> given the set of constraints in the object <code>c</code>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/wildart/Evolutionary.jl/blob/c50d834645fc063ba69504ea1503d13f73330992/src/api/constraints.jl#L3-L7">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="Evolutionary.isfeasible" href="#Evolutionary.isfeasible"><code>Evolutionary.isfeasible</code></a> — <span class="docstring-category">Function</span></header><section><div><pre><code class="language-julia">isfeasible(bounds::ConstraintBounds, x) -&gt; Bool</code></pre><p>Return <code>true</code> if point <code>x</code> is feasible, given the <code>bounds</code> object with bounds <code>lx</code>, <code>ux</code>, <code>lc</code>, and <code>uc</code>. <code>x</code> is feasible if</p><pre><code class="language-none">lx[i] &lt;= x[i] &lt;= ux[i]
-lc[i] &lt;= c(x)[i] &lt;= uc[i]</code></pre><p>for all possible <code>i</code>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/wildart/Evolutionary.jl/blob/c50d834645fc063ba69504ea1503d13f73330992/src/api/constraints.jl#L40-L49">source</a></section><section><div><pre><code class="language-julia">isfeasible(c::AbstractConstraints, x) -&gt; Bool</code></pre><p>Return <code>true</code> if point <code>x</code> is feasible, given the constraints object <code>c</code>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/wildart/Evolutionary.jl/blob/c50d834645fc063ba69504ea1503d13f73330992/src/api/constraints.jl#L69-L73">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="Evolutionary.penalty" href="#Evolutionary.penalty"><code>Evolutionary.penalty</code></a> — <span class="docstring-category">Function</span></header><section><div><pre><code class="language-julia">penalty(constraints, x)</code></pre><p>Calculate a penalty for the variable <code>x</code> given the set of <code>constraints</code>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/wildart/Evolutionary.jl/blob/c50d834645fc063ba69504ea1503d13f73330992/src/api/constraints.jl#L10-L14">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="Evolutionary.penalty!" href="#Evolutionary.penalty!"><code>Evolutionary.penalty!</code></a> — <span class="docstring-category">Function</span></header><section><div><pre><code class="language-julia">penalty!(fitness, constraints, population)</code></pre><p>Set a penalty to the <code>fitness</code> given the set of <code>constraints</code> and <code>population</code>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/wildart/Evolutionary.jl/blob/c50d834645fc063ba69504ea1503d13f73330992/src/api/constraints.jl#L17-L21">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="Evolutionary.apply!" href="#Evolutionary.apply!"><code>Evolutionary.apply!</code></a> — <span class="docstring-category">Function</span></header><section><div><pre><code class="language-julia">apply!(c::AbstractConstraints, x)</code></pre><p>Appliy constrains <code>c</code> to a variable <code>x</code>, and return the variable.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/wildart/Evolutionary.jl/blob/c50d834645fc063ba69504ea1503d13f73330992/src/api/constraints.jl#L24-L28">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="Evolutionary.bounds" href="#Evolutionary.bounds"><code>Evolutionary.bounds</code></a> — <span class="docstring-category">Function</span></header><section><div><pre><code class="language-julia">bounds(c::AbstractConstraints)</code></pre><p>Return bounds for the constraint <code>c</code>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/wildart/Evolutionary.jl/blob/c50d834645fc063ba69504ea1503d13f73330992/src/api/constraints.jl#L31-L35">source</a></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tutorial/">« Tutorial</a><a class="docs-footer-nextpage" href="../ga/">Genetic Algorithm »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Wednesday 8 December 2021 22:59">Wednesday 8 December 2021</span>. Using Julia version 1.6.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+    Seconds run:   0.0047 (vs limit Inf)
+    Iterations:    56
+    f(x) calls:    5756
+</pre><h2 id="Auxiliary-Functions"><a class="docs-heading-anchor" href="#Auxiliary-Functions">Auxiliary Functions</a><a id="Auxiliary-Functions-1"></a><a class="docs-heading-anchor-permalink" href="#Auxiliary-Functions" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-binding" id="NLSolversBase.value-Tuple{NLSolversBase.AbstractConstraints, Any}" href="#NLSolversBase.value-Tuple{NLSolversBase.AbstractConstraints, Any}"><code>NLSolversBase.value</code></a> — <span class="docstring-category">Method</span></header><section><div><pre><code class="language-julia">value(c::AbstractConstraints, x)</code></pre><p>Return a values of constraints for a variable <code>x</code> given the set of constraints in the object <code>c</code>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/wildart/Evolutionary.jl/blob/8b44d266b12712be706de36b3fc74333ebb03a99/src/api/constraints.jl#L3-L7">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="Evolutionary.isfeasible" href="#Evolutionary.isfeasible"><code>Evolutionary.isfeasible</code></a> — <span class="docstring-category">Function</span></header><section><div><pre><code class="language-julia">isfeasible(bounds::ConstraintBounds, x) -&gt; Bool</code></pre><p>Return <code>true</code> if point <code>x</code> is feasible, given the <code>bounds</code> object with bounds <code>lx</code>, <code>ux</code>, <code>lc</code>, and <code>uc</code>. <code>x</code> is feasible if</p><pre><code class="language-none">lx[i] &lt;= x[i] &lt;= ux[i]
+lc[i] &lt;= c(x)[i] &lt;= uc[i]</code></pre><p>for all possible <code>i</code>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/wildart/Evolutionary.jl/blob/8b44d266b12712be706de36b3fc74333ebb03a99/src/api/constraints.jl#L40-L49">source</a></section><section><div><pre><code class="language-julia">isfeasible(c::AbstractConstraints, x) -&gt; Bool</code></pre><p>Return <code>true</code> if point <code>x</code> is feasible, given the constraints object <code>c</code>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/wildart/Evolutionary.jl/blob/8b44d266b12712be706de36b3fc74333ebb03a99/src/api/constraints.jl#L69-L73">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="Evolutionary.penalty" href="#Evolutionary.penalty"><code>Evolutionary.penalty</code></a> — <span class="docstring-category">Function</span></header><section><div><pre><code class="language-julia">penalty(constraints, x)</code></pre><p>Calculate a penalty for the variable <code>x</code> given the set of <code>constraints</code>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/wildart/Evolutionary.jl/blob/8b44d266b12712be706de36b3fc74333ebb03a99/src/api/constraints.jl#L10-L14">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="Evolutionary.penalty!" href="#Evolutionary.penalty!"><code>Evolutionary.penalty!</code></a> — <span class="docstring-category">Function</span></header><section><div><pre><code class="language-julia">penalty!(fitness, constraints, population)</code></pre><p>Set a penalty to the <code>fitness</code> given the set of <code>constraints</code> and <code>population</code>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/wildart/Evolutionary.jl/blob/8b44d266b12712be706de36b3fc74333ebb03a99/src/api/constraints.jl#L17-L21">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="Evolutionary.apply!" href="#Evolutionary.apply!"><code>Evolutionary.apply!</code></a> — <span class="docstring-category">Function</span></header><section><div><pre><code class="language-julia">apply!(c::AbstractConstraints, x)</code></pre><p>Appliy constrains <code>c</code> to a variable <code>x</code>, and return the variable.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/wildart/Evolutionary.jl/blob/8b44d266b12712be706de36b3fc74333ebb03a99/src/api/constraints.jl#L24-L28">source</a></section></article><article class="docstring"><header><a class="docstring-binding" id="Evolutionary.bounds" href="#Evolutionary.bounds"><code>Evolutionary.bounds</code></a> — <span class="docstring-category">Function</span></header><section><div><pre><code class="language-julia">bounds(c::AbstractConstraints)</code></pre><p>Return bounds for the constraint <code>c</code>.</p></div><a class="docs-sourcelink" target="_blank" href="https://github.com/wildart/Evolutionary.jl/blob/8b44d266b12712be706de36b3fc74333ebb03a99/src/api/constraints.jl#L31-L35">source</a></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../tutorial/">« Tutorial</a><a class="docs-footer-nextpage" href="../ga/">Genetic Algorithm »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> on <span class="colophon-date" title="Wednesday 8 December 2021 23:20">Wednesday 8 December 2021</span>. Using Julia version 1.6.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
