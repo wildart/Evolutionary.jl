@@ -55,7 +55,7 @@ function randterm(rng::AbstractRNG, t::TreeGP)
     if isa(term, Symbol) || isa(term, Real)
         term
     elseif isa(term, Function)
-        term()
+        term(rng) # terminal functions must accept RNG as an argument
     else
         # Code shouldn't reach branch but left as a catchall
         dim = t.terminals[term]
@@ -97,10 +97,11 @@ rand(t::TreeGP, maxdepth::Int=2; kwargs...) =
 
 Initialize a random population of expressions derived from `expr`.
 """
-function initial_population(m::TreeGP, expr::Union{Expr,Nothing}=nothing)
+function initial_population(m::TreeGP, expr::Union{Expr,Nothing}=nothing;
+                            rng::AbstractRNG=Random.GLOBAL_RNG)
     n = population_size(m)
     return [
-        expr === nothing ? rand(m, m.maxdepth, mindepth=m.mindepth) : deepcopy(expr)
+        expr === nothing ? rand(rng, m, m.maxdepth, mindepth=m.mindepth) : deepcopy(expr)
         for i in 1:n
     ]
 end
@@ -129,8 +130,13 @@ function update_state!(objfun, constraints, state::GPState, population::Abstract
 end
 
 # Custom optimization call
-function optimize(f, method::TreeGP, options::Options = Options(;default_options(method)...))
-    method.optimizer.mutation =  subtree(method)
-    method.optimizer.crossover = crosstree
-    optimize(f, NoConstraints(), nothing, method, options)
+function optimize(f, mthd::TreeGP, options::Options = Options(;default_options(mthd)...))
+    optimize(f, mthd, initial_population(mthd, rng=options.rng), options)
 end
+
+function optimize(f, mthd::TreeGP, population, options::Options = Options(;default_options(mthd)...))
+    mthd.optimizer.mutation =  subtree(mthd)
+    mthd.optimizer.crossover = crosstree
+    optimize(f, NoConstraints(), mthd, population, options)
+end
+

@@ -1,5 +1,6 @@
 @testset "Genetic Programming" begin
-    Random.seed!(9874984737486);
+    rng = StableRNG(42)
+
     pop = 10
     terms = Terminal[:x, :y, rand]
     funcs = Function[+,-,*,/]
@@ -16,18 +17,18 @@
     @test_skip summary(t) == "TreeGP[P=10,Parameter[x,y],Function[*, +, /, -]]"
 
     # population initialization
-    popexp = Evolutionary.initial_population(t);
+    popexp = Evolutionary.initial_population(t, rng=rng);
     @test length(popexp) == pop
     popexp = Evolutionary.initial_population(t, :(x + 1));
     @test popexp[1] == :(x + 1)
 
     # recursive helper functions
-    Random.seed!(9874984737482)
-    gt = rand(TreeGP(pop, terms, funcs, maxdepth=2, initialization=:grow), 3)
+    Random.seed!(rng, 1)
+    gt = rand(rng, TreeGP(pop, terms, funcs, maxdepth=2, initialization=:grow), 3)
     @test Evolutionary.nodes(gt) < 15
     @test Evolutionary.height(gt) <= 3
     @test length(gt) < 15
-    ft = rand(TreeGP(pop, terms, funcs, maxdepth=2, initialization=:full), 3)
+    ft = rand(rng, TreeGP(pop, terms, funcs, maxdepth=2, initialization=:full), 3)
     @test Evolutionary.nodes(ft) == 15
     @test Evolutionary.height(ft) == 3
     @test length(ft) == 15
@@ -57,7 +58,7 @@
 
     # evaluation
     ex = Expr(:call, +, 1, :x) |> Evolutionary.Expression
-    xs = rand(10)
+    xs = rand(rng, 10)
     @test ex(xs[1]) == xs[1]+1
     @test ex.(xs) == xs.+1
     io = IOBuffer()
@@ -67,24 +68,23 @@
     depth = 5
     fitfun(x) = x*x + x + 1.0
     function fitobj(expr)
-        rg = -5.0:0.5:5.0
+        rg = -5.0:0.1:5.0
         ex = Evolutionary.Expression(expr)
-        sum(v->isnan(v) ? 1.0 : v, abs2.(fitfun.(rg) - ex.(rg)) )/length(rg) |> sqrt
+        sum(v->isnan(v) ? 1.0 : v, abs2.(fitfun.(rg) - ex.(rg)) )/length(rg)
     end
 
-    Random.seed!(9874984737426);
     res = Evolutionary.optimize(fitobj,
         TreeGP(50, Terminal[:x, randn], Function[+,-,*,Evolutionary.pdiv],
             mindepth=1,
             maxdepth=depth,
             optimizer = GA(
-                selection = tournament(5),
+                selection = tournament(4),
                 ɛ = 0.1,
-                mutationRate = 0.85,
+                mutationRate = 0.8,
                 crossoverRate = 0.2,
             ),
-        )
+        ), Evolutionary.Options(rng=StableRNG(1))
     )
-    @test minimum(res) < 1.1
+    @test minimum(res) < 1
 
 end

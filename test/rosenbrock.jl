@@ -52,12 +52,12 @@
     c = PenaltyConstraints(100.0, fill(0.0, 5N), Float64[], [1.0], [1.0], con_c!)
     result = Evolutionary.optimize(rosenbrock, c, (() -> rand(5N)), CMAES(mu = 40, lambda = 100))
     println("(5/5,100)-CMA-ES [penalty] => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
-    @test Evolutionary.minimizer(result) |> sum ≈ 1.0 atol=1e-1
+    @test Evolutionary.minimizer(result) |> sum ≈ 1.0 atol=0.1
 
     c = PenaltyConstraints(100.0, fill(0.0, 2N), fill(0.5, 2N), [1.0], [1.0], con_c!)
     result = Evolutionary.optimize(rosenbrock, c, (() -> rand(2N)), CMAES(mu = 8, lambda = 100))
     println("(5/5,100)-CMA-ES [penalty] => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
-    @test Evolutionary.minimizer(result) |> sum ≈ 1.0 atol=1e-1
+    @test Evolutionary.minimizer(result) |> sum ≈ 1.0 atol=0.1
     @test all(0.0 <= x+0.01 && x-0.01 <= 0.5 for x in abs.(Evolutionary.minimizer(result)))
 
     # Testing: GA
@@ -65,15 +65,15 @@
         populationSize = 100,
         ɛ = 0.1,
         selection = rouletteinv,
-        crossover = intermediate(0.25),
+        crossover = IC(0.2),
         mutation = BGA(fill(0.5,N))
     )
     result = Evolutionary.optimize(rosenbrock, (() -> rand(N)), m)
     println("GA(p=100,x=0.8,μ=0.1,ɛ=0.1) => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
-    test_result(result, N, 1e-1)
+    test_result(result, N, 0.1)
     result = Evolutionary.optimize(rosenbrock, BoxConstraints(0.0, 0.5, N), (() -> rand(N)), m)
     println("GA(p=100,x=0.8,μ=0.1,ɛ=0.1)[box] => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
-    @test Evolutionary.minimizer(result) ≈ [0.5, 0.25] atol=1e-1
+    @test Evolutionary.minimizer(result) ≈ [0.5, 0.25] atol=0.1
 
     # Testing: DE
     result = Evolutionary.optimize(rosenbrock, (() -> rand(N)), DE(populationSize = 100))

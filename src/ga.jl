@@ -61,19 +61,19 @@ end
 function update_state!(objfun, constraints, state, population::AbstractVector{IT}, method::GA, options, itr) where {IT}
     @unpack populationSize,crossoverRate,mutationRate,ɛ,selection,crossover,mutation = method
     evaltype = options.parallelization
-
+    rng = options.rng
     offspring = similar(population)
 
     # Select offspring
-    selected = selection(state.fitpop, populationSize)
+    selected = selection(state.fitpop, populationSize, rng=rng)
 
     # Perform mating
-    offidx = randperm(populationSize)
+    offidx = randperm(rng, populationSize)
     offspringSize = populationSize - state.eliteSize
     for i in 1:2:offspringSize
         j = (i == offspringSize) ? i-1 : i+1
-        if rand() < crossoverRate
-            offspring[i], offspring[j] = crossover(population[selected[offidx[i]]], population[selected[offidx[j]]])
+        if rand(rng) < crossoverRate
+            offspring[i], offspring[j] = crossover(population[selected[offidx[i]]], population[selected[offidx[j]]], rng=rng)
         else
             offspring[i], offspring[j] = population[selected[i]], population[selected[j]]
         end
@@ -88,8 +88,8 @@ function update_state!(objfun, constraints, state, population::AbstractVector{IT
 
     # Perform mutation
     for i in 1:offspringSize
-        if rand() < mutationRate
-            mutation(offspring[i])
+        if rand(rng) < mutationRate
+            mutation(offspring[i], rng=rng)
         end
     end
 
