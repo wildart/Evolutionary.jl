@@ -32,6 +32,7 @@ SHFX
 UX
 BINX
 EXPX
+BSX
 ```
 
 Real-valued crossovers:
@@ -78,3 +79,5 @@ Evolutionary.crosstree
 [^5]: K. Deep, K. P. Singh, M. L. Kansal, and C. Mohan, "A real coded  genetic algorithm for solving integer and mixed integer optimization problems.", Appl. Math. Comput. 212, 505-518, 2009
 
 [^6]: K. Deb, R. B. Agrawal, "Simulated Binary Crossover for Continuous Search Space", Complex Syst., 9., 1995
+
+[^7]: M. A. Wolters, “A Genetic Algorithm for Selection of Fixed-Size Subsets with Application to Design Problems”, J. Stat. Soft., vol. 68, no. 1, pp. 1–18, Nov. 2015.

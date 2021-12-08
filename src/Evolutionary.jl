@@ -24,6 +24,7 @@ module Evolutionary
            SPX, TPX, UX, SHFX,
            DC, AX, WAX, IC, LC, HX, LX, MILX, SBX,
            PMX, OX1, CX, OX2, POS,
+           BSX,
            # GA selections
            ranklinear, uniformranking, roulette, rouletteinv, sus, susinv,
            tournament, truncation,

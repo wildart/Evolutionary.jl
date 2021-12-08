@@ -60,6 +60,7 @@ a
     - UX (uniform)
     - BINX (binary)
     - EXPX (exponential)
+    - BSX (binary subset)
   - real valued
     - DC (discrete)
     - AX (average)

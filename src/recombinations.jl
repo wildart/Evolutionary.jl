@@ -180,6 +180,26 @@ function EXPX(Cr::Real = 0.5)
     return expxvr
 end
 
+"""
+    BSX(k::Int)
+
+Binary Subset Crossover[^7]. Produces two offsprings by first pooling the unique
+items of the two parents, and then creating each offspring by sampling without 
+replacement at most `k` elements from the pool of items.
+"""
+function BSX(k::Int)
+    function BSX(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: AbstractVector{Bool}}
+        l = length(v1) # get number of available elements
+        pooled = findall(v1 .| v2) # pool parents selections
+        K = min(k,length(pooled)) # cannot sample more than the items in pool
+        c1 = falses(l) # init child 1
+        c2 = falses(l) # init child 2
+        c1[shuffle(rng, pooled)[1:K]] .= true # fill child 1 with sample from pool w/o replacement
+        c2[shuffle(rng, pooled)[1:K]] .= true # fill child 2 with sample from pool w/o replacement
+        return c1, c2
+    end
+    return BSX
+end
 
 # Real valued crossovers
 # ----------------------
@@ -543,6 +563,8 @@ function POS(v1::T, v2::T; rng::AbstractRNG=Random.GLOBAL_RNG) where {T <: Abstr
     end
     return c1,c2
 end
+
+
 
 # ===================
 # Genetic Programming
