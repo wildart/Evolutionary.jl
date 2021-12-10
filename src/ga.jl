@@ -58,54 +58,72 @@ function initial_state(method::GA, options, objfun, population)
     return GAState(N, eliteSize, minfit, fitness, copy(population[fitidx]))
 end
 
-function update_state!(objfun, constraints, state, population::AbstractVector{IT}, method::GA, options, itr) where {IT}
-    @unpack populationSize,crossoverRate,mutationRate,ɛ,selection,crossover,mutation = method
+function update_state!(objfun, constraints, state, parents::AbstractVector{IT}, method::GA, options, itr) where {IT}
+    populationSize = method.populationSize
     evaltype = options.parallelization
     rng = options.rng
-    offspring = similar(population)
+    offspring = similar(parents)
 
-    # Select offspring
-    selected = selection(state.fitpop, populationSize, rng=rng)
+    # select offspring
+    selected = method.selection(state.fitpop, populationSize, rng=rng)
 
-    # Perform mating
-    offidx = randperm(rng, populationSize)
+    # perform mating
     offspringSize = populationSize - state.eliteSize
-    for i in 1:2:offspringSize
-        j = (i == offspringSize) ? i-1 : i+1
-        if rand(rng) < crossoverRate
-            offspring[i], offspring[j] = crossover(population[selected[offidx[i]]], population[selected[offidx[j]]], rng=rng)
-        else
-            offspring[i], offspring[j] = population[selected[i]], population[selected[j]]
-        end
-    end
+    recombine!(offspring, parents, selected, method, offspringSize)
 
     # Elitism (copy population individuals before they pass to the offspring & get mutated)
     fitidxs = sortperm(state.fitpop)
     for i in 1:state.eliteSize
         subs = offspringSize+i
-        offspring[subs] = copy(population[fitidxs[i]])
+        offspring[subs] = copy(parents[fitidxs[i]])
     end
 
-    # Perform mutation
-    for i in 1:offspringSize
-        if rand(rng) < mutationRate
-            mutation(offspring[i], rng=rng)
-        end
-    end
+    # perform mutation
+    mutate!(offspring, method, constraints, rng=rng)
 
-    # Create new generation & evaluate it
-    for i in 1:populationSize
-        population[i] = apply!(constraints, offspring[i])
-    end
     # calculate fitness of the population
-    value!(objfun, state.fitpop, population)
-    # apply penalty to fitness
-    penalty!(state.fitpop, constraints, population)
+    evaluate!(objfun, state.fitpop, offspring, constraints)
 
-    # find the best individual
+    # select the best individual
     minfit, fitidx = findmin(state.fitpop)
-    state.fittest = population[fitidx]
+    state.fittest = parents[fitidx]
     state.fitness = state.fitpop[fitidx]
+    
+    # replace population
+    parents .= offspring
 
     return false
 end
+
+function recombine!(offspring, parents, selected, method, n=length(selected);
+                    rng::AbstractRNG=Random.GLOBAL_RNG)
+    mates = ((i,i == n ? i-1 : i+1) for i in 1:2:n)
+    for (i,j) in mates
+        p1, p2 = parents[selected[i]], parents[selected[j]]
+        if rand(rng) < method.crossoverRate
+            offspring[i], offspring[j] = method.crossover(p1, p2, rng=rng)
+        else
+            offspring[i], offspring[j] = p1, p2
+        end
+    end
+
+end
+
+function mutate!(population, method, constraints;
+                 rng::AbstractRNG=Random.GLOBAL_RNG)
+    n = length(population)
+    for i in 1:n
+        if rand(rng) < method.mutationRate
+            method.mutation(population[i], rng=rng)
+        end        
+        apply!(constraints, population[i])
+    end
+end
+
+function evaluate!(objfun, fitness, population, constraints)
+    # calculate fitness of the population
+    value!(objfun, fitness, population)
+    # apply penalty to fitness
+    penalty!(fitness, constraints, population)
+end
+

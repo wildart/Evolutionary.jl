@@ -1,5 +1,7 @@
 @testset "Rastrigin" begin
 
+    rng = StableRNG(42)
+
     function test_result(result::Evolutionary.EvolutionaryOptimizationResults, N::Int, tol::Float64)
         fitness = minimum(result)
         extremum = Evolutionary.minimizer(result)
@@ -21,11 +23,11 @@
     # Parameters
     N = 3
     P = 100
-    initState = ()->rand(N)
+    initState = ()->rand(rng, N)
 
     # Testing: (μ/μ_I,λ)-σ-Self-Adaptation-ES
     # with non-isotropic mutation operator y' := y + (σ_1 N_1(0, 1), ..., σ_N N_N(0, 1))
-    Random.seed!(9874984737486)
+    Random.seed!(rng, 42)
     m = ES(mu = 15, lambda = P)
     @test m.μ == 15
     @test m.λ == P
@@ -37,7 +39,7 @@
             mutation = gaussian, smutation = gaussian,
             selection=:comma,
             μ = 15, λ = P
-        ),Evolutionary.Options(iterations=1000, show_trace=false)
+        ),Evolutionary.Options(iterations=1000, abstol=1e-10, rng=rng)
     )
     println("(15,$(P))-σ-SA-ES => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
     test_result(result, N, 1e-1)
@@ -48,17 +50,16 @@
     test_result(result, N, 1e-1)
 
     # Testing: GA
-    Random.seed!(9874984737486)
     m = GA(epsilon = 10.0)
     @test m.ɛ == 10
 
-    selections = [:roulette=>rouletteinv, :sus=>susinv, :rank=>ranklinear(1.5)]
-    crossovers = [:discrete=>DC, :intermediate0=>IC(0.), :intermediate0_5=>IC(0.5), :line=>LC(0.1)]
-    mutations = [:domrng0_5=>BGA(fill(0.5,N)), :uniform=>uniform(2.0), :gaussian=>gaussian(0.3)]
+    selections = [:roulette=>rouletteinv, :sus=>susinv, :tourn=>tournament(2)]
+    crossovers = [:discrete=>DC, :intermediate0=>IC(0.), :intermediate0_5=>IC(0.5), :line=>LC(0.1), :avg=>AX, :heuristic=>HX, :laplace=>LX(), :simbin=>SBX()]
+    mutations  = [:domrng0_5=>BGA(fill(0.5,N)), :uniform=>uniform(), :plm=>PLM()]
 
     @testset "GA settings" for (sn,ss) in selections, (xn,xovr) in crossovers, (mn,ms) in mutations
-        xn == :discrete && (mn == :uniform || mn == :gaussian) && continue # bad combination
-        xn == :line && mn == :gaussian && continue # bad combination
+        (xn ∈ [:heuristic, :discrete, :avg]) && mn == :uniform && continue # bad combination
+        Random.seed!(rng, 42)
         result = Evolutionary.optimize( rastrigin, initState,
             GA(
                 populationSize = P,
@@ -66,18 +67,17 @@
                 selection = ss,
                 crossover = xovr,
                 mutation = ms
-            ), Evolutionary.Options(iterations=1000, successive_f_tol=25)
+            ), Evolutionary.Options(abstol=1e-10, successive_f_tol=25, rng=rng)
         )
         println("GA:$(sn):$(xn):$(mn)(N=$(N),P=$(P),x=.8,μ=.1,ɛ=0.1) => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
-        test_result(result, N, 1e-1)
+        test_result(result, N, 0.2)
     end
 
     # Testing: DE
-    Random.seed!(9874984737486)
     selections = [:rand=>random, :perm=>permutation, :rndoff=>randomoffset, :best=>best]
     mutations = [:exp=>EXPX(0.5), :bin=>BINX(0.5)]
-
     @testset "DE settings" for (sn,ss) in selections, (mn,ms) in mutations, n in 1:2
+        Random.seed!(rng, 1)
         result = Evolutionary.optimize( rastrigin, initState,
             DE(
                 populationSize = P,
@@ -85,7 +85,7 @@
                 selection = ss,
                 recombination = ms,
                 F = 0.9
-            )
+               ), Evolutionary.Options(rng=rng)
         )
         println("DE/$sn/$n/$mn(F=0.9,Cr=0.5) => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
         test_result(result, N, 1e-2)

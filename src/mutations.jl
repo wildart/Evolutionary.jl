@@ -5,6 +5,13 @@
 # ======================
 
 """
+    nop(s::AbstractStrategy)
+
+This is a dummy mutation operator that does not change recombinant.
+"""
+nop(recombinant::AbstractVector, s::AbstractStrategy; kwargs...) = recombinant
+
+"""
     gaussian(x, s::IsotropicStrategy)
 
 Performs Gaussian isotropic mutation of the recombinant `x` given the strategy `s`  by adding Gaussian noise as follows:
@@ -56,6 +63,14 @@ end
 
 # Strategy mutation operators
 # ===========================
+
+"""
+    nop(s::AbstractStrategy)
+
+This is a dummy operator that does not change strategy.
+"""
+nop(s::AbstractStrategy; kwargs...) = s
+
 
 """
     gaussian(s::IsotropicStrategy)
@@ -411,7 +426,7 @@ end
 # ======================
 
 """
-    subtree(method::TreeGP; growth::Real = 0.1)
+    subtree(method::TreeGP; growth::Real = 0.0)
 
 Returns an in-place expression mutation function that performs mutation of an arbitrary expression subtree with a randomly generated one [^5].
 
@@ -523,6 +538,7 @@ function swap!(v::T, from::Int, to::Int) where {T <: AbstractVector}
 end
 
 function mutationwrapper(gamutation::Function)
-    wrapper(recombinant::T, s::S) where {T <: AbstractVector, S <: AbstractStrategy} =  gamutation(recombinant)
+    wrapper(recombinant::T, s::S; kwargs...) where {T <: AbstractVector, S <: AbstractStrategy} =  gamutation(recombinant; kwargs...)
     return wrapper
 end
+

@@ -1,28 +1,29 @@
 @testset "OneMax" begin
 
+    rng = StableRNG(42)
+
     # Initial population
     N = 100
-    initpop = (() -> BitArray(rand(Bool, N)))
+    initpop = (() -> BitArray(rand(rng, Bool, N)))
 
     function Evolutionary.trace!(record::Dict{String,Any}, objfun, state, population, method::GA, options)
         idx = sortperm(state.fitpop)
         record["fitpop"] = state.fitpop[idx[1:5]]
     end
 
-    Random.seed!(0);
     res = Evolutionary.optimize(
         x -> -sum(x),                 # Function to MINIMIZE
         initpop,
         GA(
-            selection = uniformranking(5),
+            selection = tournament(3),
             mutation =  flip,
             crossover = TPX,
-            mutationRate = 0.6,
-            crossoverRate = 0.2,
+            mutationRate = 0.05,
+            crossoverRate = 0.85,
             populationSize = N,
         ),
-        Evolutionary.Options(successive_f_tol=20, iterations=1500, store_trace=true));
-    println("GA:UR(3):FLP:SP (OneMax: 1/sum) => F: $(minimum(res)), C: $(Evolutionary.iterations(res))")
+        Evolutionary.Options(rng=rng, store_trace=true));
+    println("GA:TOUR(3):FLP:TPX (OneMax: 1/sum) => F: $(minimum(res)), C: $(Evolutionary.iterations(res))")
     @test sum(Evolutionary.minimizer(res)) >= N-3
     @test abs(minimum(res)) >= N-3
     @test Evolutionary.trace(res)[end].metadata["fitpop"][1] == minimum(res)

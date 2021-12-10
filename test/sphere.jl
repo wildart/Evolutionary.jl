@@ -48,7 +48,7 @@
             mutationRate = 0.15,
             ɛ = 0.1,
             selection = susinv,
-            crossover = intermediate(0.25),
+            crossover = IC(0.25),
             mutation = BGA(fill(0.5,N)),
         ));
     # show(result)

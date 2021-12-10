@@ -67,36 +67,22 @@ function initial_state(method::NSGA2, options, objfun, parents)
 end
 
 function update_state!(objfun, constraints, state, parents::AbstractVector{IT}, method::NSGA2, options, itr) where {IT}
-    @unpack populationSize,crossoverRate,mutationRate,selection,crossover,mutation = method
+    populationSize = method.populationSize
+    rng = options.rng
 
-    # Select offspring
+    # select offspring
     specFit = StackView(state.ranks, state.crowding, dims=1)
-    selected = selection(view(specFit, :, 1:populationSize), populationSize)
+    selected = method.selection(view(specFit,:,1:populationSize), populationSize; rng=rng)
 
-    # Perform mating
-    offidx = randperm(populationSize)
-    for i in 1:2:populationSize
-        j = (i == populationSize) ? i-1 : i+1
-        if rand() < crossoverRate
-            state.offspring[i], state.offspring[j] = crossover(parents[selected[offidx[i]]], parents[selected[offidx[j]]])
-        else
-            state.offspring[i], state.offspring[j] = parents[selected[i]], parents[selected[j]]
-        end
-    end
+    # perform mating
+    recombine!(state.offspring, parents, selected, method)
 
-    # Perform mutation
-    for i in 1:populationSize
-        if rand() < mutationRate
-            mutation(state.offspring[i])
-        end
-        apply!(constraints, state.offspring[i])
-    end
+    # perform mutation
+    mutate!(state.offspring, method, constraints, rng=rng)
 
     # calculate fitness of the offspring
     offfit = @view state.fitpop[:, populationSize+1:end]
-    value!(objfun, offfit, state.offspring)
-    # apply penalty to fitness
-    penalty!(offfit, constraints, state.offspring)
+    evaluate!(objfun, offfit, state.offspring, constraints)
 
     # calculate ranks & crowding for population
     F = nondominatedsort!(state.ranks, state.fitpop)
@@ -117,6 +103,7 @@ function update_state!(objfun, constraints, state, parents::AbstractVector{IT}, 
     state.fittest = state.population[F[1]]
     # and keep their fitness
     state.fitness = state.fitpop[:,F[1]]
+
     # construct new parent population
     parents .= state.population[fitidx]
 

@@ -48,6 +48,7 @@ function update_state!(objfun, constraints, state, population::AbstractVector{IT
     Np = method.populationSize
     n = method.n
     F = method.F
+    rng = options.rng
 
     offspring = Array{IT}(undef, Np)
 
@@ -61,12 +62,12 @@ function update_state!(objfun, constraints, state, population::AbstractVector{IT
         offspring[i] = copy(base)
         # println("$i => base:", offspring[i])
 
-        targets = randexcl(1:Np, [i], 2*n)
+        targets = randexcl(rng, 1:Np, [i], 2*n)
         offspring[i] = differentiation(offspring[i], @view population[targets]; F=F)
         # println("$i => mutated:", offspring[i], ", targets:", targets)
 
         # recombination
-        offspring[i], _ = method.recombination(offspring[i], base)
+        offspring[i], _ = method.recombination(offspring[i], base, rng=rng)
         # println("$i => recombined:", offspring[i])
     end
 

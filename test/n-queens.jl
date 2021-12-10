@@ -1,8 +1,9 @@
 @testset "n-Queens" begin
+    rng = StableRNG(42)
 
     N = 8
     P = 100
-    generatePositions = ()->collect(1:N)[randperm(N)]
+    generatePositions = ()->randperm(rng, N)
 
     # Vector of N cols filled with numbers from 1:N specifying row position
     function nqueens(queens::Vector{Int})
@@ -23,28 +24,36 @@
     @test nqueens([3,1,2]) == 1
 
     # Testing: GA solution with various mutations
-    for muts in [inversion, insertion, swap2, scramble, shifting]
+    for muts in [inversion, insertion, swap2, scramble, shifting],
+        xo in [PMX, OX1, CX, OX2, POS]
+        Random.seed!(rng, 42)
         result = Evolutionary.optimize(nqueens,
             generatePositions,
             GA(
                 populationSize = P,
-                selection = susinv,
-                crossover = PMX,
-                mutation = muts
-            ));
+                selection = tournament(5),
+                crossover = xo,
+                crossoverRate = 0.89,
+                mutation = muts,
+                mutationRate = 0.06,
+               ), Evolutionary.Options(rng=rng, successive_f_tol=30));
         # show(result)
-        println("GA:PMX:$(string(muts))(N=$(N), P=$(P)) => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
-        @test nqueens(Evolutionary.minimizer(result)) == 0
-        @test Evolutionary.iterations(result) < 100 # Test early stopping
+        println("GA:$(string(xo)):$(string(muts))(N=$(N), P=$(P)) => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
+        @test nqueens(Evolutionary.minimizer(result)) <= 1
+        @test Evolutionary.iterations(result) < 500 # Test early stopping
     end
 
     # Testing: ES
+    μ = 20
     for muts in [inversion, insertion, swap2, scramble, shifting]
         for sel in [:plus, :comma]
-            μ = 20
+            Random.seed!(rng, 42)
             result = Evolutionary.optimize(nqueens, generatePositions,
-                ES(mutation = mutationwrapper(muts), μ=μ, ρ=1, λ=P, selection=sel),
-                Evolutionary.Options(show_trace=false))
+                ES(
+                   mutation = mutationwrapper(muts),
+                   μ=μ, ρ=1, λ=P,
+                   selection=sel
+                  ), Evolutionary.Options(show_trace=false, rng=rng))
             println("($μ$(sel == :plus ? "+" : ",")$(P))-ES:$(string(muts)) => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
             # show(result)
             @test nqueens(Evolutionary.minimizer(result)) == 0
@@ -52,3 +61,4 @@
     end
 
 end
+

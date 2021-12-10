@@ -1,26 +1,27 @@
 @testset "Knapsack" begin
-    Random.seed!(42)
+    rng = StableRNG(42)
 
     mass    = [1, 5, 3, 7, 2, 10, 5]
     utility = [1, 3, 5, 2, 5,  8, 3]
 
     fitnessFun = n -> (sum(mass .* n) <= 20) ? sum(utility .* n) : 0
 
-    initpop = collect(rand(Bool,length(mass)))
-
+    Random.seed!(rng, 42)
+    initpop = ()->rand(rng, Bool, length(mass))
     result = Evolutionary.optimize(
         x -> -fitnessFun(x),
         initpop,
         GA(
-            selection = tournament(3),
-            mutation = inversion,
+            selection = roulette,
+            mutation = swap2,
             crossover = SPX,
-            mutationRate = 0.9,
-            crossoverRate = 0.2,
-            ɛ = 0.1,                                # Elitism
+            mutationRate = 0.05,
+            crossoverRate = 0.85,
+            ɛ = 0.05,                                # Elitism
             populationSize = 100,
-        ));
-    println("GA:RLT:INV:SP (-objfun) => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
+           ), Evolutionary.Options(show_trace=false, rng=rng)
+       );
+    println("GA:RLT:SWP:SPX (-objfun) => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
     @test abs(Evolutionary.minimum(result)) == 21.
     @test sum(mass .* Evolutionary.minimizer(result)) <= 20
 
@@ -33,21 +34,22 @@
     uc   = [20]   # upper bound for constraint function
     con = WorstFitnessConstraints(Int[], Int[], lc, uc, cf)
 
-    initpop = BitVector(rand(Bool,length(mass)))
-
+    Random.seed!(rng, 42)
+    initpop = BitVector(rand(rng, Bool, length(mass)))
     result = Evolutionary.optimize(
         x -> -fitnessFun(x), con,
         initpop,
         GA(
-            selection = roulette,
-            mutation = flip,
+            selection = tournament(3),
+            mutation = inversion,
             crossover = SPX,
-            mutationRate = 0.9,
-            crossoverRate = 0.1,
+            mutationRate = 0.05,
+            crossoverRate = 0.85,
             ɛ = 0.1,                                # Elitism
             populationSize = 50,
-        ));
-    println("GA:RLT:FL:SP (-objfun) => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
+           ), Evolutionary.Options(show_trace=false, rng=rng, successive_f_tol=10));
+    println("GA:TRN3:INV:SPX (-objfun) => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
     @test abs(Evolutionary.minimum(result)) == 21.
     @test sum(mass .* Evolutionary.minimizer(result)) <= 20
+
 end

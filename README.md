@@ -26,7 +26,7 @@ pkg> add Evolutionary
 - Genetic Programming (TreeGP)
 
 ## Operators
-a
+
 - Mutations
   - ES
     - (an)isotropic Gaussian
