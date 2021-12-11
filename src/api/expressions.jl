@@ -32,10 +32,10 @@ function depth(root, ex; d=0)
     end
 end
 
-function copyto!(ex1::Expr, ex2::Expr)
-    ex1.head = ex2.head
-    ex1.args = deepcopy(ex2.args)
-    ex1
+function copyto!(dst::Expr, src::Expr)
+    dst.head = src.head
+    dst.args = deepcopy(src.args)
+    dst
 end
 
 function randsubexpr(ex)
@@ -72,9 +72,16 @@ function setindex!(ex::Expr, subex, idx::Int)
     end
 end
 
+isnum(ex) = isa(ex, Number)
+iszeronum(root) = isnum(root) && iszero(root)
+isonenum(root) = isnum(root) && isone(root)
+isdiv(ex) = ex in [/, div, pdiv, aq]
+isexpr(ex) = isa(ex, Expr)
+issym(ex) = isa(ex, Symbol)
+
 function evaluate(val, ex::Expr, psyms::Vector{Symbol})
     exprm = ex.args
-    exvals = (isa(nex, Expr) || isa(nex, Symbol) ? evaluate(val, nex, psyms) : nex for nex in exprm[2:end])
+    exvals = (isexpr(nex) || issym(nex) ? evaluate(val, nex, psyms) : nex for nex in exprm[2:end])
     exprm[1](exvals...)
 end
 
@@ -83,8 +90,69 @@ function evaluate(val, ex::Symbol, psyms::Vector{Symbol})
     val[pidx]
 end
 
-iszeronum(root) = isa(root, Number) && iszero(root)
-isonenum(root) = isa(root, Number) && isone(root)
+
+function simplifyunary!(root)
+    fn, op = root.args
+    if isexpr(op)
+        fn2, op2 = op.args
+        if fn == log && fn2 == exp
+            return op2
+        elseif fn == exp && fn2 == log
+            return op2
+        end
+    end
+    return root
+end
+
+function simplifybinary!(root)
+    fn, op1, op2 = root.args
+
+    # some elementary simplification rules
+    if fn == (-) && op1 == op2 # additive inverse: x-x = 0
+        root = 0
+    elseif isdiv(fn) && (op1 == op2 || iszeronum(op2)) # look for multiplicative inverse x/x = 1
+        root = 1
+    elseif (fn == (*) || isdiv(fn)) &&  (iszeronum(op1) || iszeronum(op2)) # look for 0: x*0 = 0*x = 0
+        root = 0
+    elseif (fn == (+) || fn == (-)) && iszeronum(op2) # look for 0: x ± 0 = 0
+        root = op1
+    elseif fn == (+) && iszeronum(op1) # look for 0: 0 ± x = 0
+        root = op2
+    elseif (fn == (*) || isdiv(fn)) && isonenum(op2) # x*1 = x || x/1 = x
+        root = op1
+    elseif fn == (*) && isonenum(op1) # 1*x = x
+        root = op2
+    elseif (fn == (+)) && (op1 == op2) # x+x = 2x
+        root.args[1] = (*)
+        root.args[2] = 2
+    elseif (fn == (+) || fn == (-))
+        # n1+(n2+x) = n1+(x+n2) = (n2+x)+n1 = (x+n2)+n1 = x+n3, s.t. n3=n1+n2
+        if (isexpr(op1) && isnum(op2)) || (isnum(op1) && isexpr(op2))
+            # swap so op1 is expr
+            if isnum(op1) && isexpr(op2)
+                op1, op2 =  op2, op1
+            end
+            #println("ex1: $fn ($op1, $op2)"
+            # op2 is binexpr
+            if isexpr(op1) && length(op1) == 3
+                fn2, op21, op22 = op1.args
+                # some operand has to be num
+                if (fn2 == (+) || fn2 == (-)) && (isnum(op21) || isnum(op22))
+                    var, n2 = isnum(op21) ? (op22, op21) : (op21, op22)
+                    n3 = fn(n2, op2)
+                    root.args[1] = fn2
+                    root.args[2] = var
+                    root.args[3] = n3
+                end
+            end
+        end
+    end
+
+    # evaluate numerical arithmetic
+    isnum(op1) && isnum(op2) && return fn(op1, op2)
+
+    return root
+end
 
 """
     simplify!(expr)
@@ -97,38 +165,15 @@ function simplify!(root)
     # return if not a function
     root.head != :call && return root
 
+    n = length(root.args)
     # recursively simplify arguments
-    for i in 2:length(root.args)
-        !isa(root.args[i], Expr) && continue
+    for i in 2:n
+        !isexpr(root.args[i]) && continue
         root.args[i] = simplify!(root.args[i])
     end
 
-    # some elementary simplification rules
-    if root.args[1] == (-) && root.args[2] == root.args[3] # additive inverse: x-x = 0
-        root = 0
-    elseif root.args[1] == (/) && (root.args[2] == root.args[3] || iszeronum(root.args[3])) # look for multiplicative inverse x/x = 1
-        root = 1
-    elseif (root.args[1] == (*) || root.args[1] == (/)) &&  (iszeronum(root.args[2]) || iszeronum(root.args[3])) # look for 0: x*0 = 0*x = 0
-        root = 0
-    elseif (root.args[1] == (+) || root.args[1] == (-)) && iszeronum(root.args[3]) # look for 0: x ± 0 = 0
-        root = root.args[2]
-    elseif root.args[1] == (+) && iszeronum(root.args[2]) # look for 0: 0 ± x = 0
-        root = root.args[3]
-    elseif (root.args[1] == (*) || root.args[1] == (/)) && isonenum(root.args[3]) # x*1 = x || x/1 = x
-        root = root.args[2]
-    elseif root.args[1] == (*) && isonenum(root.args[2]) # 1*x = x
-        root = root.args[3]
-    else
-        # x+x = 2x
-        if root.args[1] == (+) && root.args[2] == root.args[3]
-            root.args[1] = (*)
-            root.args[2] = 2
-        end
-        # evaluate numerical arithmetic
-        if all(e->!(isa(e, Symbol) || isa(e, Expr)), root.args[2:end])
-            root = root.args[1](root.args[2:end]...)
-        end
-    end
+    n == 2 && return simplifyunary!(root)
+    n == 3 && return simplifybinary!(root)
     return root
 end
 
@@ -145,7 +190,8 @@ function infix(io::IO, root; digits=3)
         else
             infix(io, root.args[1])
             print(io, "(")
-            for ex in root.args[2:end]
+            for (i, ex) in enumerate(root.args[2:end])
+                i > 1 && print(io, ", ")
                 infix(io, ex)
             end
             print(io, ")")
@@ -189,3 +235,4 @@ function latex(io::IO, root::Expr; digits=3)
     end
 end
 show(io::IO, ::MIME"text/latex", e::Expression) = latex(io, e.expr)
+

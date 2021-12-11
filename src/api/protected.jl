@@ -2,6 +2,8 @@
 
 """Protected division"""
 pdiv(x, y, undef=10e6) = ifelse(y==0 , x+undef  , /(x,y))
+"""Analytic quotient"""
+aq(x, y)               = x / sqrt(1+y*y)
 """Protected exponential"""
 pexp(x, undef=10e15)   = ifelse(x>=32, x+undef  , exp(x))
 """Protected natural log"""
@@ -22,3 +24,5 @@ function ppow(x, y, undef=10e6)
         pow(x,y)
     end
 end
+"""Conditional function"""
+cond(x,y,z)            = ifelse(x > 0, y, z)

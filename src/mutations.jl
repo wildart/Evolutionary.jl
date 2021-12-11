@@ -507,7 +507,7 @@ As with hoist mutation, it is motivated by the desire to reduce program size [^8
 """
 function shrink(method::TreeGP)
     function mutation(recombinant::Expr; rng::AbstractRNG=Random.GLOBAL_RNG)
-        i = rand(1:nodes(recombinant)-1)
+        i = rand(rng, 1:nodes(recombinant)-1)
         recombinant[i] = randterm(rng, method)
         recombinant
     end

@@ -23,8 +23,12 @@
     @test popexp[1] == :(x + 1)
 
     # recursive helper functions
+    gtr = TreeGP(pop, terms, funcs, maxdepth=2, initialization=:grow)
     Random.seed!(rng, 1)
-    gt = rand(rng, TreeGP(pop, terms, funcs, maxdepth=2, initialization=:grow), 3)
+    tmp = rand(rng, gtr, 3)
+    Random.seed!(rng, 1)
+    gt = rand(rng, gtr, 3)
+    @test tmp == gt
     @test Evolutionary.nodes(gt) < 15
     @test Evolutionary.height(gt) <= 3
     @test length(gt) < 15
@@ -44,17 +48,24 @@
     # @test Evolutionary.symbols(ft) |> sort == [:x, :y]
 
     # simplification
-    @test Expr(:call, -, :x, :x) |> Evolutionary.simplify! == 0
-    @test Expr(:call, /, :x, :x) |> Evolutionary.simplify! == 1
-    @test Expr(:call, *, 0, :x) |> Evolutionary.simplify! == 0
-    @test Expr(:call, *, :x, 0) |> Evolutionary.simplify! == 0
-    @test Expr(:call, /, 0, :x) |> Evolutionary.simplify! == 0
-    @test Expr(:call, /, 1, 0) |> Evolutionary.simplify! == 1
-    @test Expr(:call, +, 0, :x) |> Evolutionary.simplify! == :x
-    @test Expr(:call, +, :x, 0) |> Evolutionary.simplify! == :x
-    @test Expr(:call, -, :x, 0) |> Evolutionary.simplify! == :x
-    @test Expr(:call, +, :x, :x) |> Evolutionary.simplify! == Expr(:call, *, 2, :x)
-    @test Expr(:call, -, 2, 1) |> Evolutionary.simplify! == 1
+    using Evolutionary: simplify!
+    @test Expr(:call, -, :x, :x) |> simplify! == 0
+    @test Expr(:call, /, :x, :x) |> simplify! == 1
+    @test Expr(:call, *, 0, :x) |> simplify! == 0
+    @test Expr(:call, *, :x, 0) |> simplify! == 0
+    @test Expr(:call, /, 0, :x) |> simplify! == 0
+    @test Expr(:call, /, 0,  1) |> simplify! == 0
+    @test Expr(:call, +, 0, :x) |> simplify! == :x
+    @test Expr(:call, +, :x, 0) |> simplify! == :x
+    @test Expr(:call, -, :x, 0) |> simplify! == :x
+    @test Expr(:call, +, :x, :x) |> simplify! == Expr(:call, *, 2, :x)
+    @test Expr(:call, -, 2, 1) |> simplify! == 1
+    @test Expr(:call, exp, Expr(:call, log, 1)) |> simplify! == 1
+    @test Expr(:call, log, Expr(:call, exp, 1)) |> simplify! == 1
+    @test Expr(:call, -, Expr(:call, +, :x, 1), 2) |> simplify! == Expr(:call, +, :x, -1)
+    @test Expr(:call, -, Expr(:call, +, 1, :x), 2) |> simplify! == Expr(:call, +, :x, -1)
+    @test Expr(:call, +, 2, Expr(:call, +, 1, :x)) |> simplify! == Expr(:call, +, :x, 3)
+    @test Expr(:call, +, 2, Expr(:call, +, :x, 1)) |> simplify! == Expr(:call, +, :x, 3)
 
     # evaluation
     ex = Expr(:call, +, 1, :x) |> Evolutionary.Expression
@@ -65,25 +76,28 @@
     show(io, "text/latex", ex)
     @test String(take!(io)) == "\\left(1.0+x\\right)"
 
-    depth = 5
+    # symreg
     fitfun(x) = x*x + x + 1.0
+    rg = -5.0:0.1:5.0
+    ys = fitfun.(rg)
     function fitobj(expr)
-        rg = -5.0:0.1:5.0
         ex = Evolutionary.Expression(expr)
-        sum(v->isnan(v) ? 1.0 : v, abs2.(fitfun.(rg) - ex.(rg)) )/length(rg)
+        sum(v->isnan(v) ? 1.0 : v, abs2.(ys - ex.(rg)) )/length(rg)
     end
 
+    Random.seed!(rng, 42)
     res = Evolutionary.optimize(fitobj,
-        TreeGP(50, Terminal[:x, randn], Function[+,-,*,Evolutionary.pdiv],
+        TreeGP(25, Terminal[:x, randn], Function[+,-,*,Evolutionary.aq],
             mindepth=1,
-            maxdepth=depth,
+            maxdepth=3,
+            simplify = simplify!,
             optimizer = GA(
-                selection = tournament(4),
-                ɛ = 0.1,
-                mutationRate = 0.8,
-                crossoverRate = 0.2,
+                selection = tournament(3),
+                mutationRate = 0.2,
+                crossoverRate = 0.9,
             ),
-        ), Evolutionary.Options(rng=StableRNG(1))
+        ),
+        Evolutionary.Options(show_trace=false, rng=rng, iterations=50)
     )
     @test minimum(res) < 1
 

@@ -69,7 +69,7 @@ function update_state!(objfun, constraints, state, parents::AbstractVector{IT}, 
 
     # perform mating
     offspringSize = populationSize - state.eliteSize
-    recombine!(offspring, parents, selected, method, offspringSize)
+    recombine!(offspring, parents, selected, method, offspringSize, rng=rng)
 
     # Elitism (copy population individuals before they pass to the offspring & get mutated)
     fitidxs = sortperm(state.fitpop)
@@ -86,7 +86,7 @@ function update_state!(objfun, constraints, state, parents::AbstractVector{IT}, 
 
     # select the best individual
     minfit, fitidx = findmin(state.fitpop)
-    state.fittest = parents[fitidx]
+    state.fittest = offspring[fitidx]
     state.fitness = state.fitpop[fitidx]
     
     # replace population

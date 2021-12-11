@@ -15,6 +15,8 @@ The constructor takes following keyword arguments:
     - Possible values: `:grow` and `:full`
 - `mindepth`: Minimal depth of the expression (default: `0`)
 - `maxdepth`: Maximal depth of the expression (default: `3`)
+- `mutation`: A mutation function (default: [`crosstree`](@ref))
+- `crossover`: A crossover function (default: [`subtree`](@ref))
 - `simplify`: An expression simplification function (default: `:nothing`)
 - `optimizer`: An evolutionary optimizer used for evolving the expressions (default: [`GA`](@ref))
     - Use `mutation` and `crossover` parameters to specify GP-related mutation operation.
@@ -26,6 +28,8 @@ The constructor takes following keyword arguments:
     functions::Dict{Function, Int} = Dict( f=>2 for f in [+,-,*,pdiv] )
     mindepth::Int = 0
     maxdepth::Int = 3
+    crossover::Function = crosstree
+    mutation::Function = subtree
     initialization::Symbol = :grow
     simplify::Union{Nothing, Function} = nothing
     optimizer::AbstractOptimizer = GA()
@@ -100,10 +104,11 @@ Initialize a random population of expressions derived from `expr`.
 function initial_population(m::TreeGP, expr::Union{Expr,Nothing}=nothing;
                             rng::AbstractRNG=Random.GLOBAL_RNG)
     n = population_size(m)
-    return [
-        expr === nothing ? rand(rng, m, m.maxdepth, mindepth=m.mindepth) : deepcopy(expr)
-        for i in 1:n
-    ]
+    if isnothing(expr)
+        return [ rand(rng, m, m.maxdepth, mindepth=m.mindepth) for i in 1:n ]
+    else
+        return [ deepcopy(expr) for i in 1:n ]
+    end
 end
 
 mutable struct GPState{T,IT} <: Evolutionary.AbstractOptimizerState
@@ -135,8 +140,9 @@ function optimize(f, mthd::TreeGP, options::Options = Options(;default_options(m
 end
 
 function optimize(f, mthd::TreeGP, population, options::Options = Options(;default_options(mthd)...))
-    mthd.optimizer.mutation =  subtree(mthd)
-    mthd.optimizer.crossover = crosstree
+    mthd.optimizer.populationSize = mthd.populationSize
+    mthd.optimizer.mutation =  mthd.mutation(mthd)
+    mthd.optimizer.crossover = mthd.crossover
     optimize(f, NoConstraints(), mthd, population, options)
 end
 
