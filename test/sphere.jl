@@ -1,5 +1,7 @@
 @testset "Sphere" begin
 
+    rng = StableRNG(42)
+
     # Objective function
     sphere(x::AbstractVector) = sum(x.*x)
 
@@ -28,7 +30,7 @@
             mutation = gaussian, smutation = gaussian,
             selection=:comma,
             μ = 3, λ = P
-        ), Evolutionary.Options(show_trace=false,iterations=1000));
+        ), Evolutionary.Options(show_trace=false,iterations=1000, rng=rng));
     # show(result)
     println("(3/3,$(P))-σ-SA-ES => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
     @test minimum(result) ≈ 0.0 atol=1e-3
@@ -40,6 +42,7 @@
     Evolutionary.trace!(record::Dict{String,Any}, objfun, state, population, method::ES, options) = ()
 
     # Testing: GA
+    Random.seed!(rng, 42)
     result = Evolutionary.optimize(
         sphere,
         initial,
@@ -50,11 +53,12 @@
             selection = susinv,
             crossover = IC(0.25),
             mutation = BGA(fill(0.5,N)),
-        ));
+        ), Evolutionary.Options(rng=rng)
+    );
     # show(result)
     println("GA:INTER:DOMRNG:(N=$(N), P=$(P)) => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
-    @test minimum(result) ≈ 0.0 atol=1e-3
-    @test sum(x->x.^2, Evolutionary.minimizer(result)) ≈ 0.0 atol=1e-3
+    @test minimum(result) ≈ 0.0 atol=1e-2
+    @test sum(x->x.^2, Evolutionary.minimizer(result)) ≈ 0.0 atol=1e-2
     @test length(Evolutionary.minimizer(result)) == N
 
 end

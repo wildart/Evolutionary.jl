@@ -55,10 +55,10 @@
 
     selections = [:roulette=>rouletteinv, :sus=>susinv, :tourn=>tournament(2)]
     crossovers = [:discrete=>DC, :intermediate0=>IC(0.), :intermediate0_5=>IC(0.5), :line=>LC(0.1), :avg=>AX, :heuristic=>HX, :laplace=>LX(), :simbin=>SBX()]
-    mutations  = [:domrng0_5=>BGA(fill(0.5,N)), :uniform=>uniform(), :plm=>PLM()]
+    mutations  = [:domrng0_5=>BGA(fill(0.5,N)), :gaussian=>gaussian(), :plm=>PLM()]
 
     @testset "GA settings" for (sn,ss) in selections, (xn,xovr) in crossovers, (mn,ms) in mutations
-        (xn ∈ [:heuristic, :discrete, :avg]) && mn == :uniform && continue # bad combination
+        (xn ∈ [:line, :discrete]) && mn == :gaussian && continue # bad combination
         Random.seed!(rng, 42)
         result = Evolutionary.optimize( rastrigin, initState,
             GA(
