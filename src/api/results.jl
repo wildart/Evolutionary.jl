@@ -69,9 +69,6 @@ reltol(r::OptimizationResults) = error("`reltol` is not implemented for $(summar
 abschange(r::OptimizationResults) = error("`abschange` is not implemented for $(summary(r)).")
 relchange(r::OptimizationResults) = error("`relchange` is not implemented for $(summary(r)).")
 
-time_limit(r::OptimizationResults) = r.time_limit
-time_run(  r::OptimizationResults) = r.time_run
-
 
 """
 Evolutionary optimization result type
@@ -105,6 +102,9 @@ abstol(r::EvolutionaryOptimizationResults) = r.abstol
 reltol(r::EvolutionaryOptimizationResults) = r.reltol
 abschange(r::EvolutionaryOptimizationResults) = r.abschange
 relchange(r::EvolutionaryOptimizationResults) = r.relchange
+time_limit(r::EvolutionaryOptimizationResults) = r.time_limit
+time_run(r::EvolutionaryOptimizationResults) = r.time_run
+is_moo(r::EvolutionaryOptimizationResults) = r.is_moo
 
 function show(io::IO, r::EvolutionaryOptimizationResults)
     failure_string = "failure"
@@ -118,7 +118,7 @@ function show(io::IO, r::EvolutionaryOptimizationResults)
     print(io, " * Status: ", converged(r) ? "success" : failure_string, "\n\n")
     print(io, " * Candidate solution\n")
     mzr = minimizer(r)
-    if r.is_moo
+    if is_moo(r)
         pfsize = length(mzr)
         pl = pfsize > 1 ? "s" : ""
         print(io, "    Pareto front: $(pfsize) element$pl\n")
@@ -132,8 +132,8 @@ function show(io::IO, r::EvolutionaryOptimizationResults)
     else
         print(io, "    Minimizer:  $mzr\n")
     end
-    !r.is_moo && print(io, "    Minimum:    $(minimum(r))\n")
-    print(io, "    Iterations:", rpad(" ", r.is_moo ? 3 : 0), "$(iterations(r))\n")
+    !is_moo(r) && print(io, "    Minimum:    $(minimum(r))\n")
+    print(io, "    Iterations:", rpad(" ",is_moo(r) ? 3 : 0), "$(iterations(r))\n")
     print(io, "\n")
     print(io, " * Found with\n")
     print(io, "    Algorithm: $(summary(r))\n")

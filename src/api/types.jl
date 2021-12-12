@@ -66,7 +66,7 @@ Returns a minimum value of the current `state`.
 value(state::AbstractOptimizerState) = error("`value` is not implemented for $(state).")
 
 """
-    value(state)
+    minimizer(state)
 
 Returns a minimizer object in the current `state`.
 """
@@ -88,6 +88,7 @@ struct OptimizationTraceRecord{T, O <: AbstractOptimizer}
     value::T
     metadata::Dict{String,Any}
 end
+value(tr::OptimizationTraceRecord) = tr.value
 
 function show(io::IO, t::OptimizationTraceRecord)
     print(io, lpad("$(t.iteration)",6))

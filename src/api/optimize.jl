@@ -67,7 +67,7 @@ function optimize(objfun::D, constraints::C, method::M, population::AbstractArra
                   state = initial_state(method, options, objfun, population)
                  ) where {D<:AbstractObjective, C<:AbstractConstraints, M<:AbstractOptimizer}
     # setup trace
-    tr = OptimizationTrace{typeof(value(objfun)), typeof(method)}()
+    tr = OptimizationTrace{typeof(value(state)), typeof(method)}()
     tracing = options.store_trace || options.show_trace || options.callback !== nothing
 
     # prepare iteration counter (used to make "initial state" trace entry)
@@ -89,9 +89,6 @@ function optimize(objfun::D, constraints::C, method::M, population::AbstractArra
 
         # evaluate convergence
         converged = assess_convergence(objfun, state, method, options)
-
-        # update the function value
-        !is_moo && value!(objfun, minimizer(state))
 
         # check convergence persistence
         counter_tol = converged ? counter_tol+1 : 0
@@ -124,8 +121,8 @@ function optimize(objfun::D, constraints::C, method::M, population::AbstractArra
         converged,
         options.abstol,
         options.reltol,
-        abschange(objfun, state),
-        relchange(objfun, state),
+        0.0,
+        0.0,
         tr,
         f_calls(objfun),
         options.time_limit,

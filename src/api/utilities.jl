@@ -35,7 +35,7 @@ function trace!(tr, iteration, objfun, state, population, method, options, curr_
     update!(tr,
             state,
             iteration,
-            value(objfun),
+            value(state),
             dt,
             options.store_trace,
             options.show_trace,
@@ -46,7 +46,7 @@ end
 """
     trace!(record::Dict{String,Any}, objfun, state, population, method, options)
 
-Update the trace `record`. This function allows to supplement an additional information into the optimization algorithm trace by modifing a trace `record`. It can be overwiden by specifing particular parameter types.
+Update the trace `record`. This function allows to supplement an additional information into the optimization algorithm trace by modifying a trace `record`. It can be overridden by specifying particular parameter types.
 """
 trace!(record::Dict{String,Any}, objfun, state, population, method, options) = ()
 
@@ -55,41 +55,9 @@ trace!(record::Dict{String,Any}, objfun, state, population, method, options) = (
 # STATE #
 #########
 
-abschange(objfun::O, state::S) where {O<:AbstractObjective, S<:AbstractOptimizerState} =
-    abschange(value(objfun), value(state))
-abschange(curr, prev) = Float64(abs(curr - prev))
-relchange(objfun::O, state::S) where {O<:AbstractObjective, S<:AbstractOptimizerState} =
-    relchange(value(objfun), value(state))
-relchange(curr, prev) = Float64(abs(curr - prev)/abs(curr))
-
-maxdiff(x::AbstractArray, y::AbstractArray) = mapreduce((a, b) -> abs(a - b), max, x, y)
-abschange(curr::T, prev) where {T<:AbstractArray} = maxdiff(curr, curr)
-relchange(curr::T, prev) where {T<:AbstractArray} = maxdiff(curr, prev)/maximum(abs, curr)
-
-# convergence for a single objective
-function assess_convergence(x, x_previous, options::Options)
-    converged = false
-
-    if abschange(x, x_previous) ≤ options.abstol
-        converged = true
-    end
-    if relchange(x, x_previous) ≤ options.reltol * abs(x)
-        converged = true
-    end
-
-    return converged
-end
-
 # default convergence
 assess_convergence(objfun::AbstractObjective, state::AbstractOptimizerState,
                    method, options::Options) = false
-
-# convergence for a single objective
-# it's assumed that `objfun` holds previous value
-assess_convergence(objfun::EvolutionaryObjective{TC,TF,TX,TP},
-                   state::AbstractOptimizerState, method,
-                   options::Options) where {TC, TF<:Real, TX, TP} =
-    assess_convergence(value(objfun), value(state), options)
 
 
 ##############

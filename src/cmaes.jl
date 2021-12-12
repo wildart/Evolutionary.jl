@@ -123,7 +123,7 @@ function update_state!(objfun, constraints, state::CMAESState{T,TI}, population:
     parent = reshape(state.parent,N)
     parentshape = size(state.parent)
 
-    randn!(state.z)
+    randn!(options.rng, state.z)
     # y = zeros(T, N, λ)
     ȳ = zeros(T, N)
     offspring = Array{Vector{T}}(undef, λ)
