@@ -55,14 +55,14 @@ f_calls(r::OptimizationResults) = r.f_calls
 """
     abstol(result)
 
-Returns an absolute tollerance value of the optimization `result`.
+Returns an absolute tolerance value of the optimization `result`.
 """
 abstol(r::OptimizationResults) = error("`abstol` is not implemented for $(summary(r)).")
 
 """
     reltol(result)
 
-Returns a relative tollerance value of the optimization `result`.
+Returns a relative tolerance value of the optimization `result`.
 """
 reltol(r::OptimizationResults) = error("`reltol` is not implemented for $(summary(r)).")
 
@@ -91,12 +91,13 @@ mutable struct EvolutionaryOptimizationResults{O<:AbstractOptimizer, T, Tx, Tf} 
     f_calls::Int
     time_limit::Float64
     time_run::Float64
+    is_moo::Bool
 end
 
 """
     converged(result)
 
-Returns `true` if the optimization sucesfully coverged to a minimum value.
+Returns `true` if the optimization successfully converged to a minimum value.
 """
 converged(r::EvolutionaryOptimizationResults) = r.converged
 
@@ -117,7 +118,11 @@ function show(io::IO, r::EvolutionaryOptimizationResults)
     print(io, " * Status: ", converged(r) ? "success" : failure_string, "\n\n")
     print(io, " * Candidate solution\n")
     mzr = minimizer(r)
-    if isa(mzr, Array)
+    if r.is_moo
+        pfsize = length(mzr)
+        pl = pfsize > 1 ? "s" : ""
+        print(io, "    Pareto front: $(pfsize) element$pl\n")
+    elseif mzr isa AbstractVector
         nx = length(mzr)
         str_x_elements = ["$_x" for _x in Iterators.take(mzr, min(nx, 3))]
         if nx >= 4
@@ -127,8 +132,8 @@ function show(io::IO, r::EvolutionaryOptimizationResults)
     else
         print(io, "    Minimizer:  $mzr\n")
     end
-    print(io, "    Minimum:    $(minimum(r))\n")
-    print(io, "    Iterations: $(iterations(r))\n")
+    !r.is_moo && print(io, "    Minimum:    $(minimum(r))\n")
+    print(io, "    Iterations:", rpad(" ", r.is_moo ? 3 : 0), "$(iterations(r))\n")
     print(io, "\n")
     print(io, " * Found with\n")
     print(io, "    Algorithm: $(summary(r))\n")
@@ -147,3 +152,4 @@ function show(io::IO, r::EvolutionaryOptimizationResults)
     print(io, "    f(x) calls:    $(f_calls(r))\n")
     return
 end
+

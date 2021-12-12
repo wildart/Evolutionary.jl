@@ -26,25 +26,25 @@ optimize(f, F, bounds::ConstraintBounds, method::M,
 function optimize(f, constraints::C, method::M,
                   opts::Options = Options(;default_options(method)...)
                   ) where {M<:AbstractOptimizer, C<:AbstractConstraints}
-    population = initial_population(method, bounds(constraints))
+    population = initial_population(method, bounds(constraints), rng=opts.rng)
     optimize(f, constraints, method, population, opts)
 end
 function optimize(f, F, constraints::C, method::M,
                   opts::Options = Options(;default_options(method)...)
                   ) where {M<:AbstractOptimizer, C<:AbstractConstraints}
-    population = initial_population(method, bounds(constraints))
+    population = initial_population(method, bounds(constraints), rng=opts.rng)
     optimize(f, F, constraints, method, population, opts)
 end
 function optimize(f, constraints::C, individual, method::M,
                   opts::Options = Options(;default_options(method)...)
                   ) where {M<:AbstractOptimizer, C<:AbstractConstraints}
-    population = initial_population(method, individual)
+    population = initial_population(method, individual, rng=opts.rng)
     optimize(f, constraints, method, population, opts)
 end
 function optimize(f, F, constraints::C, individual, method::M,
                   opts::Options = Options(;default_options(method)...)
                   ) where {M<:AbstractOptimizer, C<:AbstractConstraints}
-    population = initial_population(method, individual)
+    population = initial_population(method, individual, rng=opts.rng)
     optimize(f, F, constraints, method, population, opts)
 end
 function optimize(f, constraints::C, method::M, population,
@@ -130,6 +130,7 @@ function optimize(objfun::D, constraints::C, method::M, population::AbstractArra
         f_calls(objfun),
         options.time_limit,
         _time-t0,
+        is_moo,
     )
 end
 

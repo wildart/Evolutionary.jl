@@ -1,5 +1,5 @@
 """
-Nondominated Sorting Genetic Algorithm (NSGA-II) for Multi-objective Optimization
+Non-dominated Sorting Genetic Algorithm (NSGA-II) for Multi-objective Optimization
 
 The constructor takes following keyword arguments:
 
@@ -99,7 +99,7 @@ function update_state!(objfun, constraints, state, parents::AbstractVector{IT}, 
             append!(fitidx, f)
         end
     end
-    # designate non-dominated individual as fittest
+    # designate the first Pareto front individuals as the fittest
     state.fittest = state.population[F[1]]
     # and keep their fitness
     state.fitness = state.fitpop[:,F[1]]

@@ -99,17 +99,17 @@ assess_convergence(objfun::EvolutionaryObjective{TC,TF,TX,TP},
 """
     initial_population(method, individual::AbstractVector)
 
-Initialize population by replicating the `inividual` vector.
+Initialize population by replicating the `individual` vector.
 """
-initial_population(method::M, individual::I) where {M<:AbstractOptimizer, I<:AbstractVector} =
+initial_population(method::M, individual::I; kwargs...) where {M<:AbstractOptimizer, I<:AbstractVector} =
     [copy(individual) for i in 1:population_size(method)]
 
 """
     initial_population(method, individuals::AbstractVector{<:AbstractVector})
 
-Initialize population from the collection of `inividuals` vectors.
+Initialize population from the collection of `individuals` vectors.
 """
-function initial_population(method::M, individuals::AbstractVector{I}) where {M<:AbstractOptimizer, I<:AbstractVector}
+function initial_population(method::M, individuals::AbstractVector{I}; kwargs...) where {M<:AbstractOptimizer, I<:AbstractVector}
     n = population_size(method)
     @assert length(individuals) ==  n "Size of initial population must be $n"
     individuals
@@ -118,17 +118,17 @@ end
 """
     initial_population(method, individual::Function)
 
-Initialize population from the `inividual` function which returns an individual object.
+Initialize population from the `individual` function which returns an individual object.
 """
-initial_population(method::M, individualFunc::Function) where {M<:AbstractOptimizer} =
+initial_population(method::M, individualFunc::Function; kwargs...) where {M<:AbstractOptimizer} =
     [individualFunc() for i in 1:population_size(method)]
 
 """
     initial_population(method, individual::AbstractMatrix)
 
-Initialize population by replicating the `inividual` matrix.
+Initialize population by replicating the `individual` matrix.
 """
-function initial_population(method::M, individual::I) where {M<:AbstractOptimizer, I<:AbstractMatrix}
+function initial_population(method::M, individual::I; kwargs...) where {M<:AbstractOptimizer, I<:AbstractMatrix}
     [copy(individual) for i in 1:population_size(method)]
 end
 
@@ -137,10 +137,12 @@ end
 
 Initialize a random population within the individual `bounds`.
 """
-function initial_population(method::M, bounds::ConstraintBounds) where {M<:AbstractOptimizer}
+function initial_population(method::M, bounds::ConstraintBounds;
+                            rng::AbstractRNG=Random.GLOBAL_RNG
+                           ) where {M<:AbstractOptimizer}
     n = population_size(method)
     cn = nconstraints_x(bounds)
-    indv = rand(cn, n)
+    indv = rand(rng, cn, n)
     if length(bounds.eqx) > 0
         indv[bounds.eqx,:] .= bounds.valx
     end
@@ -177,3 +179,4 @@ function funargnum(f)
     end
     fobj.nargs
 end
+
