@@ -4,9 +4,9 @@ using Random
 using LinearAlgebra
 using Statistics
 using StableRNGs
-Random.seed!(9874984737486)
 
 for tests in [
+    "types.jl",
     "objective.jl",
     "interface.jl",
     "selections.jl",

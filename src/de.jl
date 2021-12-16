@@ -9,6 +9,7 @@ The constructor takes following keyword arguments:
 - `selection`: the selection strategy function (default: [`random`](@ref))
 - `recombination`: the recombination functions (default: [`BINX(0.5)`](@ref))
 - `K`: the recombination scale factor (default: 0.5*(F+1))
+- `metrics` is a collection of convergence metrics.
 """
 @kwdef struct DE <: AbstractOptimizer
     populationSize::Integer = 50
@@ -17,9 +18,10 @@ The constructor takes following keyword arguments:
     K::Real = 0.5*(F+1)
     selection::Function = random
     recombination::Function = BINX(0.5)
+    metrics::ConvergenceMetrics = ConvergenceMetric[AbsDiff{Float64}(1e-10)]
 end
 population_size(method::DE) = method.populationSize
-default_options(method::DE) = (abstol=1e-10,)
+default_options(method::DE) = (iterations=1000,)
 summary(m::DE) = "DE/$(m.selection)/$(m.n)/$(m.recombination)"
 show(io::IO,m::DE) = print(io, summary(m))
 

@@ -1,5 +1,8 @@
+# Individual
 const Individual = Union{AbstractArray, Function, Nothing}
 
+
+# Optimizer
 """
 Abstract evolutionary optimizer algorithm
 """
@@ -9,46 +12,7 @@ function print_header(method::AbstractOptimizer)
     println("Iter     Function value")
 end
 population_size(method::AbstractOptimizer) = error("`population_size` is not implemented for $(summary(method)).")
-
-
-# Options
-"""
-There are following options available:
-- `abstol::Float64`: the absolute tolerance used in the convergence test (*default: 1e-32*)
-- `reltol::Float64`: the relative tolerance used in the convergence test (*default: 1e-32*)
-- `successive_f_tol::Integer`: the additional number of the iterations of the optimization algorithm after the convergence test is satisfied (*default: 10*)
-- `iterations::Integer`: the total number of the iterations of the optimization algorithm (*default: 1000*)
-- `show_trace::Bool`: enable the trace information display during the optimization (*default: false*).
-- `store_trace::Bool`: enable the trace information capturing during the optimization (*default: false*). The trace can be accessed by using [`trace`](@ref) function after optimization is finished.
-- `show_every::Integer`: show every `n`s successive trace message (*default: 1*)
-- `time_limit::Float64`: the time limit for the optimization run in seconds. If the value set to `NaN` then the limit is not set. (*default: NaN*)
-- `callback`: the callback function that is called after each eteration of the optimization algorithm. The function accepts as parameter a trace dictionary, and **must** return a boolean value which if `true` terminates the optimization. (*default: nothing*)
-- `parallelization::Symbol`: allows parallelization of the population fitness evaluation if set to `:thread` using multiple threads (*default: `:serial`*)
-"""
-@kwdef struct Options{TCallback <: Union{Nothing, Function}}
-    abstol::Float64 = 1e-32
-    reltol::Float64 = 1e-32
-    successive_f_tol::Integer = 10
-    iterations::Integer = 1000
-    store_trace::Bool = false
-    show_trace::Bool  = false
-    show_every::Integer = 1
-    callback::TCallback = nothing
-    time_limit::Float64 = NaN
-    parallelization::Symbol = :serial
-    rng::AbstractRNG = Random.GLOBAL_RNG
-end
-function show(io::IO, o::Options)
-    for k in fieldnames(typeof(o))
-        v = getfield(o, k)
-        if v === nothing
-            print(io, lpad("$(k)",24) *" = nothing\n")
-        else
-            print(io, lpad("$(k)",24) *" = $v\n")
-        end
-    end
-end
-
+metrics(method::AbstractOptimizer) = method.metrics
 
 # Optimizer State
 """
@@ -79,6 +43,90 @@ minimizer(state::AbstractOptimizerState) = error("`minimizer` is not implemented
 Returns `true` if the `state` requires early termination.
 """
 terminate(state::AbstractOptimizerState) = false
+
+
+# Convergence
+"""
+Interface for the convergence metrics
+"""
+abstract type ConvergenceMetric end
+
+"""
+    description(metric)
+
+Return a string with a description of the `metric`.
+"""
+description(m::ConvergenceMetric) = error("`description` is not implemented for $(typeof(m)).")
+
+"""
+    converged(metric)
+
+Return `true` if the convergence is archived for the `metric`.
+"""
+converged(m::ConvergenceMetric) = diff(m) <= tolerance(m)
+
+"""
+    diff(metric)
+
+Return the value difference for the `metric`.
+"""
+diff(m::ConvergenceMetric) = m.Δ #error("`diff` is not implemented for $(typeof(m)).")
+
+"""
+    tolerance(metric)
+
+Return a tolerance value for the `metric`.
+"""
+tolerance(m::ConvergenceMetric) = m.tol #error("`tolerance` is not implemented for $(typeof(m)).")
+
+"""
+    assess!(metric, state)
+
+Asses the convergence of an algorithm using the `metric`at the `state`.
+"""
+assess!(m::ConvergenceMetric, s::AbstractOptimizerState) = error("`assess!` is not implemented for $(typeof(m)).")
+
+
+const ConvergenceMetrics = Vector{ConvergenceMetric}
+
+# Options
+"""
+There are following options available:
+- `abstol::Float64`: the absolute tolerance used in the convergence test (*deprecated, use `termination` parameter*)
+- `reltol::Float64`: the relative tolerance used in the convergence test (*deprecated, use `termination` parameter*)
+- `successive_f_tol::Integer`: the additional number of the iterations of the optimization algorithm after the convergence test is satisfied (*default: 10*)
+- `iterations::Integer`: the total number of the iterations of the optimization algorithm (*default: 1000*)
+- `show_trace::Bool`: enable the trace information display during the optimization (*default: false*).
+- `store_trace::Bool`: enable the trace information capturing during the optimization (*default: false*). The trace can be accessed by using [`trace`](@ref) function after optimization is finished.
+- `show_every::Integer`: show every `n`s successive trace message (*default: 1*)
+- `time_limit::Float64`: the time limit for the optimization run in seconds. If the value set to `NaN` then the limit is not set. (*default: NaN*)
+- `callback`: the callback function that is called after each iteration of the optimization algorithm. The function accepts as parameter a trace dictionary, and **must** return a `Bool` value which if `true` terminates the optimization. (*default: nothing*)
+- `parallelization::Symbol`: allows parallelization of the population fitness evaluation if set to `:thread` using multiple threads (*default: `:serial`*)
+- `rng::AbstractRNG`: a random number generator object that is used to control generation of random data during the evolutionary optimization (*default: `Random.GLOBAL_RNG`*)
+"""
+@kwdef struct Options{TCallback <: Union{Nothing, Function}}
+    abstol::Float64 = Inf
+    reltol::Float64 = Inf
+    successive_f_tol::Integer = 10
+    iterations::Integer = 1000
+    store_trace::Bool = false
+    show_trace::Bool  = false
+    show_every::Integer = 1
+    callback::TCallback = nothing
+    time_limit::Float64 = NaN
+    parallelization::Symbol = :serial
+    rng::AbstractRNG = Random.GLOBAL_RNG
+end
+function show(io::IO, o::Options)
+    for k in fieldnames(typeof(o))
+        v = getfield(o, k)
+        if v === nothing
+            print(io, lpad("$(k)",24) *" = nothing\n")
+        else
+            print(io, lpad("$(k)",24) *" = $v\n")
+        end
+    end
+end
 
 
 # Optimization Trace

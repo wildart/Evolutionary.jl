@@ -22,7 +22,7 @@
             crossoverRate = 0.85,
             populationSize = N,
         ),
-        Evolutionary.Options(rng=rng));
+        Evolutionary.Options(rng=rng, store_trace=true));
     println("GA:TOUR(3):FLP:TPX (OneMax: 1/sum) => F: $(minimum(res)), C: $(Evolutionary.iterations(res))")
     @test sum(Evolutionary.minimizer(res)) >= N-3
     @test abs(minimum(res)) >= N-3

@@ -19,6 +19,8 @@
         strategy(state).σ < 1e-10
     end
 
+    opts = Evolutionary.Options(show_trace=false, iterations=1000, rng=rng)
+
     # Testing: (μ/μ_I, λ)-σ-Self-Adaptation-ES
     # with isotropic mutation operator y' := y + σ(N_1(0, 1), ..., N_N(0, 1))
     result = Evolutionary.optimize(
@@ -30,7 +32,7 @@
             mutation = gaussian, smutation = gaussian,
             selection=:comma,
             μ = 3, λ = P
-        ), Evolutionary.Options(show_trace=false,iterations=1000, rng=rng));
+        ), opts);
     # show(result)
     println("(3/3,$(P))-σ-SA-ES => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
     @test minimum(result) ≈ 0.0 atol=1e-3
@@ -53,7 +55,7 @@
             selection = susinv,
             crossover = IC(0.25),
             mutation = BGA(fill(0.5,N)),
-        ), Evolutionary.Options(rng=rng)
+           ), Evolutionary.Options(rng=rng)
     );
     # show(result)
     println("GA:INTER:DOMRNG:(N=$(N), P=$(P)) => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")

@@ -88,7 +88,7 @@ function optimize(objfun::D, constraints::C, method::M, population::AbstractArra
         update_state!(objfun, constraints, state, population, method, options, iteration) && break
 
         # evaluate convergence
-        converged = assess_convergence(objfun, state, method, options)
+        converged = assess_convergence(state, method)
 
         # check convergence persistence
         counter_tol = converged ? counter_tol+1 : 0
@@ -115,14 +115,11 @@ function optimize(objfun::D, constraints::C, method::M, population::AbstractArra
     return EvolutionaryOptimizationResults(
         method,
         minimizer(state),
-        is_moo ? NaN : value(objfun),
+        is_moo ? NaN : value(state),
         iteration,
         iteration == options.iterations,
         converged,
-        options.abstol,
-        options.reltol,
-        0.0,
-        0.0,
+        metrics(method),
         tr,
         f_calls(objfun),
         options.time_limit,

@@ -12,6 +12,7 @@ The constructor takes following keyword arguments:
 - `c_m` is the learning rate for the mean update, ``c_m \\leq 1``
 - `σ0`/`sigma0` is the initial step size `σ`
 - `weights` are recombination weights, if the weights are set to ``1/\\mu`` then the *intermediate* recombination is activated.
+- `metrics` is a collection of convergence metrics.
 """
 struct CMAES{T} <: AbstractOptimizer
     μ::Int
@@ -23,23 +24,28 @@ struct CMAES{T} <: AbstractOptimizer
     σ₀::T
     cₘ::T
     wᵢ::Vector{T}
+    metrics::ConvergenceMetrics
 
     function CMAES(; μ::Int=15, λ::Int=2μ, mu::Int=μ, lambda::Int=0, weights::Vector{T}=zeros(lambda),
                      c_1::Real=NaN, c_c::Real=NaN, c_mu::Real=NaN, c_sigma::Real=NaN,
-                     sigma0::Real=1, c_m::Real=1) where {T}
+                     sigma0::Real=1, c_m::Real=1, metrics=ConvergenceMetric[]) where {T}
         @assert c_m ≤ 1 "cₘ > 1"
         if lambda == 0
             lambda = μ == mu ? λ : 2*mu
             weights = zeros(lambda)
         end
         @assert length(weights) == lambda "Number of weights must be $lambda"
-        new{T}(mu, lambda, c_1, c_c, c_mu, c_sigma, sigma0, c_m, weights)
+        if length(metrics) == 0
+            push!(metrics, AbsDiff{T}(1e-12))
+            push!(metrics, RelDiff{T}(1e-12))
+        end
+        new{T}(mu, lambda, c_1, c_c, c_mu, c_sigma, sigma0, c_m, weights, metrics)
     end
 end
-population_size(method::CMAES) = method.μ
-default_options(method::CMAES) = (iterations=1500, abstol=1e-15)
 summary(m::CMAES) = "($(m.μ),$(m.λ))-CMA-ES"
 show(io::IO,m::CMAES) = print(io, summary(m))
+population_size(method::CMAES) = method.μ
+default_options(method::CMAES) = (iterations=1500,)
 
 mutable struct CMAESState{T,TI} <: AbstractOptimizerState
     N::Int
@@ -179,3 +185,4 @@ function update_state!(objfun, constraints, state::CMAESState{T,TI}, population:
 
     return false
 end
+

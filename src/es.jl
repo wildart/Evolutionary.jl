@@ -12,6 +12,7 @@ The constructor takes following keyword arguments:
 - `ρ`/`rho`: the mixing number, ρ ≤ μ, (i.e., the number of parents involved in the procreation of an offspring)
 - `λ`/`lambda`: the number of offspring
 - `selection`: the selection strategy `:plus` or `:comma` (default: `:plus`)
+- `metrics` is a collection of convergence metrics.
 """
 struct ES <: AbstractOptimizer
     initStrategy::AbstractStrategy
@@ -23,6 +24,7 @@ struct ES <: AbstractOptimizer
     ρ::Integer
     λ::Integer
     selection::Symbol
+    metrics::ConvergenceMetrics
 
     ES(; initStrategy::AbstractStrategy = NoStrategy(),
         recombination::Function = first,
@@ -35,12 +37,14 @@ struct ES <: AbstractOptimizer
         rho::Integer = ρ,
         λ::Integer = 1,
         lambda::Integer = λ,
-        selection::Symbol = :plus) =
+        selection::Symbol = :plus,
+        metrics::ConvergenceMetrics=ConvergenceMetric[AbsDiff{Float64}(1e-10)]
+       ) =
         new(initStrategy, recombination, srecombination, mutation, smutation,
-            mu, rho, lambda, selection)
+            mu, rho, lambda, selection, metrics)
 end
 population_size(method::ES) = method.μ
-default_options(method::ES) = (iterations=1000, abstol=1e-10)
+default_options(method::ES) = (iterations=1000,)
 summary(m::ES) = "($(m.μ)/$(m.ρ)$(m.selection == :plus ? '+' : ',')$(m.λ))-ES"
 show(io::IO,m::ES) = print(io, summary(m))
 

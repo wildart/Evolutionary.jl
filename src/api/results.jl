@@ -73,17 +73,14 @@ relchange(r::OptimizationResults) = error("`relchange` is not implemented for $(
 """
 Evolutionary optimization result type
 """
-mutable struct EvolutionaryOptimizationResults{O<:AbstractOptimizer, T, Tx, Tf} <: OptimizationResults
+mutable struct EvolutionaryOptimizationResults{O<:AbstractOptimizer, Tx, Tf} <: OptimizationResults
     method::O
     minimizer::Tx
     minimum::Tf
     iterations::Int
     iteration_converged::Bool
     converged::Bool
-    abstol::T
-    reltol::T
-    abschange::T
-    relchange::T
+    metrics::ConvergenceMetrics
     trace::OptimizationTrace
     f_calls::Int
     time_limit::Float64
@@ -97,11 +94,6 @@ end
 Returns `true` if the optimization successfully converged to a minimum value.
 """
 converged(r::EvolutionaryOptimizationResults) = r.converged
-
-abstol(r::EvolutionaryOptimizationResults) = r.abstol
-reltol(r::EvolutionaryOptimizationResults) = r.reltol
-abschange(r::EvolutionaryOptimizationResults) = r.abschange
-relchange(r::EvolutionaryOptimizationResults) = r.relchange
 time_limit(r::EvolutionaryOptimizationResults) = r.time_limit
 time_run(r::EvolutionaryOptimizationResults) = r.time_run
 is_moo(r::EvolutionaryOptimizationResults) = r.is_moo
@@ -138,12 +130,18 @@ function show(io::IO, r::EvolutionaryOptimizationResults)
     print(io, " * Found with\n")
     print(io, "    Algorithm: $(summary(r))\n")
     print(io, "\n")
-    print(io, " * Convergence measures\n")
-    sgn = abschange(r)<=abstol(r) ? "≤" : "≰"
-    print(io, "    |f(x) - f(x')|         = $(abschange(r)) $sgn $(abstol(r))\n" )
-    sgn = relchange(r)<=reltol(r) ? "≤" : "≰"
-    print(io, "    |f(x) - f(x')|/|f(x')| = $(relchange(r)) $sgn $(reltol(r))\n")
-    print(io, "\n")
+    if length(r.metrics) > 0
+        print(io, " * Convergence measures\n")
+        maxdsclen = maximum(length(description(cm)) for cm in r.metrics)
+        rpd = " "^4
+        for cm in r.metrics
+            sgn = converged(cm) ? "≤" : "≰"
+            dsc = description(cm)
+            lpd = " "^(maxdsclen + 1 - length(dsc))
+            print(io, "$rpd$dsc$lpd= $(diff(cm)) $sgn $(tolerance(cm))\n" )
+        end
+        print(io, "\n")
+    end
     print(io, " * Work counters\n")
     tr = round(time_run(r); digits=4)
     tl = isnan(time_limit(r)) ? Inf : round(time_limit(r); digits=4)

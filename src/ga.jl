@@ -10,6 +10,7 @@ The constructor takes following keyword arguments:
 - `selection`: [Selection](@ref) function
 - `crossover`: [Crossover](@ref) function (default: `identity`)
 - `mutation`: [Mutation](@ref) function (default: `identity`)
+- `metrics` is a collection of convergence metrics.
 """
 mutable struct GA <: AbstractOptimizer
     populationSize::Int
@@ -19,15 +20,18 @@ mutable struct GA <: AbstractOptimizer
     selection::Function
     crossover::Function
     mutation::Function
+    metrics::ConvergenceMetrics
 
     GA(; populationSize::Int=50, crossoverRate::Float64=0.8, mutationRate::Float64=0.1,
         ɛ::Real=0, epsilon::Real=ɛ,
         selection::Function = ((x,n)->1:n),
-        crossover::Function = identity, mutation::Function = identity) =
-        new(populationSize, crossoverRate, mutationRate, epsilon, selection, crossover, mutation)
+        crossover::Function = identity, mutation::Function = identity,
+        metrics = ConvergenceMetric[AbsDiff{Float64}(1e-12)]
+       ) =
+        new(populationSize, crossoverRate, mutationRate, epsilon, selection, crossover, mutation, metrics)
 end
 population_size(method::GA) = method.populationSize
-default_options(method::GA) = (iterations=1000, abstol=1e-15)
+default_options(method::GA) = (iterations=1000,)
 summary(m::GA) = "GA[P=$(m.populationSize),x=$(m.crossoverRate),μ=$(m.mutationRate),ɛ=$(m.ɛ)]"
 show(io::IO,m::GA) = print(io, summary(m))
 

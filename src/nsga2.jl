@@ -9,6 +9,7 @@ The constructor takes following keyword arguments:
 - `selection`: [Selection](@ref) function (default: `tournament`)
 - `crossover`: [Crossover](@ref) function (default: `SBX`)
 - `mutation`: [Mutation](@ref) function (default: `PLM`)
+- `metrics` is a collection of convergence metrics.
 """
 mutable struct NSGA2 <: AbstractOptimizer
     populationSize::Int
@@ -17,15 +18,18 @@ mutable struct NSGA2 <: AbstractOptimizer
     selection::Function
     crossover::Function
     mutation::Function
+    metrics::ConvergenceMetrics
 
     NSGA2(; populationSize::Int=50, crossoverRate::Float64=0.9, mutationRate::Float64=0.1,
         selection::Function = tournament(2, select=twowaycomp),
         crossover::Function = SBX(),
-        mutation::Function = PLM()) =
-        new(populationSize, crossoverRate, mutationRate, selection, crossover, mutation)
+        mutation::Function = PLM(),
+        metrics = ConvergenceMetric[GD(), GD(true)]
+       ) =
+        new(populationSize, crossoverRate, mutationRate, selection, crossover, mutation, metrics)
 end
 population_size(method::NSGA2) = method.populationSize
-default_options(method::NSGA2) = (iterations=1000, abstol=1e-15)
+default_options(method::NSGA2) = (iterations=1000,)
 summary(m::NSGA2) = "NSGA-II[P=$(m.populationSize),x=$(m.crossoverRate),μ=$(m.mutationRate)]"
 show(io::IO,m::NSGA2) = print(io, summary(m))
 

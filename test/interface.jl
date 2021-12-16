@@ -4,9 +4,8 @@
     # SETUP #
     #########
 
-    using Evolutionary: AbstractOptimizer, AbstractOptimizerState, Options, value!,
-                        f_calls, BoxConstraints, PenaltyConstraints, EvolutionaryObjective
-    import Evolutionary: value, population_size, default_options, initial_state, update_state!
+    using Evolutionary: value!, f_calls, BoxConstraints, PenaltyConstraints,
+                        EvolutionaryObjective
 
     # objective function
     dimension = 5
@@ -14,27 +13,7 @@
     minval = 1.0
     func = x->sum(x)+1
     objfun = EvolutionaryObjective(func, individual)
-
-    # state
-    mutable struct TestOptimizerState <: AbstractOptimizerState
-        individual
-        fitness
-    end
-    Evolutionary.value(state::TestOptimizerState) = state.fitness
-    Evolutionary.minimizer(state::TestOptimizerState) = state.individual
     st = TestOptimizerState(individual, minval);
-
-    # optimizer
-    struct TestOptimizer <: AbstractOptimizer end
-    Evolutionary.population_size(method::TestOptimizer) = 5
-    Evolutionary.default_options(method::TestOptimizer) = Dict(:iterations=>10, :abstol=>1e-10)
-    Evolutionary.initial_state(method, options, d, population) = TestOptimizerState(population[end], value(d, population[end]))
-    function Evolutionary.update_state!(d, constraints, state::TestOptimizerState, population::AbstractVector, method, opts, itr)
-        i = rand(1:population_size(method))
-        state.individual = population[i]
-        state.fitness = value!(d, state.individual)
-        return false
-    end
     mthd = TestOptimizer()
     cnstr= Evolutionary.NoConstraints()
 
@@ -51,8 +30,6 @@
     #########
     @test value(st) == minval
     val = value!(objfun, rand(dimension))
-    @test_broken Evolutionary.abschange(objfun, st) == val - minval
-    @test_broken Evolutionary.relchange(objfun, st) == (val - minval)/val
 
     tr = Evolutionary.OptimizationTrace{typeof(value(objfun)), typeof(mthd)}()
     @test !Evolutionary.trace!(tr, 1, objfun, st, ppl, mthd, opts)
@@ -91,27 +68,25 @@
     ##########
     # RESULT #
     ##########
+    opts = Evolutionary.Options(store_trace=true)
     res = Evolutionary.EvolutionaryOptimizationResults(
-        mthd, individual, value(objfun),
+        mthd, individual, value(st),
         opts.iterations, opts.show_trace, opts.store_trace,
-        opts.abstol, opts.reltol, 1.0, 2.0, tr, f_calls(objfun),
+        Evolutionary.metrics(mthd), tr, f_calls(objfun),
         1.0, 1.0, opts.show_trace,
     );
     @test summary(res) == summary(mthd)
     @test Evolutionary.minimizer(res) == individual
-    @test minimum(res) == value(objfun)
+    @test minimum(res) == value(st)
     @test Evolutionary.iterations(res) == opts.iterations
     @test Evolutionary.iteration_limit_reached(res) == opts.show_trace
     @test Evolutionary.converged(res) == opts.store_trace
     @test f_calls(res) == f_calls(objfun)
-    @test Evolutionary.abstol(res) == opts.abstol
-    @test Evolutionary.reltol(res) == opts.reltol
-    @test Evolutionary.abschange(res) == 1.0
-    @test Evolutionary.relchange(res) == 2.0
     @test Evolutionary.time_run(res) == 1.0
     @test Evolutionary.time_limit(res) == 1.0
     @test Evolutionary.is_moo(res) == opts.show_trace
     @test length(Evolutionary.trace(res)) >= 1
+    @test !Evolutionary.converged(res.metrics[1])
     show(IOBuffer(), res)
 
 
@@ -145,12 +120,26 @@
     @test map(i->i[3],pop) == fill(ub[3], population_size(mthd))
     @test all(map(i->lb[4] <= i[4] <= ub[4],pop))
 
+
     ###########
     # OPTIONS #
     ###########
-    dopts = default_options(mthd)
-    opts = Options(;store_trace=true, dopts...)
-    @test opts.abstol == dopts[:abstol]
+    opts = Evolutionary.Options(;store_trace=true, iterations=7)
+    @test opts.store_trace
+    @test opts.iterations == 7
+
+
+    ###############
+    # CONVERGENCE #
+    ###############
+    cm = Evolutionary.AbsDiff()
+    @test !Evolutionary.converged(cm)
+    st.fitness = 1.0
+    @test !Evolutionary.assess!(cm, st)
+    @test !Evolutionary.converged(cm)
+    @test Evolutionary.assess!(cm, st)
+    @test Evolutionary.converged(cm)
+
 
     ###############
     # CONSTRAINTS #
@@ -187,7 +176,6 @@
     ############
     # OPTIMIZE #
     ############
-    opts = Options(;store_trace=true, iterations=7, abstol=-1.0, reltol=-1.0)
     res =  Evolutionary.optimize(sum, (()->BitVector(rand(Bool,dimension))), mthd, opts)
     @test Evolutionary.minimum(res) <= dimension
     @test length(Evolutionary.minimizer(res)) == dimension

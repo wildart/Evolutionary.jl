@@ -51,15 +51,6 @@ Update the trace `record`. This function allows to supplement an additional info
 trace!(record::Dict{String,Any}, objfun, state, population, method, options) = ()
 
 
-#########
-# STATE #
-#########
-
-# default convergence
-assess_convergence(objfun::AbstractObjective, state::AbstractOptimizerState,
-                   method, options::Options) = false
-
-
 ##############
 # POPULATION #
 ##############

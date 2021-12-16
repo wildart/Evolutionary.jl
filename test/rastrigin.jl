@@ -31,6 +31,7 @@
     m = ES(mu = 15, lambda = P)
     @test m.μ == 15
     @test m.λ == P
+    opts = Evolutionary.Options(iterations=1000, rng=rng)
     result = Evolutionary.optimize( rastrigin,
         initState,
         ES(
@@ -39,20 +40,22 @@
             mutation = gaussian, smutation = gaussian,
             selection=:comma,
             μ = 15, λ = P
-        ),Evolutionary.Options(iterations=1000, abstol=1e-10, rng=rng)
+        ), opts
     )
     println("(15,$(P))-σ-SA-ES => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
     test_result(result, N, 1e-1)
 
     # Testing: CMA-ES
-    result = Evolutionary.optimize(rastrigin, initState, CMAES(mu = 15, lambda = P))
+    Random.seed!(rng, 42)
+    opts = Evolutionary.Options(rng=rng)
+    result = Evolutionary.optimize(rastrigin, initState, CMAES(mu = 15, lambda = P), opts)
     println("(15/15,$(P))-CMA-ES => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
     test_result(result, N, 1e-1)
 
     # Testing: GA
     m = GA(epsilon = 10.0)
     @test m.ɛ == 10
-
+    opts = Evolutionary.Options(iterations=1000, rng=rng, successive_f_tol=25)
     selections = [:roulette=>rouletteinv, :sus=>susinv, :tourn=>tournament(2)]
     crossovers = [:discrete=>DC, :intermediate0=>IC(0.), :intermediate0_5=>IC(0.5), :line=>LC(0.1), :avg=>AX, :heuristic=>HX, :laplace=>LX(), :simbin=>SBX()]
     mutations  = [:domrng0_5=>BGA(fill(0.5,N)), :gaussian=>gaussian(), :plm=>PLM()]
@@ -67,7 +70,7 @@
                 selection = ss,
                 crossover = xovr,
                 mutation = ms
-            ), Evolutionary.Options(abstol=1e-10, successive_f_tol=25, rng=rng)
+            ), opts
         )
         println("GA:$(sn):$(xn):$(mn)(N=$(N),P=$(P),x=.8,μ=.1,ɛ=0.1) => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
         test_result(result, N, 0.2)
@@ -85,10 +88,11 @@
                 selection = ss,
                 recombination = ms,
                 F = 0.9
-               ), Evolutionary.Options(rng=rng)
+               ), Evolutionary.Options(rng=rng, successive_f_tol=20)
         )
         println("DE/$sn/$n/$mn(F=0.9,Cr=0.5) => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
-        test_result(result, N, 1e-2)
+        test_result(result, N, 0.5)
     end
 
 end
+

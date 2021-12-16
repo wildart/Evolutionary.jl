@@ -41,7 +41,8 @@ function TreeGP(pop::Integer, term::Vector{Terminal}, func::Vector{Function}; kw
 end
 
 population_size(method::TreeGP) = method.populationSize
-default_options(method::TreeGP) = (iterations=1000, abstol=1e-15)
+default_options(method::TreeGP) = (iterations=1000,)
+metrics(method::TreeGP) = metrics(method.optimizer)
 terminals(m::TreeGP) = Symbol[t for t in keys(m.terminals) if isa(t,Symbol)] |> sort!
 function summary(m::TreeGP)
     par = join(terminals(m),",")
