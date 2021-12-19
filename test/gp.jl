@@ -82,7 +82,9 @@
     ys = fitfun.(rg)
     function fitobj(expr)
         ex = Evolutionary.Expression(expr)
-        sum(v->isnan(v) ? 1.0 : v, abs2.(ys - ex.(rg)) )/length(rg)
+        #ex = Evolutionary.Expression(expr, Dict(:x=>1))
+        yy = ex.(rg)
+        sum(v->isnan(v) ? 1.0 : v, abs2.(ys .- yy) )/length(rg)
     end
 
     Random.seed!(rng, 42)
@@ -90,15 +92,17 @@
         TreeGP(25, Terminal[:x, randn], Function[+,-,*,Evolutionary.aq],
             mindepth=1,
             maxdepth=3,
-            simplify = simplify!,
+            simplify = Evolutionary.simplify!,
             optimizer = GA(
                 selection = tournament(3),
-                mutationRate = 0.2,
+                mutationRate = 0.1,
                 crossoverRate = 0.9,
+                ε = 0.1
             ),
         ),
-        Evolutionary.Options(show_trace=false, rng=rng, iterations=50)
+        Evolutionary.Options(show_trace=true, rng=rng, iterations=50)
     )
     @test minimum(res) < 1.1
 
 end
+

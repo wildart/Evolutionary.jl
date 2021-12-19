@@ -3,11 +3,14 @@ Julia expression wrapper
 """
 struct Expression
     expr::Expr
-    syms::Vector{Symbol}
+    syms::Dict{Symbol,Int}
 end
-Expression(ex::Expr) = Expression(ex, sort!(symbols(ex)))
+function Expression(ex::Expr)
+    syms = Dict( s=>i for (i,s) in pairs(sort!(symbols(ex))) )
+    Expression(ex, syms)
+end
 show(io::IO, e::Expression) = infix(io, e.expr)
-(e::Expression)(val) = evaluate(val, e.expr, e.syms)
+(e::Expression)(vals::T...) where {T} = evaluate(e.expr, e.syms, vals...)
 
 function symbols(ex::Expr)
     syms = Symbol[]
@@ -16,6 +19,11 @@ function symbols(ex::Expr)
         isa(e, Expr) && append!(syms, symbols(e))
     end
     unique!(syms)
+end
+
+function compile(ex::Expr, params::Vector{Symbol})
+    tprm = Expr(:tuple, params...)
+    Expr(:->, tprm, ex)
 end
 
 height(ex) = isa(ex, Expr) ? maximum( height(e) for e in ex.args )+1 : 0
@@ -79,15 +87,18 @@ isdiv(ex) = ex in [/, div, pdiv, aq]
 isexpr(ex) = isa(ex, Expr)
 issym(ex) = isa(ex, Symbol)
 
-function evaluate(val, ex::Expr, psyms::Vector{Symbol})
+function evaluate(ex::Expr, psyms::Dict{Symbol,Int}, vals::T...)::T where {T}
     exprm = ex.args
-    exvals = (isexpr(nex) || issym(nex) ? evaluate(val, nex, psyms) : nex for nex in exprm[2:end])
+    exvals = (isexpr(nex) || issym(nex) ? evaluate(nex, psyms, vals...) : nex for nex in exprm[2:end])
     exprm[1](exvals...)
 end
 
-function evaluate(val, ex::Symbol, psyms::Vector{Symbol})
-    pidx = findfirst(isequal(ex), psyms)
-    val[pidx]
+function evaluate(ex::Symbol, psyms::Dict{Symbol,Int}, vals::T...)::T where {T}
+    pidx = get(psyms, ex, 0)
+    if pidx == 0
+        @error "Undefined symbol: $ex"
+    end
+    return T(vals[pidx])
 end
 
 
@@ -114,9 +125,9 @@ function simplifybinary!(root)
         root = 1
     elseif (fn == (*) || isdiv(fn)) &&  (iszeronum(op1) || iszeronum(op2)) # look for 0: x*0 = 0*x = 0
         root = 0
-    elseif (fn == (+) || fn == (-)) && iszeronum(op2) # look for 0: x ± 0 = 0
+    elseif (fn == (+) || fn == (-)) && iszeronum(op2) # look for 0: x ± 0 = x
         root = op1
-    elseif fn == (+) && iszeronum(op1) # look for 0: 0 ± x = 0
+    elseif fn == (+) && iszeronum(op1) # look for 0: 0 + x = x
         root = op2
     elseif (fn == (*) || isdiv(fn)) && isonenum(op2) # x*1 = x || x/1 = x
         root = op1
