@@ -110,10 +110,9 @@ function update_state!(objfun, constraints, state, population::AbstractVector{IT
         # Apply constraints
         offspring[i] = apply!(constraints, off)
     end
+
     # calculate fitness of the population
-    value!(objfun, fitoff, offspring)
-    # apply penalty to fitness
-    penalty!(fitoff, constraints, offspring)
+    evaluate!(objfun, fitoff, offspring, constraints)
 
     # Select new parent population
     if selection == :plus
