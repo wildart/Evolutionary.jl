@@ -86,6 +86,8 @@ isonenum(root) = isnum(root) && isone(root)
 isdiv(ex) = ex in [/, div, pdiv, aq]
 isexpr(ex) = isa(ex, Expr)
 issym(ex) = isa(ex, Symbol)
+isexprsym(ex) = isexpr(ex) || issym(ex)
+isbinexpr(ex) = isexpr(ex) && length(ex.args) == 3
 
 function evaluate(ex::Expr, psyms::Dict{Symbol,Int}, vals::T...)::T where {T}
     exprm = ex.args
@@ -136,24 +138,100 @@ function simplifybinary!(root)
     elseif (fn == (+)) && (op1 == op2) # x+x = 2x
         root.args[1] = (*)
         root.args[2] = 2
-    elseif (fn == (+) || fn == (-))
-        # n1+(n2+x) = n1+(x+n2) = (n2+x)+n1 = (x+n2)+n1 = x+n3, s.t. n3=n1+n2
-        if (isexpr(op1) && isnum(op2)) || (isnum(op1) && isexpr(op2))
-            # swap so op1 is expr
-            if isnum(op1) && isexpr(op2)
-                op1, op2 =  op2, op1
+    elseif (fn == (+) || fn == (-)) && (isbinexpr(op1) && isnum(op2))
+        fn2, op11, op12 = op1.args
+        if fn == (+) && fn2 == (-) && isnum(op12)
+            # (x-m)+n = x+(n-m)
+            root.args[2] = op11
+            root.args[3] = op2-op12
+        elseif fn == (-) && fn2 == (-) && isnum(op12)
+            # (x-m)-n = x-(n+m)
+            root.args[2] = op11
+            root.args[3] = op12+op2
+        elseif fn2 == (+) && (isnum(op11) || isnum(op12))
+            # (m+x)±n = (x+m)±n = x+(n±m)
+            var, n2 = isnum(op11) ? (op12, op11) : (op11, op12)
+            n3 = fn(n2, op2)
+            root.args[1] = fn2
+            root.args[2] = var
+            root.args[3] = n3
+        elseif fn2 == (-) && isnum(op11)
+            # (m-x)±n = (n±m)-x
+            n3 = fn(op11, op2)
+            root.args[1] = fn2
+            root.args[2] = n3
+            root.args[3] = op12
+        end
+    elseif fn == (+) && isnum(op1) && isbinexpr(op2)
+        fn2, op21, op22 = op2.args
+        if fn2 == (+) || fn2 == (-)
+            if isnum(op21)
+                # n+(m±x) = (n+m)±x
+                root.args[1] = fn2
+                root.args[2] = op1 + op21
+                root.args[3] = op22
+            elseif isnum(op22)
+                # n+(x±m) = (n±m)+x
+                root.args[1] = fn
+                root.args[2] = fn2(op1, op22)
+                root.args[3] = op21
             end
-            #println("ex1: $fn ($op1, $op2)"
-            # op2 is binexpr
-            if isexpr(op1) && length(op1) == 3
-                fn2, op21, op22 = op1.args
-                # some operand has to be num
-                if (fn2 == (+) || fn2 == (-)) && (isnum(op21) || isnum(op22))
-                    var, n2 = isnum(op21) ? (op22, op21) : (op21, op22)
-                    n3 = fn(n2, op2)
+        end
+    elseif fn == (-) && isnum(op1) && isbinexpr(op2)
+        fn2, op21, op22 = op2.args
+        if fn2 == (+) && (isnum(op21) || isnum(op22))
+            # n-(x+m) = n-(m+x) = (n-m)-x
+            var, n2 = isnum(op21) ? (op22, op21) : (op21, op22)
+            root.args[2] = op1 - n2
+            root.args[3] = var
+        elseif fn2 == (-) && (isnum(op21) || isnum(op22))
+            # n-(m-x) = (n-m)+x
+            # n-(x-m) = (n+m)-x
+            var, n2, f1p = isnum(op21) ? (op22, op21, true) : (op21, op22, false)
+            root.args[1] = f1p ? (+) : (-)
+            root.args[2] = f1p ? op1 - n2 : op1 + n2
+            root.args[3] = var
+        end
+    elseif fn == (+) && (isexpr(op1) || isexpr(op2))
+        if isbinexpr(op2)
+            # x + (n - x) = n
+            fn2, op21, op22 = op2.args
+            if fn2 == (-) && op1 == op22
+                root = op21
+            end
+        elseif isbinexpr(op1)
+            # (n - x) + x = n
+            fn2, op11, op12 = op1.args
+            if fn2 == (-) && op12 == op2
+                root = op11
+            end
+        end
+    elseif fn == (-) && (isexpr(op1) || isexpr(op2))
+        if isbinexpr(op2)
+            fn2, op21, op22 = op2.args
+            if op1 == op21
+                # x - (x ± n) = -±n
+                if fn2 == (-)
+                    root = op22
+                else
+                    pop!(root.args)
+                    root.args[end] = op22
+                end
+            elseif op1 == op22 && fn2 == (+)
+                # x - (n + x) = -n
+                pop!(root.args)
+                root.args[end] = op21
+            end
+        elseif isbinexpr(op1)
+            # (x ± n) - x = ±n
+            fn2, op11, op12 = op1.args
+            if op11 == op2
+                if fn2 == (+)
+                    root = op12
+                else
                     root.args[1] = fn2
-                    root.args[2] = var
-                    root.args[3] = n3
+                    root.args[2] = op12
+                    pop!(root.args)
                 end
             end
         end
@@ -196,7 +274,7 @@ function infix(io::IO, root; digits=3)
             print(io, "(")
             infix(io, root.args[2])
             infix(io, root.args[1])
-            infix(io, root.args[3])
+            length(root.args)>2 && infix(io, root.args[3])
             print(io, ")")
         else
             infix(io, root.args[1])

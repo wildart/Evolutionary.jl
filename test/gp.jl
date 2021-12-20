@@ -14,7 +14,7 @@
     @testset for (func, arity) in t.functions
         @test arity == 2
     end
-    @test_skip summary(t) == "TreeGP[P=10,Parameter[x,y],Function[*, +, /, -]]"
+    show(IOBuffer(), summary(t))
 
     # population initialization
     popexp = Evolutionary.initial_population(t, rng=rng);
@@ -36,16 +36,16 @@
     @test Evolutionary.nodes(ft) == 15
     @test Evolutionary.height(ft) == 3
     @test length(ft) == 15
-    # @test Evolutionary.depth(ft, :x) == 3
-    # ft[3] = :z
-    # @test Evolutionary.depth(ft, :z) == 3
+    @test Evolutionary.depth(ft, :x) == 3
+    ft[3] = :z
+    @test Evolutionary.depth(ft, :z) == 3
     @test Evolutionary.depth(ft, ft) == 0
     @test Evolutionary.depth(ft, ft[3]) > 0
     @test Evolutionary.depth(ft, :w) == -1
-    @test Evolutionary.evaluate([1.0, 2.0], :y, [:y, :z]) == 1.0
+    @test Evolutionary.evaluate(:y, Dict(:y=>1, :z=>2), 1.0, 2.0) == 1.0
     copyto!(ft, gt)
     @test ft == gt
-    # @test Evolutionary.symbols(ft) |> sort == [:x, :y]
+    @test Evolutionary.symbols(ft) |> sort == [:x, :y]
 
     # simplification
     using Evolutionary: simplify!
@@ -64,8 +64,27 @@
     @test Expr(:call, log, Expr(:call, exp, 1)) |> simplify! == 1
     @test Expr(:call, -, Expr(:call, +, :x, 1), 2) |> simplify! == Expr(:call, +, :x, -1)
     @test Expr(:call, -, Expr(:call, +, 1, :x), 2) |> simplify! == Expr(:call, +, :x, -1)
-    @test Expr(:call, +, 2, Expr(:call, +, 1, :x)) |> simplify! == Expr(:call, +, :x, 3)
-    @test Expr(:call, +, 2, Expr(:call, +, :x, 1)) |> simplify! == Expr(:call, +, :x, 3)
+    @test Expr(:call, +, Expr(:call, +, :x, 1), 2) |> simplify! == Expr(:call, +, :x, 3)
+    @test Expr(:call, +, Expr(:call, +, 1, :x), 2) |> simplify! == Expr(:call, +, :x, 3)
+    @test Expr(:call, +, Expr(:call, -, 1, :x), 2) |> simplify! == Expr(:call, -,  3, :x)
+    @test Expr(:call, -, Expr(:call, -, 1, :x), 2) |> simplify! == Expr(:call, -, -1, :x)
+    @test Expr(:call, +, Expr(:call, -, :x, 1), 2) |> simplify! == Expr(:call, +, :x, 1)
+    @test Expr(:call, -, Expr(:call, -, :x, 1), 2) |> simplify! == Expr(:call, -, :x, 3)
+    @test Expr(:call, +, :x, Expr(:call, -, 1, :x)) |> simplify! == 1
+    @test Expr(:call, +, Expr(:call, -, 2, :x), :x) |> simplify! == 2
+    @test Expr(:call, -, :x, Expr(:call, +, :x, :y)) |> simplify! == Expr(:call, -, :y)
+    @test Expr(:call, -, :x, Expr(:call, -, :x, :y)) |> simplify! == :y
+    @test Expr(:call, -, :x, Expr(:call, +, :y, :x)) |> simplify! == Expr(:call, -, :y)
+    @test Expr(:call, -, Expr(:call, -, :x, :y), :x) |> simplify! == Expr(:call, -, :y)
+    @test Expr(:call, -, Expr(:call, +, :x, :y), :x) |> simplify! == :y
+    @test Expr(:call, +, 2, Expr(:call, +, 1, :x)) |> simplify! == Expr(:call, +, 3, :x)
+    @test Expr(:call, +, 2, Expr(:call, -, 1, :x)) |> simplify! == Expr(:call, -, 3, :x)
+    @test Expr(:call, +, 2, Expr(:call, +, :x, 1)) |> simplify! == Expr(:call, +, 3, :x)
+    @test Expr(:call, +, 2, Expr(:call, -, :x, 1)) |> simplify! == Expr(:call, +, 1, :x)
+    @test Expr(:call, -, 2, Expr(:call, +, 1, :x)) |> simplify! == Expr(:call, -, 1, :x)
+    @test Expr(:call, -, 2, Expr(:call, +, :x, 1)) |> simplify! == Expr(:call, -, 1, :x)
+    @test Expr(:call, -, 1, Expr(:call, -, 2, :x)) |> simplify! == Expr(:call, +, -1, :x)
+    @test Expr(:call, -, 2, Expr(:call, -, :x, 1)) |> simplify! == Expr(:call, -, 3, :x)
 
     # evaluation
     ex = Expr(:call, +, 1, :x) |> Evolutionary.Expression
@@ -100,7 +119,7 @@
                 ε = 0.1
             ),
         ),
-        Evolutionary.Options(show_trace=true, rng=rng, iterations=50)
+        Evolutionary.Options(show_trace=false, rng=rng, iterations=50)
     )
     @test minimum(res) < 1.1
 
