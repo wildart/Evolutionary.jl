@@ -14,7 +14,7 @@
     @testset for (func, arity) in t.functions
         @test arity == 2
     end
-    show(IOBuffer(), summary(t))
+    show(IOBuffer(), t)
 
     # population initialization
     popexp = Evolutionary.initial_population(t, rng=rng);
@@ -94,6 +94,21 @@
     io = IOBuffer()
     show(io, "text/latex", ex)
     @test String(take!(io)) == "\\left(1.0+x\\right)"
+    Evolutionary.infix(io, ex)
+    @test String(take!(io)) == "(1.0+x)"
+
+    # protected operations
+    @test Evolutionary.pdiv(1,0) == 1e7+1
+    @test Evolutionary.aq(1,0) == 1.0
+    @test Evolutionary.pexp(40) == 1e16+40
+    @test Evolutionary.plog(0) == -1e7
+    @test Evolutionary.psin(Inf) == 1e7
+    @test Evolutionary.pcos(Inf) == 1e7
+    @test Evolutionary.ppow(10,20) == 1e7+30
+    @test Evolutionary.ppow(-4,0.5) == 2.0
+    @test Evolutionary.ppow(2,2) == 4.0
+    @test Evolutionary.cond(3,1,2) == 1
+    @test Evolutionary.cond(-3,1,2) == 2
 
     # symreg
     fitfun(x) = x*x + x + 1.0

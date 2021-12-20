@@ -11,17 +11,17 @@ plog(x, undef=10e6)    = ifelse(x==0 , -undef   , log(abs(x)))
 """Protected sq.root"""
 psqrt(x)               = sqrt(abs(x))
 """Protected sin(x)"""
-psin(x, undef=10e6)    = ifelse(isinf(x), undef, sin(x))
+psin(x, undef=10e6)    = isinf(x) ? undef : sin(x)
 """Protected cos(x)"""
-pcos(x, undef=10e6)    = ifelse(isinf(x), undef, cos(x))
+pcos(x, undef=10e6)    = isinf(x) ? undef : cos(x)
 """Protected exponentiation operation"""
 function ppow(x, y, undef=10e6)
     if y>=10
         x+y+undef
     elseif y < 1
-        pow(abs(x),y)
+        abs(x)^y
     else
-        pow(x,y)
+        x^y
     end
 end
 """Conditional function"""
