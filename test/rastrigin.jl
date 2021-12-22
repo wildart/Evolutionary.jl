@@ -80,7 +80,7 @@
     selections = [:rand=>random, :perm=>permutation, :rndoff=>randomoffset, :best=>best]
     mutations = [:exp=>EXPX(0.5), :bin=>BINX(0.5)]
     @testset "DE settings" for (sn,ss) in selections, (mn,ms) in mutations, n in 1:2
-        Random.seed!(rng, 42)
+        Random.seed!(rng, 1)
         result = Evolutionary.optimize( rastrigin, initState,
             DE(
                 populationSize = P,
