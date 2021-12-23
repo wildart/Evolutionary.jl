@@ -36,7 +36,7 @@ The constructor takes following keyword arguments:
 end
 function TreeGP(pop::Integer, term::Vector{Terminal}, func::Vector{Function}; kwargs...)
     terminals = Dict(t=>1 for t in term)
-    functions = Dict(f=>2 for f in func)
+    functions = Dict(f=>(f == (-) ? 2 : funargnum(f)-1) for f in func)
     TreeGP(;populationSize=pop, terminals=terminals, functions=functions, kwargs...)
 end
 
@@ -112,7 +112,7 @@ function initial_population(m::TreeGP, expr::Union{Expr,Nothing}=nothing;
     end
 end
 
-mutable struct GPState{T,IT} <: Evolutionary.AbstractOptimizerState
+mutable struct GPState{T,IT} <: AbstractOptimizerState
     ga::GAState{T,IT}
 end
 value(s::GPState) = s.ga.fitness
