@@ -79,6 +79,7 @@
     # Testing: DE
     selections = [:rand=>random, :perm=>permutation, :rndoff=>randomoffset, :best=>best]
     mutations = [:exp=>EXPX(0.5), :bin=>BINX(0.5)]
+    opts = Evolutionary.Options(rng=rng, successive_f_tol=25)
     @testset "DE settings" for (sn,ss) in selections, (mn,ms) in mutations, n in 1:2
         Random.seed!(rng, 1)
         result = Evolutionary.optimize( rastrigin, initState,
@@ -88,10 +89,12 @@
                 selection = ss,
                 recombination = ms,
                 F = 0.9
-               ), Evolutionary.Options(rng=rng, successive_f_tol=20)
+               ),
+            opts
         )
         println("DE/$sn/$n/$mn(F=0.9,Cr=0.5) => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
-        test_result(result, N, 0.01)
+        println(Evolutionary.minimizer(result))
+        test_result(result, N, 0.05)
     end
 
 end
