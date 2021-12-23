@@ -47,27 +47,27 @@
     # Testing: CMA-ES
     opts = Evolutionary.Options(rng=rng)
     Random.seed!(rng, 42)
-    result = Evolutionary.optimize(rosenbrock, (() -> rand(rng, Float32,N)), CMAES(mu = 5, lambda = 100, weights=zeros(Float32,100)), opts)
-    println("(5/5,100)-CMA-ES => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
+    result = Evolutionary.optimize(rosenbrock, (() -> rand(rng, Float32,N)), CMAES(lambda = 100), opts)
+    println("(50,100)-CMA-ES => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
     test_result(result, N, 1e-2)
 
     Random.seed!(rng, 42)
-    bc = BoxConstraints(fill(0.0, N), fill(0.5, N))
-    result = Evolutionary.optimize(rosenbrock, bc, (() -> rand(rng, N)), CMAES(mu = 5, lambda = 100), opts)
-    println("(5/5,100)-CMA-ES [box] => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
+    bc = BoxConstraints(fill(0.25, N), fill(0.5, N))
+    result = Evolutionary.optimize(rosenbrock, bc, (() -> rand(rng, N)), CMAES(lambda = 100), opts)
+    println("(50,100)-CMA-ES [box] => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
     @test Evolutionary.minimizer(result) ≈ [0.5, 0.25] atol=1e-5
 
     Random.seed!(rng, 42)
     con_c!(x) = [sum(x)]
     c = PenaltyConstraints(100.0, fill(0.0, 5N), Float64[], [1.0], [1.0], con_c!)
-    result = Evolutionary.optimize(rosenbrock, c, (() -> rand(rng, 5N)), CMAES(mu = 40, lambda = 100), opts)
-    println("(5/5,100)-CMA-ES [penalty] => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
+    result = Evolutionary.optimize(rosenbrock, c, (() -> rand(rng, 5N)), CMAES(lambda = 100), opts)
+    println("(50,100)-CMA-ES [penalty] => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
     @test Evolutionary.minimizer(result) |> sum ≈ 1.0 atol=0.1
 
     Random.seed!(rng, 42)
     c = PenaltyConstraints(100.0, fill(0.0, 2N), fill(0.5, 2N), [1.0], [1.0], con_c!)
-    result = Evolutionary.optimize(rosenbrock, c, (() -> rand(rng, 2N)), CMAES(mu = 8, lambda = 100), opts)
-    println("(5/5,100)-CMA-ES [penalty] => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
+    result = Evolutionary.optimize(rosenbrock, c, (() -> rand(rng, 2N)), CMAES(lambda = 100), opts)
+    println("(50,100)-CMA-ES [penalty] => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
     @test Evolutionary.minimizer(result) |> sum ≈ 1.0 atol=0.1
     @test all(0.0 <= x+0.01 && x-0.01 <= 0.5 for x in abs.(Evolutionary.minimizer(result)))
 

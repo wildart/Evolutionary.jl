@@ -48,8 +48,8 @@
     # Testing: CMA-ES
     Random.seed!(rng, 42)
     opts = Evolutionary.Options(rng=rng)
-    result = Evolutionary.optimize(rastrigin, initState, CMAES(mu = 15, lambda = P), opts)
-    println("(15/15,$(P))-CMA-ES => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
+    result = Evolutionary.optimize(rastrigin, initState, CMAES(lambda = P), opts)
+    println("($(P>>1),$P)-CMA-ES => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
     test_result(result, N, 1e-1)
 
     # Testing: GA
