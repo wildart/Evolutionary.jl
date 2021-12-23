@@ -91,7 +91,7 @@
                ), Evolutionary.Options(rng=rng, successive_f_tol=20)
         )
         println("DE/$sn/$n/$mn(F=0.9,Cr=0.5) => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
-        test_result(result, N, 0.5)
+        test_result(result, N, 0.01)
     end
 
 end
