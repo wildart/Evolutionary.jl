@@ -104,9 +104,10 @@ function update_state!(objfun, constraints, state, parents::AbstractVector{IT}, 
         end
     end
     # designate the first Pareto front individuals as the fittest
-    state.fittest = state.population[F[1]]
+    fidx = length(F[1]) > populationSize ? fitidx : F[1]
+    state.fittest = state.population[fidx]
     # and keep their fitness
-    state.fitness = state.fitpop[:,F[1]]
+    state.fitness = state.fitpop[:,fidx]
 
     # construct new parent population
     parents .= state.population[fitidx]

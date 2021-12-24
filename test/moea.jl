@@ -1,7 +1,7 @@
 @testset "Multi-objective EA" begin
 
     rng = StableRNG(42)
-    opts = Evolutionary.Options(rng=rng)
+    opts = Evolutionary.Options(rng=rng, iterations=500)
 
     # domination
     P =[ [0,0,0], [0,1,0], [-1,0,0], [0,-1,0] ]
@@ -24,22 +24,24 @@
 
     schafferf2(x::AbstractVector) = [ x[1]^2,  (x[1]-2)^2 ]
     Random.seed!(rng, 1)
-    result = Evolutionary.optimize(schafferf2, [5.0], NSGA2(), opts)
+    result = Evolutionary.optimize(schafferf2, ()->100randn(rng,1), NSGA2(), opts)
     println("NSGA2:2RLT:SBX:PLM => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
     @test isnan(Evolutionary.minimum(result))
     mvs = vcat(Evolutionary.minimizer(result)...)
-    @test 1-sum(0 .<= mvs .<= 2)/length(mvs) ≈ 0.0 atol=0.1 # PO ∈ [0,2]
+    @test sum(0 .<= mvs .<= 2)/length(mvs) >= 0.8 # 80% in PO ∈ [0,2]
+    #println(result)
+    #println(extrema(mvs))
 
     function schafferf2!(F, x::AbstractVector) # in-place update
         F[1] = x[1]^2
         F[2] = (x[1]-2)^2
         F
     end
-    Random.seed!(rng, 2)
-    result = Evolutionary.optimize(schafferf2!, zeros(2), [5.0], NSGA2(), opts)
+    Random.seed!(rng, 42)
+    result = Evolutionary.optimize(schafferf2!, zeros(2), ()->10randn(rng,1), NSGA2(), opts)
     println("NSGA2:2RLT:SBX:PLM => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
     @test isnan(Evolutionary.minimum(result))
     mvs = vcat(Evolutionary.minimizer(result)...)
-    @test 1-sum(0 .<= mvs .<= 2)/length(mvs) ≈ 0.0 atol=0.1 # PO ∈ [0,2]
+    @test sum(0 .<= mvs .<= 2)/length(mvs) >= 0.8 # 80% in PO ∈ [0,2]
 
 end
