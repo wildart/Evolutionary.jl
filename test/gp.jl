@@ -127,12 +127,7 @@
             mindepth=1,
             maxdepth=3,
             simplify = Evolutionary.simplify!,
-            optimizer = GA(
-                selection = tournament(3),
-                mutationRate = 0.1,
-                crossoverRate = 0.9,
-                ε = 0.1
-            ),
+            selection = tournament(3),
         ),
         Evolutionary.Options(show_trace=false, rng=rng, iterations=50)
     )
