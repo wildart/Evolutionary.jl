@@ -11,19 +11,21 @@ end
 """
     EvolutionaryObjective(f, x[, F])
 
-Constructor for an objective function object around the function `f` with initial paramter `x`, and objective value `F`.
+Constructor for an objective function object around the function `f` with initial parameter `x`, and objective value `F`.
 """
-function EvolutionaryObjective(f, x::AbstractArray,
+function EvolutionaryObjective(f::TC, x::AbstractArray,
                                F::Union{Real, AbstractArray{<:Real}} = zero(f(x));
-                               eval::Symbol = :serial)
+                               eval::Symbol = :serial) where {TC}
     defval = default_values(x)
     # convert function into the in-place one
-    fn = if funargnum(f) == 2 && F isa AbstractArray
-        (Fv,xv) -> (Fv .= f(xv))
+    TF = typeof(F)
+    fn, TN = if funargnum(f) == 2 && F isa AbstractArray
+        ff = (Fv,xv) -> (Fv .= f(xv))
+        ff, typeof(ff)
     else
-        f
+        f, TC
     end
-    EvolutionaryObjective{typeof(fn),typeof(F),typeof(x),Val{eval}}(fn, F, defval, 0)
+    EvolutionaryObjective{TN,TF,typeof(x),Val{eval}}(fn, F, defval, 0)
 end
 
 """
@@ -31,9 +33,9 @@ end
 
 Constructor for an objective object for a Julia evaluatable expression.
 """
-function EvolutionaryObjective(f, x::Expr, F::TF = zero(f(x));
-                               eval::Symbol = :serial) where {TF<:Real}
-    EvolutionaryObjective{typeof(f),TF,typeof(x),Val{eval}}(f, F, :(), 0)
+function EvolutionaryObjective(f::TC, x::Expr, F::TF = zero(f(x));
+                               eval::Symbol = :serial) where {TC,TF<:Real}
+    EvolutionaryObjective{TC,TF,typeof(x),Val{eval}}(f, F, :(), 0)
 end
 
 f_calls(obj::EvolutionaryObjective) = obj.f_calls
@@ -41,7 +43,7 @@ f_calls(obj::EvolutionaryObjective) = obj.f_calls
 """
     ismultiobjective(objfun)
 
-Return `true` if the function is multiobjective objective.
+Return `true` if the function is multi-objective objective.
 """
 ismultiobjective(obj) = obj.F isa AbstractArray
 

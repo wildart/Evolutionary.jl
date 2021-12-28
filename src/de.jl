@@ -11,13 +11,13 @@ The constructor takes following keyword arguments:
 - `K`: the recombination scale factor (default: 0.5*(F+1))
 - `metrics` is a collection of convergence metrics.
 """
-@kwdef struct DE <: AbstractOptimizer
+@kwdef struct DE{T1,T2} <: AbstractOptimizer
     populationSize::Integer = 50
     F::Real = 0.9
     n::Integer = 1
     K::Real = 0.5*(F+1)
-    selection::Function = random
-    recombination::Function = BINX(0.5)
+    selection::T1 = random
+    recombination::T2 = BINX(0.5)
     metrics::ConvergenceMetrics = ConvergenceMetric[AbsDiff{Float64}(1e-10)]
 end
 population_size(method::DE) = method.populationSize

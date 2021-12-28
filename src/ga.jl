@@ -12,23 +12,22 @@ The constructor takes following keyword arguments:
 - `mutation`: [Mutation](@ref) function (default: `identity`)
 - `metrics` is a collection of convergence metrics.
 """
-mutable struct GA <: AbstractOptimizer
+struct GA{T1,T2,T3} <: AbstractOptimizer
     populationSize::Int
     crossoverRate::Float64
     mutationRate::Float64
     ɛ::Real
-    selection::Function
-    crossover::Function
-    mutation::Function
+    selection::T1
+    crossover::T2
+    mutation::T3
     metrics::ConvergenceMetrics
 
     GA(; populationSize::Int=50, crossoverRate::Float64=0.8, mutationRate::Float64=0.1,
         ɛ::Real=0, epsilon::Real=ɛ,
-        selection::Function = ((x,n)->1:n),
-        crossover::Function = identity, mutation::Function = identity,
-        metrics = ConvergenceMetric[AbsDiff{Float64}(1e-12)]
-       ) =
-        new(populationSize, crossoverRate, mutationRate, epsilon, selection, crossover, mutation, metrics)
+        selection::T1=((x,n)->1:n),
+        crossover::T2=identity, mutation::T3=identity,
+        metrics = ConvergenceMetric[AbsDiff{Float64}(1e-12)]) where {T1, T2, T3} =
+        new{T1,T2,T3}(populationSize, crossoverRate, mutationRate, epsilon, selection, crossover, mutation, metrics)
 end
 population_size(method::GA) = method.populationSize
 default_options(method::GA) = (iterations=1000,)

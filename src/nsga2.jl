@@ -11,22 +11,23 @@ The constructor takes following keyword arguments:
 - `mutation`: [Mutation](@ref) function (default: `PLM`)
 - `metrics` is a collection of convergence metrics.
 """
-mutable struct NSGA2 <: AbstractOptimizer
+struct NSGA2{T1,T2,T3} <: AbstractOptimizer
     populationSize::Int
     crossoverRate::Float64
     mutationRate::Float64
-    selection::Function
-    crossover::Function
-    mutation::Function
+    selection::T1
+    crossover::T2
+    mutation::T3
     metrics::ConvergenceMetrics
 
     NSGA2(; populationSize::Int=50, crossoverRate::Float64=0.9, mutationRate::Float64=0.1,
-        selection::Function = tournament(2, select=twowaycomp),
-        crossover::Function = SBX(),
-        mutation::Function = PLM(),
+        selection::T1 = tournament(2, select=twowaycomp),
+        crossover::T2 = SBX(),
+        mutation::T3 = PLM(),
         metrics = ConvergenceMetric[GD(), GD(true)]
-       ) =
-        new(populationSize, crossoverRate, mutationRate, selection, crossover, mutation, metrics)
+       ) where {T1,T2,T3} =
+            new{T1,T2,T3}(populationSize, crossoverRate, mutationRate, selection,
+                          crossover, mutation, metrics)
 end
 population_size(method::NSGA2) = method.populationSize
 default_options(method::NSGA2) = (iterations=1000,)

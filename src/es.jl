@@ -14,12 +14,12 @@ The constructor takes following keyword arguments:
 - `selection`: the selection strategy `:plus` or `:comma` (default: `:plus`)
 - `metrics` is a collection of convergence metrics.
 """
-struct ES <: AbstractOptimizer
+struct ES{T1,T2,T3,T4} <: AbstractOptimizer
     initStrategy::AbstractStrategy
-    recombination::Function
-    srecombination::Function
-    mutation::Function
-    smutation::Function
+    recombination::T1
+    srecombination::T2
+    mutation::T3
+    smutation::T4
     μ::Integer
     ρ::Integer
     λ::Integer
@@ -27,10 +27,10 @@ struct ES <: AbstractOptimizer
     metrics::ConvergenceMetrics
 
     ES(; initStrategy::AbstractStrategy = NoStrategy(),
-        recombination::Function = first,
-        srecombination::Function = first,
-        mutation::Function = nop,
-        smutation::Function = nop,
+        recombination::T1 = first,
+        srecombination::T2 = first,
+        mutation::T3 = nop,
+        smutation::T4 = nop,
         μ::Integer = 1,
         mu::Integer = μ,
         ρ::Integer = μ,
@@ -39,9 +39,9 @@ struct ES <: AbstractOptimizer
         lambda::Integer = λ,
         selection::Symbol = :plus,
         metrics::ConvergenceMetrics=ConvergenceMetric[AbsDiff{Float64}(1e-10)]
-       ) =
-        new(initStrategy, recombination, srecombination, mutation, smutation,
-            mu, rho, lambda, selection, metrics)
+       ) where {T1,T2,T3,T4} =
+         new{T1,T2,T3,T4}(initStrategy, recombination, srecombination, mutation,
+                          smutation, mu, rho, lambda, selection, metrics)
 end
 population_size(method::ES) = method.μ
 default_options(method::ES) = (iterations=1000,)
