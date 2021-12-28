@@ -102,7 +102,7 @@ There are following options available:
 - `time_limit::Float64`: the time limit for the optimization run in seconds. If the value set to `NaN` then the limit is not set. (*default: NaN*)
 - `callback`: the callback function that is called after each iteration of the optimization algorithm. The function accepts as parameter a trace dictionary, and **must** return a `Bool` value which if `true` terminates the optimization. (*default: nothing*)
 - `parallelization::Symbol`: allows parallelization of the population fitness evaluation if set to `:thread` using multiple threads (*default: `:serial`*)
-- `rng::AbstractRNG`: a random number generator object that is used to control generation of random data during the evolutionary optimization (*default: `Random.GLOBAL_RNG`*)
+- `rng::AbstractRNG`: a random number generator object that is used to control generation of random data during the evolutionary optimization (*default: `Random.default_rng()`*)
 """
 @kwdef struct Options{TCallback<:Union{Nothing, Function}, TRNG <: AbstractRNG}
     abstol::Float64 = Inf
@@ -115,7 +115,7 @@ There are following options available:
     callback::TCallback = nothing
     time_limit::Float64 = NaN
     parallelization::Symbol = :serial
-    rng::TRNG = Random.GLOBAL_RNG
+    rng::TRNG = Random.default_rng()
 end
 function show(io::IO, o::Options)
     for k in fieldnames(typeof(o))
