@@ -39,7 +39,7 @@ The constructor takes following keyword arguments:
 end
 function TreeGP(pop::Integer, term::Vector{Terminal}, func::Vector{Function}; kwargs...)
     terminals = Dict(t=>1 for t in term)
-    functions = Dict(f=>(f == (-) ? 2 : funargnum(f)-1) for f in func)
+    functions = Dict(f=>2 for f in func)
     TreeGP(;populationSize=pop, terminals=terminals, functions=functions, kwargs...)
 end
 
