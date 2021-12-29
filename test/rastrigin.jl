@@ -94,7 +94,7 @@
         )
         println("DE/$sn/$n/$mn(F=0.9,Cr=0.5) => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
         #println(Evolutionary.minimizer(result))
-        test_result(result, N, 0.05)
+        test_result(result, N, 0.25)
     end
 
 end
