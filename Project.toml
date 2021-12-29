@@ -1,6 +1,6 @@
 name = "Evolutionary"
 uuid = "86b6b26d-c046-49b6-aa0b-5f0f74682bd6"
-version = "0.10.1"
+version = "0.11.0"
 
 [deps]
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
@@ -17,8 +17,8 @@ UnPack = "^1.0.1"
 julia = "^1.5"
 
 [extras]
-Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 StableRNGs = "860ef19b-820b-49d6-a774-d7a799459cd3"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
 test = ["Test", "StableRNGs"]
