@@ -91,7 +91,6 @@ res = Evolutionary.optimize(x->-sum(x),
                             Evolutionary.Options(iterations=10))
 ```
 
-
 ## Obtaining results
 
 After we have our results in `res` object, we can use the API for getting optimization results. This consists of a collection of functions. They are not exported, so they have to be prefixed by `Evolutionary.`. Say we do the following optimization:

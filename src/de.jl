@@ -18,7 +18,7 @@ The constructor takes following keyword arguments:
     K::Real = 0.5*(F+1)
     selection::T1 = random
     recombination::T2 = BINX(0.5)
-    metrics::ConvergenceMetrics = ConvergenceMetric[AbsDiff{Float64}(1e-10)]
+    metrics::ConvergenceMetrics = ConvergenceMetric[AbsDiff(1e-10)]
 end
 population_size(method::DE) = method.populationSize
 default_options(method::DE) = (iterations=1000,)

@@ -39,7 +39,7 @@ struct CMAES{T} <: AbstractOptimizer
         end
         @assert length(weights) == lambda "Number of weights must be $lambda"
         if length(metrics) == 0
-            push!(metrics, AbsDiff{T}(1e-12))
+            push!(metrics, AbsDiff(T(1e-12)))
         end
         new{T}(mu, lambda, c_1, c_c, c_mu, c_sigma, sigma0, c_m, weights, metrics)
     end

@@ -15,9 +15,6 @@ Evolutionary.nondominatedsort!
 Evolutionary.dominate
 Evolutionary.dominations
 Evolutionary.crowding_distance!
-Evolutionary.gd
-Evolutionary.igd
-Evolutionary.spread
 ```
 
 ## References

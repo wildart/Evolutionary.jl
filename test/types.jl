@@ -12,7 +12,7 @@ Evolutionary.minimizer(state::TestOptimizerState) = state.individual
 
 # mock optimizer
 Base.@kwdef struct TestOptimizer <: Evolutionary.AbstractOptimizer
-    metrics::Vector{ConvergenceMetric}=ConvergenceMetric[Evolutionary.AbsDiff{Float64}(1e-10)]
+    metrics::Vector{ConvergenceMetric}=[Evolutionary.AbsDiff(1e-10)]
 end
 Evolutionary.population_size(method::TestOptimizer) = 5
 Evolutionary.default_options(method::TestOptimizer) = Dict(:iterations =>10,)

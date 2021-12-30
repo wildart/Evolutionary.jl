@@ -35,7 +35,7 @@ The constructor takes following keyword arguments:
     mutationRate::Real = 0.1
     initialization::Symbol = :grow
     simplify::Union{Nothing, Function} = nothing
-    metrics::ConvergenceMetrics = ConvergenceMetric[AbsDiff{Float64}(1e-5)]
+    metrics::ConvergenceMetrics = ConvergenceMetric[AbsDiff(1e-5)]
 end
 function TreeGP(pop::Integer, term::Vector{Terminal}, func::Vector{Function}; kwargs...)
     terminals = Dict(t=>1 for t in term)

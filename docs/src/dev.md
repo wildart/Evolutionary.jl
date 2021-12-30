@@ -100,7 +100,29 @@ function value!(obj::EvolutionaryObjective{TC,TF,TX,Val{:serial}}, fitness, popu
 end
 ```
 
-The first symbolic value type parameter, `:serial`, corresponds to the default value of the `parallelization` of the [`Options`](@ref) object.
-Any additional overrides with different value type parameters will be triggered by specifying
-a corresponded value type symbol in the `Options.parallelization` field.
+The first symbolic value type parameter, `:serial`, corresponds to the default value
+of the `parallelization` of the [`Options`](@ref) object.
+Any additional overrides with different value type parameters will be triggered
+by specifying a corresponded value type symbol in the `Options.parallelization` field.
 A multi-threaded override of the above evaluation is provided.
+
+## Convergence Metrics
+
+In order to add a new convergence metric, create a new type derived from `ConvergenceMetric` abstract type.
+In addition, every convergence metric class should implement following interface:
+
+```@docs
+Evolutionary.ConvergenceMetric
+Evolutionary.description
+Evolutionary.converged
+Evolutionary.assess!
+Evolutionary.diff
+Evolutionary.tolerance
+```
+
+**Note:** If the class contains the field `Δ`, which holds the current difference
+between last consecutive convergence function evaluations, then the provided
+`Evolutinary.diff` function will work correctly.
+Similarly, if the class has the field `tol`, which holds a tolerance value,
+the `Evolutionary.tolerance` method will work correctly.
+

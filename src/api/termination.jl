@@ -14,15 +14,23 @@ relchange(curr::T, prev) where {T<:AbstractArray} = maxdiff(curr, prev)/maximum(
 # Single value
 
 """
-Estimate absolute difference convergence.
+Absolute difference convergence for single objective optimization.
+
+This convergence metric allows to estimate an absolute difference between consecutive
+states of the optimization algorithm, and triggers convergence when,
+
+- `|f(x) - f(x')| < ε`
+
+where `ε` is a tolerance value, `x` and `x'` are previous and current minimizers
+found by the optimization algorithm.
 """
 mutable struct AbsDiff{T} <: ConvergenceMetric
-    tol::Float64
+    tol::T
     Δ::Float64
     value::T
 end
-AbsDiff{T}(tol::Float64) where {T} = AbsDiff(tol, Inf, zero(T))
-AbsDiff() = AbsDiff{Float64}(1e-12)
+AbsDiff(tol::T) where {T<:AbstractFloat} = AbsDiff(tol, Inf, zero(T))
+AbsDiff() = AbsDiff(1e-12)
 description(m::AbsDiff) = "|f(x) - f(x')|"
 function assess!(m::AbsDiff, state::AbstractOptimizerState)
     val = value(state)
@@ -32,15 +40,23 @@ function assess!(m::AbsDiff, state::AbstractOptimizerState)
 end
 
 """
-Estimate relative difference convergence.
+Relative difference convergence metric for single objective optimization.
+
+This convergence metric allows to estimate a relative difference between consecutive
+states of the optimization algorithm, and triggers convergence when,
+
+- `|f(x) - f(x')|/|f(x')| < ε`
+
+where `ε` is a tolerance value, `x` and `x'` are previous and current minimizers
+found by the optimization algorithm.
 """
 mutable struct RelDiff{T} <: ConvergenceMetric
-    tol::Float64
+    tol::T
     Δ::Float64
     value::T
 end
-RelDiff{T}(tol::Float64) where {T} = RelDiff(tol, Inf, zero(T))
-RelDiff() = RelDiff{Float64}(1e-12)
+RelDiff(tol::T) where {T<:AbstractFloat} = RelDiff(tol, Inf, zero(T))
+RelDiff() = RelDiff(1e-12)
 description(m::RelDiff) = "|f(x) - f(x')|/|f(x')|"
 function assess!(m::RelDiff, state::AbstractOptimizerState)
     val = value(state)
@@ -78,14 +94,32 @@ Parameters are column-major matrices.
 """
 igd(S,R) = gd(R,S)
 
+
+"""
+(Inverse) generational distance convergence metric for multi-objective optimization.
+
+This convergence metric allows to estimate a (inverse) generational distance between
+consecutive states of the multi-objective optimization algorithm, and triggers convergence when,
+
+- ``GD(S,R) = \\frac{1}{|S|}\\left(\\sum_{s \\in S} \\min_{r \\in R}||f(s) - f(r)||^2\\right)^{1/2} < \\varepsilon``
+
+where `ε` is a tolerance value, `S` and `R` are discrete Pareto front approximations
+for previous and current state of the optimization algorithm.
+
+The inverse generational distance calculated as `IGD(S,R) = GR(R,S)`.
+To use, `IGD` metric pass `true` value to the metric constructor argument, e.g.
+
+- `GD()` create a generational distance metric
+- `GD(true)` create an inverse generational metric
+"""
 mutable struct GD{T} <: ConvergenceMetric
-    tol::Float64
+    tol::T
     Δ::Float64
     value::Matrix{T}
     inverted::Bool
 end
-GD{T}(tol::Float64, inv=false) where {T} = GD(tol, Inf, zeros(T,0,0), inv)
-GD(inv=false) = GD{Float64}(1e-5, inv)
+GD(tol::T, inv=false) where {T<:AbstractFloat} = GD(tol, Inf, zeros(T,0,0), inv)
+GD(inv=false) = GD(1e-5, inv)
 function description(m::GD)
     prefix = m.inverted ? "I" : "" 
     "|$(prefix)GD(P) - $(prefix)GD(P')|"

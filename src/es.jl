@@ -38,7 +38,7 @@ struct ES{T1,T2,T3,T4} <: AbstractOptimizer
         λ::Integer = 1,
         lambda::Integer = λ,
         selection::Symbol = :plus,
-        metrics::ConvergenceMetrics=ConvergenceMetric[AbsDiff{Float64}(1e-10)]
+        metrics::ConvergenceMetrics=ConvergenceMetric[AbsDiff(1e-10)]
        ) where {T1,T2,T3,T4} =
          new{T1,T2,T3,T4}(initStrategy, recombination, srecombination, mutation,
                           smutation, mu, rho, lambda, selection, metrics)

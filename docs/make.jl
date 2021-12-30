@@ -9,6 +9,7 @@ makedocs(
         "Home" => "index.md",
         "Tutorial" => "tutorial.md",
         "Constraints" => "constraints.md",
+        "COnvergence" => "convergence.md",
         "Algorithms" => [
             "Genetic Algorithm" => "ga.md",
             "Differential Evolution" => "de.md",

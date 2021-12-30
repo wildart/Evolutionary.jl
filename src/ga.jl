@@ -26,7 +26,7 @@ struct GA{T1,T2,T3} <: AbstractOptimizer
         ɛ::Real=0, epsilon::Real=ɛ,
         selection::T1=((x,n)->1:n),
         crossover::T2=identity, mutation::T3=identity,
-        metrics = ConvergenceMetric[AbsDiff{Float64}(1e-12)]) where {T1, T2, T3} =
+        metrics = ConvergenceMetric[AbsDiff(1e-12)]) where {T1, T2, T3} =
         new{T1,T2,T3}(populationSize, crossoverRate, mutationRate, epsilon, selection, crossover, mutation, metrics)
 end
 population_size(method::GA) = method.populationSize

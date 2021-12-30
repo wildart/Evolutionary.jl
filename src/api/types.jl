@@ -92,8 +92,8 @@ const ConvergenceMetrics = Vector{ConvergenceMetric}
 # Options
 """
 There are following options available:
-- `abstol::Float64`: the absolute tolerance used in the convergence test (*deprecated, use `termination` parameter*)
-- `reltol::Float64`: the relative tolerance used in the convergence test (*deprecated, use `termination` parameter*)
+- `abstol::Float64`: the absolute tolerance used in the convergence test (*deprecated, use `metrics` parameter of a particular optimization algorithm*)
+- `reltol::Float64`: the relative tolerance used in the convergence test (*deprecated, use `metrics` parameter of a particular optimization algorithm*)
 - `successive_f_tol::Integer`: the additional number of the iterations of the optimization algorithm after the convergence test is satisfied (*default: 10*)
 - `iterations::Integer`: the total number of the iterations of the optimization algorithm (*default: 1000*)
 - `show_trace::Bool`: enable the trace information display during the optimization (*default: false*).
