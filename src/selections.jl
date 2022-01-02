@@ -211,7 +211,7 @@ pselection(prob, N::Int) = pselection(Random.GLOBAL_RNG, prob, N)
 function randexcl(rng::AbstractRNG, itr, exclude, dims::Int)
     idxs = Int[]
     while length(idxs) < dims
-        j = rand(itr)
+        j = rand(rng, itr)
         (j ∈ exclude || j ∈ idxs) && continue
         push!(idxs, j)
     end
