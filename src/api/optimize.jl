@@ -77,6 +77,23 @@ function optimize(objfun::D, constraints::C, method::M, population::AbstractArra
     converged, counter_tol = false, 0 # tolerance convergence
     is_moo = ismultiobjective(objfun)
 
+    # initialize convergence metrics
+    # use abstol as a tolerance value for metrics
+    if !isinf(options.abstol)
+        for m in method.metrics
+            m.tol = options.abstol
+        end
+    end
+    # if reltol is set, try to add RelDiff metric
+    if !(isinf(options.reltol) || is_moo)
+        idx = findfirst(m->isa(m, RelDiff), method.metrics)
+        if idx === nothing
+            push!(method.metrics, RelDiff(options.reltol))
+        else
+            method.metrics[idx].tol = options.reltol
+        end
+    end
+
     options.show_trace && print_header(method)
     trace!(tr, iteration, objfun, state, population, method, options, time()-t0)
 

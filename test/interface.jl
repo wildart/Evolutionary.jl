@@ -182,5 +182,18 @@
     @test Evolutionary.iterations(res) == 7
     @test !Evolutionary.converged(res)
     @test length(Evolutionary.trace(res)) > 1
+    @test length(res.metrics) == 1
+    @test res.metrics[1].tol == 1e-10
+
+    o = Evolutionary.Options(abstol=1e-3)
+    res =  Evolutionary.optimize(sum, (()->BitVector(rand(Bool,dimension))), mthd, o)
+    @test length(res.metrics) == 1
+    @test res.metrics[1].tol == 1e-3
+
+    o = Evolutionary.Options(abstol=1e-3, reltol=1e-4)
+    res =  Evolutionary.optimize(sum, (()->BitVector(rand(Bool,dimension))), mthd, o)
+    @test length(res.metrics) == 2
+    @test res.metrics[1].tol == 1e-3
+    @test res.metrics[2].tol == 1e-4
 
 end
