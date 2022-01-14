@@ -50,11 +50,11 @@ end
 # ==================
 
 """
-    identity(v1, v2)
+    genop(v1, v2)
 
-Returns the same parameter individuals `v1` and `v2` as an offspring pair.
+Returns the same parameter individuals `v1` and `v2` as an offspring pair (GENetic No OPeration).
 """
-identity(v1::T, v2::T; kwargs...) where {T <: AbstractVector} = (v1,v2)
+genop(v1::T, v2::T; kwargs...) where {T <: AbstractVector} = (v1,v2)
 
 # Binary crossovers
 # -----------------

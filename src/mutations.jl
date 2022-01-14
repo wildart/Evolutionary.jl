@@ -7,7 +7,7 @@
 """
     nop(s::AbstractStrategy)
 
-This is a dummy mutation operator that does not change recombinant.
+This is a dummy mutation operator that does not change the strategy.
 """
 nop(recombinant::AbstractVector, s::AbstractStrategy; kwargs...) = recombinant
 
@@ -105,6 +105,13 @@ end
 
 # Binary mutations
 # ---------------------
+
+"""
+    genop(recombinant)
+
+This is a dummy mutation operator that does not change the `recombinant`.
+"""
+genop(recombinant; kwargs...) = recombinant
 
 """
     flip(recombinant)

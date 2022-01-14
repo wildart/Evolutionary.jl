@@ -7,9 +7,9 @@ The constructor takes following keyword arguments:
 - `crossoverRate`: The fraction of the population at the next generation, not including elite children, that is created by the crossover function.
 - `mutationRate`: Probability of chromosome to be mutated
 - `ɛ`/`epsilon`: Positive integer specifies how many individuals in the current generation are guaranteed to survive to the next generation. Floating number specifies fraction of population.
-- `selection`: [Selection](@ref) function
-- `crossover`: [Crossover](@ref) function (default: `identity`)
-- `mutation`: [Mutation](@ref) function (default: `identity`)
+- `selection`: [Selection](@ref) function (default: [`tournament`](@ref))
+- `crossover`: [Crossover](@ref) function (default: [`genop`](@ref))
+- `mutation`: [Mutation](@ref) function (default: [`genop`](@ref))
 - `metrics` is a collection of convergence metrics.
 """
 struct GA{T1,T2,T3} <: AbstractOptimizer
@@ -24,8 +24,9 @@ struct GA{T1,T2,T3} <: AbstractOptimizer
 
     GA(; populationSize::Int=50, crossoverRate::Float64=0.8, mutationRate::Float64=0.1,
         ɛ::Real=0, epsilon::Real=ɛ,
-        selection::T1=((x,n)->1:n),
-        crossover::T2=identity, mutation::T3=identity,
+        selection::T1=tournament(2),
+        crossover::T2=genop,
+        mutation::T3=genop,
         metrics = ConvergenceMetric[AbsDiff(1e-12)]) where {T1, T2, T3} =
         new{T1,T2,T3}(populationSize, crossoverRate, mutationRate, epsilon, selection, crossover, mutation, metrics)
 end
