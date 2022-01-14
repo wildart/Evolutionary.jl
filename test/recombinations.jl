@@ -17,7 +17,6 @@
 
     @testset "GA" begin
 
-        @test identity(pop[1], pop[2]) == (pop[1], pop[2])
         Random.seed!(rng, 4)
         @test SPX([0:4;], [5:9;], rng=rng) == ([0, 1, 7, 8, 9], [5, 6, 2, 3, 4])
         Random.seed!(rng, 1)

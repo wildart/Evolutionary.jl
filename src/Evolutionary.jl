@@ -6,7 +6,7 @@ module Evolutionary
     using NLSolversBase: NLSolversBase, AbstractObjective, ConstraintBounds,
                          AbstractConstraints, nconstraints_x, nconstraints
     import NLSolversBase: f_calls, value, value!, value!!
-    import Base: show, copy, minimum, summary, identity, getproperty, rand, getindex, length, copyto!, setindex!, replace
+    import Base: show, copy, minimum, summary, getproperty, rand, getindex, length, copyto!, setindex!, replace
 
     export AbstractStrategy, strategy, mutationwrapper,
            IsotropicStrategy, AnisotropicStrategy, NoStrategy,
