@@ -14,6 +14,7 @@ See [Strategies](@ref) section for detailed description of ES strategies.
 List of ES mutation operations:
 
 ```@docs
+Evolutionary.nop(::AbstractVector, ::AbstractStrategy)
 gaussian(::AbstractVector, ::IsotropicStrategy)
 gaussian(::AbstractVector, ::AnisotropicStrategy)
 cauchy(::AbstractVector, ::IsotropicStrategy)

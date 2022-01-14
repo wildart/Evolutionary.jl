@@ -110,7 +110,7 @@ con = WorstFitnessConstraints(lx, ux, lc, uc, c)
 results = Evolutionary.optimize(f, con, x0, ga)
 ```
 
-## Auxiliary Functions
+## [Auxiliary Functions](@id cons_aux_funcs)
 
 ```@docs
 value(c::Evolutionary.AbstractConstraints, x)

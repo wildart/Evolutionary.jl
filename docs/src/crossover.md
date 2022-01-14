@@ -40,7 +40,7 @@ BSX
 ### Real-valued Crossovers
 
 ```@docs
-identity
+Evolutionary.genop(::T,::T) where {T<:AbstractVector}
 DC
 AX
 WAX

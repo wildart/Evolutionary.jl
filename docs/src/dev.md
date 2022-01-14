@@ -53,13 +53,10 @@ initial_population
 ### Constraints
 
 All constraints derived from the `AbstractConstraints` abstract type.
-Usually the derived type wraps a `ConstraintBounds` object, so the
-
-Following methods can be overridden for the derived types:
-
-```@docs
-value(::AbstractConstraints, x)
-```
+For the derived type, the [`constraints interface functions`](@ref cons_aux_funcs)
+have to be implemented.
+If the derived type wraps a `ConstraintBounds` object, the [`bounds`](@ref) method
+should be implemented.
 
 Following auxiliary functions are available for every derived type of `AbstractConstraints`.
 

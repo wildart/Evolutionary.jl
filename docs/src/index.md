@@ -17,5 +17,5 @@ using Evolutionary
 result = Evolutionary.optimize(
       x -> sum(x.^2), ones(3),
       GA(populationSize = 100, selection = susinv,
-         crossover = discrete, mutation = domainrange(ones(3))))
+         crossover = DC, mutation = PLM()))
 ```

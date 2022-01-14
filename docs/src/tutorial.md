@@ -87,7 +87,8 @@ We currently recommend the statically dispatched interface by using the `Evoluti
 ```julia
 res = Evolutionary.optimize(x->-sum(x),
                             BitVector(zeros(30)),
-                            GA(selection=uniformranking(5),mutation=flip,crossover=singlepoint),
+                            GA(selection=uniformranking(5),
+                            mutation=flip, crossover=SPX),
                             Evolutionary.Options(iterations=10))
 ```
 
