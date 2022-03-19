@@ -23,22 +23,23 @@
     @test popexp[1] == :(x + 1)
 
     # recursive helper functions
+    h = 4
     gtr = TreeGP(pop, terms, funcs, maxdepth=2, initialization=:grow)
-    Random.seed!(rng, 1)
-    tmp = rand(rng, gtr, 3)
-    Random.seed!(rng, 1)
-    gt = rand(rng, gtr, 3)
+    Random.seed!(rng, 8237463746)
+    tmp = rand(rng, gtr, h)
+    Random.seed!(rng, 8237463746)
+    gt = rand(rng, gtr, h)
     @test tmp == gt
-    @test Evolutionary.nodes(gt) < 15
-    @test Evolutionary.height(gt) <= 3
-    @test length(gt) < 15
-    ft = rand(rng, TreeGP(pop, terms, funcs, maxdepth=2, initialization=:full), 3)
-    @test Evolutionary.nodes(ft) == 15
-    @test Evolutionary.height(ft) == 3
-    @test length(ft) == 15
-    @test Evolutionary.depth(ft, :x) == 3
+    @test Evolutionary.nodes(gt) < 2^(h+1)-1
+    @test Evolutionary.height(gt) <= h
+    @test length(gt) < 2^(h+1)-1
+    ft = rand(rng, TreeGP(pop, terms, funcs, maxdepth=2, initialization=:full), h)
+    @test Evolutionary.nodes(ft) == 2^(h+1)-1
+    @test Evolutionary.height(ft) == h
+    @test length(ft) == 2^(h+1)-1
+    @test Evolutionary.depth(ft, :x) == 4
     ft[3] = :z
-    @test Evolutionary.depth(ft, :z) == 3
+    @test Evolutionary.depth(ft, :z) == 4
     @test Evolutionary.depth(ft, ft) == 0
     @test Evolutionary.depth(ft, ft[3]) > 0
     @test Evolutionary.depth(ft, :w) == -1
@@ -116,14 +117,13 @@
     ys = fitfun.(rg)
     function fitobj(expr)
         ex = Evolutionary.Expression(expr)
-        #ex = Evolutionary.Expression(expr, Dict(:x=>1))
         yy = ex.(rg)
         sum(v->isnan(v) ? 1.0 : v, abs2.(ys .- yy) )/length(rg)
     end
 
     Random.seed!(rng, 42)
     res = Evolutionary.optimize(fitobj,
-        TreeGP(25, Terminal[:x, randn], Function[+,-,*,Evolutionary.aq],
+        TreeGP(50, Terminal[:x, randn], Function[+,-,*,Evolutionary.aq],
             mindepth=1,
             maxdepth=3,
             simplify = Evolutionary.simplify!,
@@ -131,7 +131,7 @@
         ),
         Evolutionary.Options(show_trace=false, rng=rng, iterations=50)
     )
-    @test minimum(res) < 1.1
+    @test minimum(res) < 1.5
 
 end
 

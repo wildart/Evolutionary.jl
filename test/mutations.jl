@@ -90,13 +90,13 @@
         end
 
         # subtree mutation does not produce offspring expression longer then the parent
-        mut = subtree(tr; growth=0.5)
+        mut = subtree(tr; growth=0.3)
         Random.seed!(rng, 2)
         off = [mut(copy(ex), rng=rng) for i in 1:10]
         @testset "Offspring Height (Growth)" for i in 1:5
             map(o->mut(o,rng=rng), off) # mutate offspring
             h = map(Evolutionary.height, off)
-            @test all(h .<= 3+i)
+            @test all(h .<= 3i)
         end
 
         # hoist
