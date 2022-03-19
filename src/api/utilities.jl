@@ -97,7 +97,7 @@ end
 Initialize a random population within the individual `bounds`.
 """
 function initial_population(method::M, bounds::ConstraintBounds;
-                            rng::AbstractRNG=Random.GLOBAL_RNG
+                            rng::AbstractRNG=default_rng()
                            ) where {M<:AbstractOptimizer}
     n = population_size(method)
     cn = nconstraints_x(bounds)

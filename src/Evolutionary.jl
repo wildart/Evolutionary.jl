@@ -1,12 +1,14 @@
 module Evolutionary
-    using Random, LinearAlgebra, Statistics
+    using LinearAlgebra, Statistics
     using Base: @kwdef
     using UnPack: @unpack
     using StackViews
+    using Random: AbstractRNG, default_rng, randperm, shuffle, randn!
     using NLSolversBase: NLSolversBase, AbstractObjective, ConstraintBounds,
                          AbstractConstraints, nconstraints_x, nconstraints
     import NLSolversBase: f_calls, value, value!, value!!
-    import Base: show, copy, minimum, summary, getproperty, rand, getindex, length, copyto!, setindex!, replace
+    import Base: show, copy, minimum, summary, getproperty, rand, getindex, length,
+                 copyto!, setindex!, replace
 
     export AbstractStrategy, strategy, mutationwrapper,
            IsotropicStrategy, AnisotropicStrategy, NoStrategy,

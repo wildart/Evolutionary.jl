@@ -19,7 +19,7 @@ end
 
 Returns an *one* offspring individual of a multi-parent recombination by random copying from `population`.
 """
-function marriage(population::Vector{T}; rng::AbstractRNG=Random.default_rng()) where {T <: AbstractVector}
+function marriage(population::Vector{T}; rng::AbstractRNG=default_rng()) where {T <: AbstractVector}
     s = length(population)
     l = length(first(population))
     obj = zeros(eltype(T), l)
@@ -64,7 +64,7 @@ genop(v1::T, v2::T; kwargs...) where {T <: AbstractVector} = (v1,v2)
 
 Single point crossover between `v1` and `v2` individuals.
 """
-function SPX(v1::T, v2::T; rng::AbstractRNG=Random.default_rng()) where {T <: AbstractVector}
+function SPX(v1::T, v2::T; rng::AbstractRNG=default_rng()) where {T <: AbstractVector}
     l = length(v1)
     c1 = copy(v1)
     c2 = copy(v2)
@@ -80,7 +80,7 @@ end
 
 Two point crossover between `v1` and `v2` individuals.
 """
-function TPX(v1::T, v2::T; rng::AbstractRNG=Random.default_rng()) where {T <: AbstractVector}
+function TPX(v1::T, v2::T; rng::AbstractRNG=default_rng()) where {T <: AbstractVector}
     l = length(v1)
     c1 = copy(v1)
     c2 = copy(v2)
@@ -97,7 +97,7 @@ end
 
 Shuffle crossover between the parents `v1` and `v2` that performs recombination similar to [`SPX`](@ref) preliminary shuffling these parents.
 """
-function SHFX(v1::T, v2::T; rng::AbstractRNG=Random.default_rng()) where {T <: AbstractVector}
+function SHFX(v1::T, v2::T; rng::AbstractRNG=default_rng()) where {T <: AbstractVector}
     l = length(v1)
     # shuffle and perform 1-point XO
     prm = randperm(rng, l)
@@ -116,7 +116,7 @@ end
 
 Uniform crossover between `v1` and `v2` individuals.
 """
-function UX(v1::T, v2::T; rng::AbstractRNG=Random.default_rng()) where {T <: AbstractVector}
+function UX(v1::T, v2::T; rng::AbstractRNG=default_rng()) where {T <: AbstractVector}
     l = length(v1)
     c1 = copy(v1)
     c2 = copy(v2)
@@ -137,7 +137,7 @@ Returns a uniform (binomial) crossover function, see [Recombination Interface](@
 The crossover probability value must be in unit interval, ``Cr \\in [0,1]``.
 """
 function BINX(Cr::Real = 0.5)
-    function binxvr(v1::T, v2::T; rng::AbstractRNG=Random.default_rng()) where {T <: AbstractVector}
+    function binxvr(v1::T, v2::T; rng::AbstractRNG=default_rng()) where {T <: AbstractVector}
         l = length(v1)
         c1 = copy(v1)
         c2 = copy(v2)
@@ -160,7 +160,7 @@ Returns an exponential crossover function, see [Recombination Interface](@ref), 
 The crossover probability value must be in unit interval, ``Cr \\in [0,1]``.
 """
 function EXPX(Cr::Real = 0.5)
-    function expxvr(v1::T, v2::T; rng::AbstractRNG=Random.default_rng()) where {T <: AbstractVector}
+    function expxvr(v1::T, v2::T; rng::AbstractRNG=default_rng()) where {T <: AbstractVector}
         l = length(v1)
         c1 = copy(v1)
         c2 = copy(v2)
@@ -188,7 +188,7 @@ items of the two parents, and then creating each offspring by sampling without
 replacement at most `k` elements from the pool of items.
 """
 function BSX(k::Int)
-    function BSX(v1::T, v2::T; rng::AbstractRNG=Random.default_rng()) where {T <: AbstractVector{Bool}}
+    function BSX(v1::T, v2::T; rng::AbstractRNG=default_rng()) where {T <: AbstractVector{Bool}}
         l = length(v1) # get number of available elements
         pooled = findall(v1 .| v2) # pool parents selections
         K = min(k,length(pooled)) # cannot sample more than the items in pool
@@ -210,7 +210,7 @@ end
 
 Returns a randomly assembled offspring and its inverse from the elements of parents `v1` and `v2`.
 """
-function DC(v1::T, v2::T; rng::AbstractRNG=Random.default_rng()) where {T <: AbstractVector}
+function DC(v1::T, v2::T; rng::AbstractRNG=default_rng()) where {T <: AbstractVector}
     l = length(v1)
     c1 = similar(v1)
     c2 = similar(v2)
@@ -228,7 +228,7 @@ end
 Returns a weighted average recombination operation, see [Recombination Interface](@ref), which generate an offspring as weighted average of the parents `v1` and `v2` with the weights `w`.
 """
 function WAX(w::Vector{<:Real})
-    function wavexvr(v1::T, v2::T; rng::AbstractRNG=Random.default_rng()) where {T <: AbstractVector}
+    function wavexvr(v1::T, v2::T; rng::AbstractRNG=default_rng()) where {T <: AbstractVector}
         c1 = (v1+v2)./w
         return c1, copy(c1)
     end
@@ -240,7 +240,7 @@ end
 
 Average crossover generates an offspring by taking average of the parents `v1` and `v2`. 
 """
-function AX(v1::T, v2::T; rng::AbstractRNG=Random.default_rng()) where {T <: AbstractVector}
+function AX(v1::T, v2::T; rng::AbstractRNG=default_rng()) where {T <: AbstractVector}
     c1 = (v1+v2)./2
     return c1, copy(c1)
 end
@@ -253,11 +253,11 @@ Returns an extended intermediate recombination operation, see [Recombination Int
 - ``u_i = x_i + \\alpha_i (y_i - x_i)``
 - ``v_i = y_i + \\alpha_i (x_i - y_i)``
 
-where ``\\alpha_i`` is chosen uniform randomly in the interval ``[-d;d+1]``.
+where ``\\alpha_i`` is chosen uniform y in the interval ``[-d;d+1]``.
 
 """
 function IC(d::Real = 0.0)
-    function intermxvr(v1::T, v2::T; rng::AbstractRNG=Random.default_rng()) where {T <: AbstractVector}
+    function intermxvr(v1::T, v2::T; rng::AbstractRNG=default_rng()) where {T <: AbstractVector}
         l = length(v1)
         α = (1.0+2d) * rand(rng, l) .- d
         c1 = v2 .+ α .* (v1 - v2)
@@ -280,7 +280,7 @@ where ``\\alpha`` is chosen uniform randomly in the interval ``[-d;d+1]``.
 
 """
 function LC(d::Real = 0.0)
-    function linexvr(v1::T, v2::T; rng::AbstractRNG=Random.default_rng()) where {T <: AbstractVector}
+    function linexvr(v1::T, v2::T; rng::AbstractRNG=default_rng()) where {T <: AbstractVector}
         α1, α2 = (1.0+2d) * rand(rng, 2) .- d
         c1 = v2 .+ α2 * (v1 - v2)
         c2 = v1 .+ α1 * (v2 - v1)
@@ -299,7 +299,7 @@ Heuristic crossover (HX) recombination operation[^3] generates offspring `u` and
 
 where ``r`` is chosen uniform randomly in the interval ``[0;1)``.
 """
-function HX(v1::T, v2::T; rng::AbstractRNG=Random.default_rng()) where {T <: AbstractVector}
+function HX(v1::T, v2::T; rng::AbstractRNG=default_rng()) where {T <: AbstractVector}
     c1 = v1 .+ rand(rng)*(v1 .- v2)
     c2 = v2 .+ rand(rng)*(v2 .- v1)
     return c1, c2
@@ -311,7 +311,7 @@ end
 Returns a Laplace crossover (LX) recombination operation[^4], see [Recombination Interface](@ref).
 """
 function LX(μ::Real = 0.0, b::Real = 0.2) # location μ, scale b > 0
-    function lxxvr(v1::T, v2::T; rng::AbstractRNG=Random.default_rng()) where {T <: AbstractVector}
+    function lxxvr(v1::T, v2::T; rng::AbstractRNG=default_rng()) where {T <: AbstractVector}
         u = rand(rng)
         β = u > 0.5 ? μ + b * log(u) : μ - b * log(u)
         S = β * abs.(v1 - v2)
@@ -328,7 +328,7 @@ end
 Returns a mixed integer Laplace crossover (MI-LX) recombination operation[^5], see [Recombination Interface](@ref).
 """
 function MILX(μ::Real = 0.0, b_real::Real = 0.15, b_int::Real = 0.35) # location μ, scale b > 0
-    function milxxvr(v1::T, v2::T; rng::AbstractRNG=Random.default_rng()) where {T <: AbstractVector}
+    function milxxvr(v1::T, v2::T; rng::AbstractRNG=default_rng()) where {T <: AbstractVector}
         @assert all([typeof(a) == typeof(b) for (a, b) in zip(v1, v2)]) "Types of variables in vectors do not match"
         l = length(v1)
         U, R = rand(rng, l), rand(rng, l)
@@ -349,7 +349,7 @@ Returns a Simulated Binary Crossover (SBX) recombination operation, see [Recombi
 with the mutation probability `pm` of the recombinant component, and is the crossover distribution index `η`[^6].
 """
 function SBX(pm::Real = 0.5, η::Integer = 2)
-    function sbxv(v1::T, v2::T; rng::AbstractRNG=Random.default_rng()) where {T <: AbstractVector}
+    function sbxv(v1::T, v2::T; rng::AbstractRNG=default_rng()) where {T <: AbstractVector}
         n = length(v1)
         u = rand(rng, n)
         mask = u .<= 0.5
@@ -381,7 +381,7 @@ Partially mapped crossover which maps ordering and values information from
 the parents `v1` and `v2` to  the offspring. A portion of one parent is mapped onto
 a portion of the other parent string and the remaining information is exchanged.
 """
-function PMX(v1::T, v2::T; rng::AbstractRNG=Random.default_rng()) where {T <: AbstractVector}
+function PMX(v1::T, v2::T; rng::AbstractRNG=default_rng()) where {T <: AbstractVector}
     s = length(v1)
     from, to = rand(rng, 1:s, 2)
     from, to = from > to ? (to, from)  : (from, to)
@@ -428,7 +428,7 @@ end
 Order crossover constructs an offspring by choosing a substring of one parent
 and preserving the relative order of the elements of the other parent.
 """
-function OX1(v1::T, v2::T; rng::AbstractRNG=Random.default_rng()) where {T <: AbstractVector}
+function OX1(v1::T, v2::T; rng::AbstractRNG=default_rng()) where {T <: AbstractVector}
     s = length(v1)
     from, to = rand(rng, 1:s, 2)
     from, to = from > to ? (to, from)  : (from, to)
@@ -503,7 +503,7 @@ Order-based crossover selects at random several positions in the parent `v1`, an
 the order of the elements in the selected positions of the parent `v1` is imposed on
 the parent `v2`.
 """
-function OX2(v1::T, v2::T; rng::AbstractRNG=Random.default_rng()) where {T <: AbstractVector}
+function OX2(v1::T, v2::T; rng::AbstractRNG=default_rng()) where {T <: AbstractVector}
     s = length(v1)
     c1 = copy(v1)
     c2 = copy(v2)
@@ -539,7 +539,7 @@ It selects a random set of positions in the parents `v1` and `v2`, then imposes
 the position of the selected elements of one parent on the corresponding elements
 of the other parent.
 """
-function POS(v1::T, v2::T; rng::AbstractRNG=Random.default_rng()) where {T <: AbstractVector}
+function POS(v1::T, v2::T; rng::AbstractRNG=default_rng()) where {T <: AbstractVector}
     s = length(v1)
     c1 = zero(v1)
     c2 = zero(v2)
@@ -572,7 +572,7 @@ Subset crossover operator creates new offspring by pooling the unique indices of
 the two parent vectors `v1` and `v2`, and then sampling a set of unique indices
 from this pool, uniformly at random.
 """
-function SSX(v1::T, v2::T; rng::AbstractRNG=Random.default_rng()) where {T <: AbstractVector}
+function SSX(v1::T, v2::T; rng::AbstractRNG=default_rng()) where {T <: AbstractVector}
     l = length(v1)
     pool = unique([v1;v2])
     p = length(pool)
@@ -594,7 +594,7 @@ end
 
 Perform an arbitrary subtree swap between the expressions `t1` and `t2`.
 """
-function crosstree(t1::Expr, t2::Expr; rng::AbstractRNG=Random.default_rng())
+function crosstree(t1::Expr, t2::Expr; rng::AbstractRNG=default_rng())
     tt1, tt2 = copy(t1), copy(t2)
     i, j = rand(rng, 1:nodes(t1)-1), rand(rng, 1:nodes(t2)-1)
     ex1 = tt1[i]

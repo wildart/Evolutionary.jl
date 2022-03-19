@@ -69,7 +69,7 @@ function randterm(rng::AbstractRNG, t::TreeGP)
         dim == 1 ? rand(rng) : rand(rng, dim)
     end
 end
-randterm(t::TreeGP) = randterm(Random.default_rng(), t)
+randterm(t::TreeGP) = randterm(default_rng(), t)
 
 """
     rand(t::TreeGP, maxdepth=2; mindepth=maxdepth-1)::Expr
@@ -97,7 +97,7 @@ function rand(rng::AbstractRNG, t::TreeGP, maxdepth::Int=2; mindepth::Int=maxdep
     end
 end
 rand(t::TreeGP, maxdepth::Int=2; kwargs...) =
-    rand(Random.default_rng(), t, maxdepth; kwargs...)
+    rand(default_rng(), t, maxdepth; kwargs...)
 
 """
     initial_population(m::TreeGP, expr::{Expr,Nothing}=nothing)
@@ -105,7 +105,7 @@ rand(t::TreeGP, maxdepth::Int=2; kwargs...) =
 Initialize a random population of expressions derived from `expr`.
 """
 function initial_population(m::TreeGP, expr::Union{Expr,Nothing}=nothing;
-                            rng::AbstractRNG=Random.default_rng())
+                            rng::AbstractRNG=default_rng())
     n = population_size(m)
     if isnothing(expr)
         return [ rand(rng, m, m.maxdepth, mindepth=m.mindepth) for i in 1:n ]

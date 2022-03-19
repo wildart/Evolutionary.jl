@@ -115,7 +115,7 @@ There are following options available:
     callback::TCallback = nothing
     time_limit::Float64 = NaN
     parallelization::Symbol = :serial
-    rng::TRNG = Random.default_rng()
+    rng::TRNG = default_rng()
 end
 function show(io::IO, o::Options)
     for k in fieldnames(typeof(o))

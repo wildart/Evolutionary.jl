@@ -20,7 +20,7 @@ Performs Gaussian isotropic mutation of the recombinant `x` given the strategy `
 
 """
 function gaussian(recombinant::AbstractVector, s::IsotropicStrategy;
-                  rng::AbstractRNG=Random.default_rng())
+                  rng::AbstractRNG=default_rng())
     vals = randn(rng, length(recombinant)) * s.σ
     recombinant += vals
     return recombinant
@@ -35,7 +35,7 @@ Performs Gaussian anisotropic mutation of the recombinant `x` given the strategy
 
 """
 function gaussian(recombinant::AbstractVector, s::AnisotropicStrategy;
-                  rng::AbstractRNG=Random.default_rng())
+                  rng::AbstractRNG=default_rng())
     @assert length(s.σ) == length(recombinant) "Parameter `σ` must be defined for every dimension of objective parameter"
     vals = randn(rng, length(recombinant)) .* s.σ
     recombinant += vals
@@ -53,7 +53,7 @@ where ``\\delta`` is a Cauchy random variable with the scale parameter ``t = 1``
 
 """
 function cauchy(recombinant::AbstractVector, s::IsotropicStrategy;
-                  rng::AbstractRNG=Random.default_rng())
+                  rng::AbstractRNG=default_rng())
     l = length(recombinant)
     vals = s.σ * randn(rng, l)./(randn(rng, l).+eps())
     recombinant += vals
@@ -80,7 +80,7 @@ Performs in-place mutation of the isotropic strategy `s` modifying its mutated s
 - ``\\sigma^\\prime = \\sigma \\exp(\\tau_0 \\mathcal{N}(0,1))``
 
 """
-function gaussian(s::IsotropicStrategy; rng::AbstractRNG=Random.default_rng())
+function gaussian(s::IsotropicStrategy; rng::AbstractRNG=default_rng())
     s.σ *= exp(s.τ₀*randn(rng))
     return s
 end
@@ -94,7 +94,7 @@ Performs in-place mutation of the anisotropic strategy `s` modifying its mutated
 - ``\\sigma_i^\\prime = \\sigma_i \\exp(\\tau_0 \\mathcal{N}(0,1) + \\tau_i \\mathcal{N}(0,1))``
 
 """
-function gaussian(s::AnisotropicStrategy; rng::AbstractRNG=Random.default_rng())
+function gaussian(s::AnisotropicStrategy; rng::AbstractRNG=default_rng())
     s.σ .*= exp.(s.τ₀*randn(rng))*exp.(s.τ*randn(rng, length(s.σ)))
     return s
 end
@@ -119,7 +119,7 @@ genop(recombinant; kwargs...) = recombinant
 Returns an in-place mutated binary `recombinant` with a bit flips at random positions.
 """
 function flip(recombinant::T;
-              rng::AbstractRNG=Random.default_rng()) where {T <: AbstractVector{Bool}}
+              rng::AbstractRNG=default_rng()) where {T <: AbstractVector{Bool}}
     s = length(recombinant)
     pos = rand(rng, 1:s)
     recombinant[pos] = !recombinant[pos]
@@ -150,7 +150,7 @@ The mutated individual is given by
 """
 function uniform(r::Real = 1.0)
     function mutation(recombinant::T;
-                      rng::AbstractRNG=Random.default_rng()
+                      rng::AbstractRNG=default_rng()
                      ) where {T <: AbstractVector}
         d = length(recombinant)
         recombinant .+= 2r.*rand(rng, d).-r
@@ -172,7 +172,7 @@ The mutated individual is given by
 """
 function gaussian(σ::Real = 1.0)
     function mutation(recombinant::T;
-                      rng::AbstractRNG=Random.default_rng()
+                      rng::AbstractRNG=default_rng()
                      ) where {T <: AbstractVector}
         d = length(recombinant)
         recombinant .+= σ.*randn(rng, d)
@@ -189,7 +189,7 @@ Returns an in-place real valued mutation function that performs the BGA mutation
 function BGA(valrange::Vector, m::Int = 20)
     prob = 1.0 / m
     function mutation(recombinant::T;
-                      rng::AbstractRNG=Random.default_rng()
+                      rng::AbstractRNG=default_rng()
                      ) where {T <: AbstractVector}
         d = length(recombinant)
         @assert length(valrange) == d "Range matrix must have $(d) columns"
@@ -246,7 +246,7 @@ function mipmmutation(lowerBounds::Vector, upperBounds::Vector,
         end
     end
     function mutation(recombinant::T;
-                      rng::AbstractRNG=Random.default_rng()) where {T <: Vector}
+                      rng::AbstractRNG=default_rng()) where {T <: Vector}
         d = length(recombinant)
         @assert length(lowerBounds) == d "Bounds vector must have $(d) columns"
         @assert length(upperBounds) == d "Bounds vector must have $(d) columns"
@@ -269,7 +269,7 @@ Returns an in-place real valued mutation function that performs the Polynomial M
 within `lower` and `upper` bounds, and a mutation distribution index `η`[^9].
 """
 function PLM(Δ::Union{Real, Vector}=1.0; η=2, pm::Real=NaN) # index of distribution p
-    function mutation(recombinant::T; rng::AbstractRNG=Random.default_rng()) where {T <: AbstractVector}
+    function mutation(recombinant::T; rng::AbstractRNG=default_rng()) where {T <: AbstractVector}
         d = length(recombinant)
         pm = isnan(pm) ? 1/d : pm
         mask = rand(rng, d) .< pm
@@ -296,7 +296,7 @@ PLM(lower::Vector, upper::Vector; η::Real = 2, pm::Real=NaN) = PLM(upper-lower;
 
 Returns an in-place mutated individual with a random arbitrary length segment of the genome in the reverse order.
 """
-function inversion(recombinant::T; rng::AbstractRNG=Random.default_rng()) where {T <: AbstractVector}
+function inversion(recombinant::T; rng::AbstractRNG=default_rng()) where {T <: AbstractVector}
     l = length(recombinant)
     from, to = randseg(rng, l)
     l = round(Int,(to - from)/2)
@@ -315,7 +315,7 @@ end
 
 Returns an in-place mutated individual with an arbitrary element of the genome moved in a random position.
 """
-function insertion(recombinant::T; rng::AbstractRNG=Random.default_rng()) where {T <: AbstractVector}
+function insertion(recombinant::T; rng::AbstractRNG=default_rng()) where {T <: AbstractVector}
     l = length(recombinant)
     from, to = randseg(rng, l)
     val = recombinant[from]
@@ -328,7 +328,7 @@ end
 
 Returns an in-place mutated individual with a two random elements of the genome are swapped.
 """
-function swap2(recombinant::T; rng::AbstractRNG=Random.default_rng()) where {T <: AbstractVector}
+function swap2(recombinant::T; rng::AbstractRNG=default_rng()) where {T <: AbstractVector}
     l = length(recombinant)
     from, to = randseg(rng, l)
     swap!(recombinant, from, to)
@@ -340,7 +340,7 @@ end
 
 Returns an in-place mutated individual with elements, on a random arbitrary length segment of the genome, been scrambled.
 """
-function scramble(recombinant::T; rng::AbstractRNG=Random.default_rng()) where {T <: AbstractVector}
+function scramble(recombinant::T; rng::AbstractRNG=default_rng()) where {T <: AbstractVector}
     l = length(recombinant)
     from, to = randseg(rng, l)
     diff = to - from + 1
@@ -359,7 +359,7 @@ end
 
 Returns an in-place mutated individual with a random arbitrary length segment of the genome been shifted to an arbitrary position.
 """
-function shifting(recombinant::T; rng::AbstractRNG=Random.default_rng()) where {T <: AbstractVector}
+function shifting(recombinant::T; rng::AbstractRNG=default_rng()) where {T <: AbstractVector}
     l = length(recombinant)
     from, to, where = sort(rand(rng, 1:l, 3))
     patch = recombinant[from:to]
@@ -385,7 +385,7 @@ Replacement mutation operator changes an arbitrary number, no smaller then `minc
 of elements in the individual by replacing them with elements from the predefined `pool` that are not in the individual.
 """
 function replace(pool::Vector{P}; minchange=1) where {P}
-    function rplc(recombinant::T; rng::AbstractRNG=Random.default_rng()) where {T <: AbstractVector}
+    function rplc(recombinant::T; rng::AbstractRNG=default_rng()) where {T <: AbstractVector}
         l = length(recombinant)
         p = length(pool)
         # how many values to change
@@ -442,7 +442,7 @@ Parameters:
             The offspring cannot be more than `growth`% deeper than its parent.  (default: `0.0`)
 """
 function subtree(method::TreeGP; growth::Real = 0.0)
-    function mutation(recombinant::Expr; rng::AbstractRNG=Random.default_rng())
+    function mutation(recombinant::Expr; rng::AbstractRNG=default_rng())
         i = rand(rng, 1:nodes(recombinant)-1)
         th = depth(recombinant, recombinant[i])
         maxh = if growth > 0
@@ -466,7 +466,7 @@ Node replacement mutation is similar to bit string mutation in that it randomly 
 To ensure the tree remains legal, the replacement node has the same number of arguments as the node it is replacing [^6].
 """
 function point(method::TreeGP)
-    function mutation(recombinant::Expr; rng::AbstractRNG=Random.default_rng())
+    function mutation(recombinant::Expr; rng::AbstractRNG=default_rng())
         i = rand(rng, 0:nodes(recombinant)-1)
         nd = recombinant[i]
         if isa(nd, Expr)
@@ -491,7 +491,7 @@ of a randomly chosen subtree of the parent. Thus, the offspring will be smaller 
 and will have a different root node [^7].
 """
 function hoist(method::TreeGP)
-    function mutation(recombinant::Expr; rng::AbstractRNG=Random.default_rng())
+    function mutation(recombinant::Expr; rng::AbstractRNG=default_rng())
         rnodes = nodes(recombinant)
         stsize = 0
         ch = recombinant
@@ -513,7 +513,7 @@ created terminal. This is a special case of subtree mutation where the replaceme
 As with hoist mutation, it is motivated by the desire to reduce program size [^8].
 """
 function shrink(method::TreeGP)
-    function mutation(recombinant::Expr; rng::AbstractRNG=Random.default_rng())
+    function mutation(recombinant::Expr; rng::AbstractRNG=default_rng())
         i = rand(rng, 1:nodes(recombinant)-1)
         recombinant[i] = randterm(rng, method)
         recombinant

@@ -100,7 +100,7 @@ function update_state!(objfun, constraints, state, parents::AbstractVector{IT}, 
 end
 
 function recombine!(offspring, parents, selected, method, n=length(selected);
-                    rng::AbstractRNG=Random.default_rng())
+                    rng::AbstractRNG=default_rng())
     mates = ((i,i == n ? i-1 : i+1) for i in 1:2:n)
     for (i,j) in mates
         p1, p2 = parents[selected[i]], parents[selected[j]]
@@ -114,7 +114,7 @@ function recombine!(offspring, parents, selected, method, n=length(selected);
 end
 
 function mutate!(population, method, constraints;
-                 rng::AbstractRNG=Random.default_rng())
+                 rng::AbstractRNG=default_rng())
     n = length(population)
     for i in 1:n
         if rand(rng) < method.mutationRate
