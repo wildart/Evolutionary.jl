@@ -20,9 +20,10 @@
 
     # Testing: CMA-ES
     opts = Evolutionary.Options(rng=rng)
+    λ = 14
     Random.seed!(rng, 42)
-    result = Evolutionary.optimize(schwefel, ()->rand(rng, N), CMAES(mu = 3, lambda = 12, c_1=0.05), opts)
-    println("(3/3,12)-CMA-ES => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
+    result = Evolutionary.optimize(schwefel, ()->rand(rng, N), CMAES(lambda=λ, c_1=0.05), opts)
+    println("($(λ>>1),$λ)-CMA-ES => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
     @test Evolutionary.converged(result)
     @test Evolutionary.minimizer(result) ≈ zeros(N) atol=1e-4
     @test minimum(result) ≈ 0.0 atol=1e-5
@@ -30,8 +31,8 @@
     bounds = Evolutionary.ConstraintBounds(fill(-1.0f0,N),fill(1.0f0,N),[],[])
     opts = Evolutionary.Options(store_trace=true, iterations=10, rng=rng)
     Random.seed!(rng, 42)
-    result = Evolutionary.optimize(schwefel, bounds, CMAES(mu = 3, lambda = 12, weights=zeros(Float32,12)), opts)
-    println("(3/3,12)-CMA-ES [bounds] => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
+    result = Evolutionary.optimize(schwefel, bounds, CMAES(lambda=λ, weights=zeros(Float32,λ)), opts)
+    println("($(λ>>1),$λ)-CMA-ES [bounds] => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
     @test Evolutionary.iterations(result) == 10
     @test !Evolutionary.converged(result)
     @test haskey(Evolutionary.trace(result)[end].metadata, "σ")
