@@ -18,9 +18,8 @@ The constructor takes following keyword arguments:
 - `mutation`: A mutation function (default: [`crosstree`](@ref))
 - `crossover`: A crossover function (default: [`subtree`](@ref))
 - `simplify`: An expression simplification function (default: `:nothing`)
-- `optimizer`: An evolutionary optimizer used for evolving the expressions (default: [`GA`](@ref))
-    - Use `mutation` and `crossover` parameters to specify GP-related mutation operation.
-    - Use `selection` parameter to specify the offspring selection procedure
+- Use `mutation` and `crossover` parameters to specify GP-related mutation operation.
+- Use `selection` parameter to specify the offspring selection procedure
 """
 @kwdef struct TreeGP <: AbstractOptimizer
     populationSize::Integer = 50
