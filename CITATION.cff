@@ -1,0 +1,8 @@
+cff-version: 0.0.1
+authors:
+  - family-names: Santos
+    given-names: Tiago
+    orcid: https://orcid.org/0000-0003-2463-2881
+title: "Evolutionary.jl"
+version: 0.0.2
+date-released: 2020-05-22
