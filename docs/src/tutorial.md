@@ -132,7 +132,7 @@ converged(::EvolutionaryOptimizationResults)
 
 ## Trace
 
-When `store_trace` and/or `show_trace` options are set to `true` in the [`Options`](@ref) object, an optimization trace is either captured and/or shown on the screen. By default, only the current state minimum value is displayed in the trace. In order to extend trace record, you need to override [`trace!`](@ref) function providing specialized function behavior on one of specific parameters.
+When `store_trace` and/or `show_trace` options are set to `true` in the [`Options`](@ref) object, an optimization trace is either captured and/or shown on the screen. By default, only the current state minimum value is displayed in the trace. In order to extend the trace record, you need to override the [`trace!`](@ref) function by providing specialized function behavior on one of specific parameters.
 
 ```@docs
 trace!(::Dict{String,Any}, Any, Any, Any, Any, Any)
