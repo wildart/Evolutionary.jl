@@ -52,9 +52,13 @@ function value(obj::EvolutionaryObjective{TC,TF,TX,TP}, x::TX) where {TC,TF,TX,T
     obj.f(x)::TF
 end
 
-function value(obj::EvolutionaryObjective{TC,TF,TX,TP}, x::TX, pop::AbstractVector{TX}) where {TC,TF,TX,TP}
+function value(obj::EvolutionaryObjective{TC,TF,TX,TP}, x::TX, pop::AbstractVector{TX}, pop_dependent::Bool=false) where {TC,TF,TX,TP}
     obj.f_calls += 1
-    obj.f(x, pop)::TF
+    if pop_dependent
+        return obj.f(x, pop)::TF
+    else
+        obj.f(x)::TF
+    end
 end
 
 function value!(obj::EvolutionaryObjective{TC,TF,TX,TP}, x::TX) where {TC,TF,TX,TP}
