@@ -11,6 +11,7 @@ The constructor takes following keyword arguments:
 - `crossover`: [Crossover](@ref) function (default: [`genop`](@ref))
 - `mutation`: [Mutation](@ref) function (default: [`genop`](@ref))
 - `metrics` is a collection of convergence metrics.
+- `multi-pop`: determines whether to use a Hierarchical Genetic Algorithm (https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=8004959)
 """
 struct GA{T1,T2,T3} <: AbstractOptimizer
     populationSize::Int
@@ -21,13 +22,15 @@ struct GA{T1,T2,T3} <: AbstractOptimizer
     crossover::T2
     mutation::T3
     metrics::ConvergenceMetrics
+    pop_dependent::Bool
 
     GA(; populationSize::Int=50, crossoverRate::Float64=0.8, mutationRate::Float64=0.1,
         ɛ::Real=0, epsilon::Real=ɛ,
         selection::T1=tournament(2),
         crossover::T2=genop,
         mutation::T3=genop,
-        metrics = ConvergenceMetric[AbsDiff(1e-12)]) where {T1, T2, T3} =
+        metrics = ConvergenceMetric[AbsDiff(1e-12)],
+        pop_dependent = false) where {T1, T2, T3} =
         new{T1,T2,T3}(populationSize, crossoverRate, mutationRate, epsilon, selection, crossover, mutation, metrics)
 end
 population_size(method::GA) = method.populationSize
@@ -55,7 +58,7 @@ function initial_state(method::GA, options, objfun, population)
     eliteSize = isa(method.ɛ, Int) ? method.ɛ : round(Int, method.ɛ * method.populationSize)
 
     # Evaluate population fitness
-    fitness = map(i -> value(objfun, i), population)
+    fitness = map(i -> value(objfun, i, population, pop_dependent), population)
     minfit, fitidx = findmin(fitness)
 
     # setup initial state
