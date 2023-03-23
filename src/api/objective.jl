@@ -102,7 +102,7 @@ function value!(obj::EvolutionaryObjective{TC,TF,TX,Val{:thread}},
                 F::AbstractVector, xs::AbstractVector{TX}, pop_dependent::Bool=false) where {TC,TF<:Real,TX}
     n = length(xs)
     Threads.@threads for i in 1:n
-        if pop_dependent:
+        if pop_dependent
             F[i] = value(obj, xs[i], xs)
         else
             F[i] = value(obj, xs[i])
