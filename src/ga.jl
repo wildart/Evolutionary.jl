@@ -53,7 +53,8 @@ function initial_state(method::GA, options, objfun, population)
     T = typeof(value(objfun))
     N = length(first(population))
     fitness = zeros(T, method.populationSize)
-
+    pop_dependent = method.pop_dependent
+    
     # setup state values
     eliteSize = isa(method.ɛ, Int) ? method.ɛ : round(Int, method.ɛ * method.populationSize)
 
