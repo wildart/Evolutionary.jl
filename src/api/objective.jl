@@ -98,7 +98,7 @@ end
 function value!(obj::EvolutionaryObjective{TC,TF,TX,Val{:serial}},
                 F::AbstractVector, xs::AbstractVector{TX}, pop_dependent::Bool=false) where {TC,TF<:Real,TX}
     if pop_dependent
-        broadcast!(x->value(obj,x,xs), F, xs, pop_dependent)
+        broadcast!(x->value(obj,x,xs, pop_dependent), F, xs)
     else
         broadcast!(x->value(obj,x), F, xs)
     end
