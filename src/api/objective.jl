@@ -14,8 +14,11 @@ end
 Constructor for an objective function object around the function `f` with initial parameter `x`, and objective value `F`.
 """
 function EvolutionaryObjective(f::TC, x::AbstractArray,
-                               F::Union{Real, AbstractArray{<:Real}} = zero(f(x));
+                               F::Union{Real, AbstractArray{<:Real}} = missing;
                                eval::Symbol = :serial) where {TC}
+    if F === missing
+        F = applicable(f, x) ? zero(f(x)) : 0
+    end
     defval = default_values(x)
     # convert function into the in-place one
     TF = typeof(F)
