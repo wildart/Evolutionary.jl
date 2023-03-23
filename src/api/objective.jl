@@ -137,6 +137,5 @@ function value!(obj::EvolutionaryObjective{TC,TF,TX,Val{:thread}},
             value(obj, fv, xs[i])
         end
     end
-    end
     F
 end
