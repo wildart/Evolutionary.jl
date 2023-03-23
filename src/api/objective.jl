@@ -17,7 +17,7 @@ function EvolutionaryObjective(f::TC, x::AbstractArray,
                                F::Union{Real, AbstractArray{<:Real}} = 0;
                                eval::Symbol = :serial) where {TC}
     if F === 0
-        F = applicable(f, x) ? zero(f(x)) : 0
+        F = applicable(f, x) ? zero(f(x)) : convert(typeof(x), 0)
     end
     defval = default_values(x)
     # convert function into the in-place one
