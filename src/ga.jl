@@ -90,7 +90,7 @@ function update_state!(objfun, constraints, state, parents::AbstractVector{IT}, 
     mutate!(offspring, method, constraints, rng=rng)
 
     # calculate fitness of the population
-    evaluate!(objfun, state.fitpop, offspring, constraints)
+    evaluate!(objfun, state.fitpop, offspring, constraints, method.pop_dependent)
 
     # select the best individual
     minfit, fitidx = findmin(state.fitpop)
@@ -128,9 +128,13 @@ function mutate!(population, method, constraints;
     end
 end
 
-function evaluate!(objfun, fitness, population, constraints)
+function evaluate!(objfun, fitness, population, constraints, pop_dependent=false)
     # calculate fitness of the population
-    value!(objfun, fitness, population)
+    if pop_dependent
+        value!(objfun, fitness, population, pop_dependent)
+    else
+        value!(objfun, fitness, population)
+    end
     # apply penalty to fitness
     penalty!(fitness, constraints, population)
 end
