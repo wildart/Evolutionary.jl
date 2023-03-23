@@ -52,6 +52,11 @@ function value(obj::EvolutionaryObjective{TC,TF,TX,TP}, x::TX) where {TC,TF,TX,T
     obj.f(x)::TF
 end
 
+function value(obj::EvolutionaryObjective{TC,TF,TX,TP}, x::TX, pop::AbstractVector{TX}) where {TC,TF,TX,TP}
+    obj.f_calls += 1
+    obj.f(x, pop)::TF
+end
+
 function value!(obj::EvolutionaryObjective{TC,TF,TX,TP}, x::TX) where {TC,TF,TX,TP}
     obj.F = value(obj, x)
     obj.F
@@ -68,6 +73,12 @@ function value(obj::EvolutionaryObjective{TC,TF,TX,TP}, F, x::TX) where {TC,TF,T
 end
 value(obj::EvolutionaryObjective{TC,TF,TX,TP}, x::TX) where {TC,TF<:AbstractArray,TX,TP} = value(obj, copy(obj.F), x)
 
+function value(obj::EvolutionaryObjective{TC,TF,TX,TP}, F, x::TX, pop::AbstractVector{TX}) where {TC,TF,TX,TP}
+    obj.f_calls += 1
+    obj.f(F, x, pop)
+end
+value(obj::EvolutionaryObjective{TC,TF,TX,TP}, x::TX, pop::AbstractVector{TX}) where {TC,TF<:AbstractArray,TX,TP} = value(obj, copy(obj.F), x, pop)
+
 function value!(obj::EvolutionaryObjective{TC,TF,TX,TP}, F, x::TX) where {TC,TF,TX,TP}
     obj.F = value(obj, F, x)
 end
@@ -78,36 +89,54 @@ function value!!(obj::EvolutionaryObjective{TC,TF,TX,TP}, F, x::TX) where {TC,TF
 end
 
 function value!(obj::EvolutionaryObjective{TC,TF,TX,Val{:serial}},
-                F::AbstractVector, xs::AbstractVector{TX}) where {TC,TF<:Real,TX}
-    broadcast!(x->value(obj,x), F, xs)
+                F::AbstractVector, xs::AbstractVector{TX}, pop_dependent::Bool=false) where {TC,TF<:Real,TX}
+    if pop_dependent
+        broadcast!(x->value(obj,x,xs), F, xs)
+    else
+        broadcast!(x->value(obj,x), F, xs)
+    end
     F
 end
 
 function value!(obj::EvolutionaryObjective{TC,TF,TX,Val{:thread}},
-                F::AbstractVector, xs::AbstractVector{TX}) where {TC,TF<:Real,TX}
+                F::AbstractVector, xs::AbstractVector{TX}, pop_dependent::Bool=false) where {TC,TF<:Real,TX}
     n = length(xs)
     Threads.@threads for i in 1:n
-        F[i] = value(obj, xs[i])
+        if pop_dependent:
+            F[i] = value(obj, xs[i], xs)
+        else
+            F[i] = value(obj, xs[i])
+        end
     end
     F
 end
 
 function value!(obj::EvolutionaryObjective{TC,TF,TX,Val{:serial}},
-                F::AbstractMatrix, xs::AbstractVector{TX}) where {TC,TF,TX}
+                F::AbstractMatrix, xs::AbstractVector{TX}, pop_dependent::Bool=false) where {TC,TF,TX}
     n = length(xs)
     for i in 1:n
         fv = view(F, :, i)
-        value(obj, fv, xs[i])
+        if pop_dependent
+            value(obj, fv, xs[i], xs)
+        else
+            value(obj, fv, xs[i])
+        end
     end
     F
 end
 
 function value!(obj::EvolutionaryObjective{TC,TF,TX,Val{:thread}},
-                F::AbstractMatrix, xs::AbstractVector{TX}) where {TC,TF,TX}
+                F::AbstractMatrix, xs::AbstractVector{TX}, pop_dependent::Bool=false) where {TC,TF,TX}
     n = length(xs)
     @Threads.threads for i in 1:n
         fv = view(F, :, i)
-        value(obj, fv, xs[i])
+
+        if pop_dependent
+            value(obj, fv, xs[i], xs)
+        else
+            value(obj, fv, xs[i])
+        end
+    end
     end
     F
 end
