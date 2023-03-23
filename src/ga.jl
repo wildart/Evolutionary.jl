@@ -18,20 +18,20 @@ struct GA{T1,T2,T3} <: AbstractOptimizer
     crossoverRate::Float64
     mutationRate::Float64
     ɛ::Real
+    pop_dependent::Bool
     selection::T1
     crossover::T2
     mutation::T3
     metrics::ConvergenceMetrics
-    pop_dependent::Bool
 
     GA(; populationSize::Int=50, crossoverRate::Float64=0.8, mutationRate::Float64=0.1,
         ɛ::Real=0, epsilon::Real=ɛ,
         selection::T1=tournament(2),
         crossover::T2=genop,
         mutation::T3=genop,
-        metrics = ConvergenceMetric[AbsDiff(1e-12)],
-        pop_dependent = false) where {T1, T2, T3} =
-        new{T1,T2,T3}(populationSize, crossoverRate, mutationRate, epsilon, selection, crossover, mutation, metrics)
+        pop_dependent::Bool=false,
+        metrics = ConvergenceMetric[AbsDiff(1e-12)]) where {T1, T2, T3} =
+        new{T1,T2,T3}(populationSize, crossoverRate, mutationRate, epsilon, pop_dependent, selection, crossover, mutation, metrics)
 end
 population_size(method::GA) = method.populationSize
 default_options(method::GA) = (iterations=1000,)
