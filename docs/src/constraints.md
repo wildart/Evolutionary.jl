@@ -2,7 +2,7 @@
 using Evolutionary
 ```
 
-The nonlinear constrained optimization interface in `Evolutinary` assumes that the user can write the optimization problem as follows:
+The nonlinear constrained optimization interface in `Evolutionary` assumes that the user can write the optimization problem as follows:
 
 ```math
 \min_{x\in\mathbb{R}^n} f(x) \quad \text{such that}\\
