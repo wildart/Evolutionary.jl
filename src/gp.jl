@@ -8,7 +8,7 @@ The constructor takes following keyword arguments:
 - `populationSize`: The size of the population
 - `terminals`: A dictionary of terminals with their their corresponding dimensionality
     - This dictionary contains (`Terminal`, `Int`) pairs
-    - The terminals can be any symbols (variables), constat values, or 0-arity functions.
+    - The terminals can be any symbols (variables), constant values, or 0-arity functions.
 - `functions`: A collection of functions with their corresponding arity.
     - This dictionary contains (`Function`, `Int`) pairs
 - `initialization`: A strategy for population initialization (default: `:grow`)
