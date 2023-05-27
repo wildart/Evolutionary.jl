@@ -6,7 +6,8 @@ The constructor takes following keyword arguments:
 - `populationSize`: The size of the population
 - `crossoverRate`: The fraction of the population at the next generation, not including elite children, that is created by the crossover function.
 - `mutationRate`: Probability of chromosome to be mutated
-- `ɛ`/`epsilon`: Positive integer specifies how many individuals in the current generation are guaranteed to survive to the next generation. Floating number specifies fraction of population.
+- `ɛ`/`epsilon`: Positive integer specifies how many individuals in the current generation are guaranteed to survive to the next generation.
+  Floating number specifies fraction of population. Elite individuals are still subject to mutation.
 - `selection`: [Selection](@ref) function (default: [`tournament`](@ref))
 - `crossover`: [Crossover](@ref) function (default: [`genop`](@ref))
 - `mutation`: [Mutation](@ref) function (default: [`genop`](@ref))
@@ -92,7 +93,7 @@ function update_state!(objfun, constraints, state, parents::AbstractVector{IT}, 
     minfit, fitidx = findmin(state.fitpop)
     state.fittest = offspring[fitidx]
     state.fitness = state.fitpop[fitidx]
-    
+
     # replace population
     parents .= offspring
 
@@ -119,7 +120,7 @@ function mutate!(population, method, constraints;
     for i in 1:n
         if rand(rng) < method.mutationRate
             method.mutation(population[i], rng=rng)
-        end        
+        end
         apply!(constraints, population[i])
     end
 end
