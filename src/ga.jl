@@ -7,13 +7,14 @@ The constructor takes following keyword arguments:
 - `crossoverRate`: The fraction of the population at the next generation, not including elite children, that is created by the crossover function.
 - `mutationRate`: Probability of chromosome to be mutated
 - `ɛ`/`epsilon`: Positive integer specifies how many individuals in the current generation are guaranteed to survive to the next generation.
-  Floating number specifies fraction of population. Elite individuals are still subject to mutation.
+Floating number specifies fraction of population.
 - `selection`: [Selection](@ref) function (default: [`tournament`](@ref))
 - `crossover`: [Crossover](@ref) function (default: [`genop`](@ref))
 - `mutation`: [Mutation](@ref) function (default: [`genop`](@ref))
+- `after_op`: a function that is executed on each individual afrer mutation operations (default: `identity`)
 - `metrics` is a collection of convergence metrics.
 """
-struct GA{T1,T2,T3} <: AbstractOptimizer
+struct GA{T1,T2,T3,T4} <: AbstractOptimizer
     populationSize::Int
     crossoverRate::Float64
     mutationRate::Float64
@@ -21,6 +22,7 @@ struct GA{T1,T2,T3} <: AbstractOptimizer
     selection::T1
     crossover::T2
     mutation::T3
+    after_op::T4
     metrics::ConvergenceMetrics
 
     GA(; populationSize::Int=50, crossoverRate::Float64=0.8, mutationRate::Float64=0.1,
@@ -28,8 +30,9 @@ struct GA{T1,T2,T3} <: AbstractOptimizer
         selection::T1=tournament(2),
         crossover::T2=genop,
         mutation::T3=genop,
-        metrics = ConvergenceMetric[AbsDiff(1e-12)]) where {T1, T2, T3} =
-        new{T1,T2,T3}(populationSize, crossoverRate, mutationRate, epsilon, selection, crossover, mutation, metrics)
+        after_op::T4=identity,
+        metrics = ConvergenceMetric[AbsDiff(1e-12)]) where {T1, T2, T3, T4} =
+        new{T1,T2,T3,T4}(populationSize, crossoverRate, mutationRate, epsilon, selection, crossover, mutation, after_op, metrics)
 end
 population_size(method::GA) = method.populationSize
 default_options(method::GA) = (iterations=1000,)
@@ -50,10 +53,17 @@ minimizer(s::GAState) = s.fittest
 function initial_state(method::GA, options, objfun, population)
     T = typeof(value(objfun))
     N = length(first(population))
-    fitness = zeros(T, method.populationSize)
 
-    # setup state values
+    # evaluate elite size and extend population
     eliteSize = isa(method.ɛ, Int) ? method.ɛ : round(Int, method.ɛ * method.populationSize)
+    if eliteSize > 0
+        for i in 1:eliteSize
+            push!(population, copy(first(population)))
+        end
+    end
+
+    # create fitness values
+    fitness = zeros(T, method.populationSize + eliteSize)
 
     # Evaluate population fitness
     fitness = map(i -> value(objfun, i), population)
@@ -65,29 +75,33 @@ end
 
 function update_state!(objfun, constraints, state, parents::AbstractVector{IT}, method::GA, options, itr) where {IT}
     populationSize = method.populationSize
-    evaltype = options.parallelization
     rng = options.rng
+
+    # create an offspring popultation
     offspring = similar(parents)
 
     # select offspring
     selected = method.selection(state.fitpop, populationSize, rng=rng)
 
     # perform mating
-    offspringSize = populationSize - state.eliteSize
-    recombine!(offspring, parents, selected, method, offspringSize, rng=rng)
-
-    # Elitism (copy population individuals before they pass to the offspring & get mutated)
-    fitidxs = sortperm(state.fitpop)
-    for i in 1:state.eliteSize
-        subs = offspringSize+i
-        offspring[subs] = copy(parents[fitidxs[i]])
-    end
+    recombine!(offspring, parents, selected, method, rng=rng)
 
     # perform mutation
-    mutate!(offspring, method, constraints, rng=rng)
+    mutate!(view(offspring, 1:populationSize), method, constraints, rng=rng)
+
+    # Elitism (copy elite individuals from selection to the offspring)
+    selfit = view(state.fitpop, selected)
+    fitidxs = sortperm(selfit)
+    for i in 1:state.eliteSize
+        subs = populationSize+i
+        offspring[subs] = parents[selected[fitidxs[i]]]
+    end
 
     # calculate fitness of the population
     evaluate!(objfun, state.fitpop, offspring, constraints)
+
+    # apply auxiliary function after mutation operations
+    method.after_op !== identity && broadcast!(method.after_op, offspring, offspring)
 
     # select the best individual
     minfit, fitidx = findmin(state.fitpop)
@@ -100,8 +114,9 @@ function update_state!(objfun, constraints, state, parents::AbstractVector{IT}, 
     return false
 end
 
-function recombine!(offspring, parents, selected, method, n=length(selected);
+function recombine!(offspring, parents, selected, method;
                     rng::AbstractRNG=default_rng())
+    n = length(selected)
     mates = ((i,i == n ? i-1 : i+1) for i in 1:2:n)
     for (i,j) in mates
         p1, p2 = parents[selected[i]], parents[selected[j]]

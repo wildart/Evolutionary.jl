@@ -56,7 +56,7 @@
     m = GA(epsilon = 10.0)
     @test m.ɛ == 10
     opts = Evolutionary.Options(iterations=1000, rng=rng, successive_f_tol=25)
-    selections = [:roulette=>rouletteinv, :sus=>susinv, :tourn=>tournament(2)]
+    selections = [:roulette=>rouletteinv, :sus=>susinv, :tourn=>tournament(3)]
     crossovers = [:discrete=>DC, :intermediate0=>IC(0.), :intermediate0_5=>IC(0.5), :line=>LC(0.1), :avg=>AX, :heuristic=>HX, :laplace=>LX(), :simbin=>SBX()]
     mutations  = [:domrng0_5=>BGA(fill(0.5,N)), :gaussian=>gaussian(), :plm=>PLM()]
 
@@ -66,13 +66,12 @@
         result = Evolutionary.optimize( rastrigin, initState,
             GA(
                 populationSize = P,
-                ɛ = 0.1,
                 selection = ss,
                 crossover = xovr,
                 mutation = ms
             ), opts
         )
-        println("GA:$(sn):$(xn):$(mn)(N=$(N),P=$(P),x=.8,μ=.1,ɛ=0.1) => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
+        println("GA:$(sn):$(xn):$(mn)(N=$(N),P=$(P),x=.8,μ=.1) => F: $(minimum(result)), C: $(Evolutionary.iterations(result))")
         test_result(result, N, 0.2)
     end
 
