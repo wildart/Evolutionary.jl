@@ -92,7 +92,12 @@ isbinexpr(ex) = isexpr(ex) && length(ex.args) == 3
 function evaluate(ex::Expr, psyms::Dict{Symbol,Int}, vals::T...)::T where {T}
     exprm = ex.args
     exvals = (isexpr(nex) || issym(nex) ? evaluate(nex, psyms, vals...) : nex for nex in exprm[2:end])
-    exprm[1](exvals...)
+    try
+        exprm[1](exvals...)
+    catch err
+        @error "Incottect expression" ex psyms vals
+        rethrow(err)
+    end
 end
 
 function evaluate(ex::Symbol, psyms::Dict{Symbol,Int}, vals::T...)::T where {T}
@@ -102,7 +107,6 @@ function evaluate(ex::Symbol, psyms::Dict{Symbol,Int}, vals::T...)::T where {T}
     end
     return T(vals[pidx])
 end
-
 
 function simplifyunary!(root)
     fn, op = root.args
@@ -213,7 +217,7 @@ function simplifybinary!(root)
                 # x - (x ± n) = -±n
                 if fn2 == (-)
                     root = op22
-                else
+                elseif fn2 == (+)
                     pop!(root.args)
                     root.args[end] = op22
                 end
@@ -228,7 +232,7 @@ function simplifybinary!(root)
             if op11 == op2
                 if fn2 == (+)
                     root = op12
-                else
+                elseif fn2 == (-)
                     root.args[1] = fn2
                     root.args[2] = op12
                     pop!(root.args)
@@ -266,6 +270,17 @@ function simplify!(root)
     return root
 end
 
+function Base.contains(ex::Expr, sym::Symbol)
+    for arg in ex.args
+        issym(arg) && arg == sym && return true
+        isa(arg, QuoteNode) && arg.value == sym && return true
+        isa(arg, Function) && Symbol(arg) == sym && return true
+        isexpr(arg) && return contains(arg, sym)
+    end
+    return false
+end
+
+# Construct infix string from an exporession
 function infix(io::IO, root; digits=3)
     if isa(root, Number)
         print(io, round(root, digits=digits))

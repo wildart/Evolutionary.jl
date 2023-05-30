@@ -80,7 +80,7 @@ function update_state!(objfun, constraints, state, parents::AbstractVector{IT}, 
     selected = method.selection(view(specFit,:,1:populationSize), populationSize; rng=rng)
 
     # perform mating
-    recombine!(state.offspring, parents, selected, method)
+    recombine!(state.offspring, parents, selected, method, rng=rng)
 
     # perform mutation
     mutate!(state.offspring, method, constraints, rng=rng)

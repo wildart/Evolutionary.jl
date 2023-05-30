@@ -15,7 +15,7 @@ optimize(f::TC, individual, method::M,
          opts::Options = Options(;default_options(method)...)) where {TC, M<:AbstractOptimizer} =
     optimize(f::TC, NoConstraints(), individual, method, opts)
 optimize(f, F::AbstractVector, individual, method::M,
-         opts::Options = Options(;default_options(method)...)) where {TC, M<:AbstractOptimizer} =
+         opts::Options = Options(;default_options(method)...)) where {M<:AbstractOptimizer} =
     optimize(f, F, NoConstraints(), individual, method, opts)
 optimize(f::TC, bounds::ConstraintBounds, method::M,
          opts::Options = Options(;default_options(method)...)) where {TC, M<:AbstractOptimizer} =
