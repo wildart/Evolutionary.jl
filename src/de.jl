@@ -28,6 +28,7 @@ show(io::IO,m::DE) = print(io, summary(m))
 mutable struct DEState{T,IT} <: AbstractOptimizerState
     N::Int
     fitness::Vector{T}
+    offitness::Vector{T}
     fittest::IT
 end
 value(s::DEState) = minimum(s.fitness)
@@ -39,9 +40,10 @@ function initial_state(method::DE, options, objfun, population)
     individual = first(population)
     N = length(individual)
     fitness = fill(maxintfloat(T), method.populationSize)
+    offitness = fill(maxintfloat(T), method.populationSize)
 
     # setup initial state
-    return DEState(N, fitness, copy(individual))
+    return DEState(N, fitness, offitness, copy(individual))
 end
 
 function update_state!(objfun, constraints, state, population::AbstractVector{IT}, method::DE, options, itr) where {IT}
@@ -74,14 +76,13 @@ function update_state!(objfun, constraints, state, population::AbstractVector{IT
     end
 
     # Evaluate new offspring
-    offitness = similar(state.fitness)
-    evaluate!(objfun, offitness, offspring, constraints)
+    evaluate!(objfun, state.offitness, offspring, constraints)
 
     # Create new generation
     fitidx = 0
     minfit = minimum(state.fitness)
     for i in 1:Np
-        v = offitness[i]
+        v = state.offitness[i]
         if (v <= state.fitness[i])
             population[i] = offspring[i]
             state.fitness[i] = v
