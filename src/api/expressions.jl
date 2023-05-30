@@ -92,7 +92,13 @@ isbinexpr(ex) = isexpr(ex) && length(ex.args) == 3
 function evaluate(ex::Expr, psyms::Dict{Symbol,Int}, vals::T...)::T where {T}
     exprm = ex.args
     exvals = (isexpr(nex) || issym(nex) ? evaluate(nex, psyms, vals...) : nex for nex in exprm[2:end])
-    exprm[1](exvals...)
+    try
+        exprm[1](exvals...)
+    catch err
+        @error "Incottect expression" ex psyms vals
+        dump(ex)
+        rethrow(err)
+    end
 end
 
 function evaluate(ex::Symbol, psyms::Dict{Symbol,Int}, vals::T...)::T where {T}
