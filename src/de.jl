@@ -59,25 +59,31 @@ function update_state!(objfun, constraints, state, population::AbstractVector{IT
 
     # select target vectors
     for (i,b) in enumerate(bases)
-        # mutation
         base = population[b]
         offspring[i] = copy(base)
 
+        # mutation
         targets = randexcl(rng, 1:Np, [i], 2*n)
         offspring[i] = differentiation(offspring[i], @view population[targets]; F=F)
 
         # recombination
         offspring[i], _ = method.recombination(offspring[i], base, rng=rng)
+
+        # apply constraints
+        apply!(constraints, offspring[i])
     end
+
+    # Evaluate new offspring
+    offitness = similar(state.fitness)
+    evaluate!(objfun, offitness, offspring, constraints)
 
     # Create new generation
     fitidx = 0
     minfit = minimum(state.fitness)
     for i in 1:Np
-        o = apply!(constraints, offspring[i])
-        v = value(objfun, o) + penalty(constraints, o)
+        v = offitness[i]
         if (v <= state.fitness[i])
-            population[i] = o
+            population[i] = offspring[i]
             state.fitness[i] = v
             if v < minfit
                 minfit = v
