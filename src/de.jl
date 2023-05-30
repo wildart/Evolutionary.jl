@@ -75,7 +75,7 @@ function update_state!(objfun, constraints, state, population::AbstractVector{IT
 
     # Create new generation
     fitidx = 0
-    minfit = Inf
+    minfit = minimum(state.fitness)
     for i in 1:Np
         o = apply!(constraints, offspring[i])
         v = value(objfun, o) + penalty(constraints, o)
