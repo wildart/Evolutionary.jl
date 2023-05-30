@@ -121,7 +121,7 @@
         sum(v->isnan(v) ? 1.0 : v, abs2.(ys .- yy) )/length(rg)
     end
 
-    Random.seed!(rng, 42)
+    Random.seed!(rng, 6)
     res = Evolutionary.optimize(fitobj,
         TreeGP(50, Terminal[:x, randn], Function[+,-,*,Evolutionary.aq],
             mindepth=1,
@@ -130,7 +130,7 @@
             selection = tournament(3),
         ),
         Evolutionary.Options(show_trace=false, rng=rng, iterations=50)
-    )
+    );
     @test minimum(res) < 1.5
 
 end

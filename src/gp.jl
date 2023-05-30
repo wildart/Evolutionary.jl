@@ -24,7 +24,7 @@ The constructor takes following keyword arguments:
 @kwdef struct TreeGP <: AbstractOptimizer
     populationSize::Integer = 50
     terminals::Dict{Terminal, Int} = Dict(:x=>1, rand=>1)
-    functions::Dict{Function, Int} = Dict( f=>2 for f in [+,-,*,pdiv] )
+    functions::Dict{Function, Int} = Dict(f=>2 for f in [+,-,*,pdiv])
     mindepth::Int = 0
     maxdepth::Int = 3
     crossover::Function = crosstree
@@ -79,11 +79,13 @@ function rand(rng::AbstractRNG, t::TreeGP, maxdepth::Int=2; mindepth::Int=maxdep
     @assert maxdepth > mindepth "`maxdepth` must be larger then `mindepth`"
     tl = length(t.terminals)
     fl = length(t.functions)
+    # generate a root of a subtree
     root = if (maxdepth == 0  || ( t.initialization == :grow && rand(rng) < tl/(tl+fl) ) ) && mindepth <= 0
         randterm(rng, t)
     else
         rand(rng, keys(t.functions))
     end
+    # if the root element is a function add subtrees as its parameters
     if isa(root, Function)
         args = Any[]
         for i in 1:t.functions[root]
