@@ -55,22 +55,19 @@ function update_state!(objfun, constraints, state, population::AbstractVector{IT
     offspring = Array{IT}(undef, Np)
 
     # select base vectors
-    bases = method.selection(state.fitness, Np)
+    bases = method.selection(state.fitness, Np, rng=rng)
 
     # select target vectors
     for (i,b) in enumerate(bases)
         # mutation
         base = population[b]
         offspring[i] = copy(base)
-        # println("$i => base:", offspring[i])
 
         targets = randexcl(rng, 1:Np, [i], 2*n)
         offspring[i] = differentiation(offspring[i], @view population[targets]; F=F)
-        # println("$i => mutated:", offspring[i], ", targets:", targets)
 
         # recombination
         offspring[i], _ = method.recombination(offspring[i], base, rng=rng)
-        # println("$i => recombined:", offspring[i])
     end
 
     # Create new generation
