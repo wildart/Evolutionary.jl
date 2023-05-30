@@ -95,7 +95,7 @@ function evaluate(ex::Expr, psyms::Dict{Symbol,Int}, vals::T...)::T where {T}
     try
         exprm[1](exvals...)
     catch err
-        @error "Incottect expression" ex psyms vals
+        @error "Incorrect expression" ex psyms vals
         rethrow(err)
     end
 end
@@ -270,7 +270,8 @@ function simplify!(root)
     return root
 end
 
-function Base.contains(ex::Expr, sym::Symbol)
+# This doesn't extend `Base.contains` because that would be piracy
+function contains(ex::Expr, sym::Symbol)
     for arg in ex.args
         issym(arg) && arg == sym && return true
         isa(arg, QuoteNode) && arg.value == sym && return true

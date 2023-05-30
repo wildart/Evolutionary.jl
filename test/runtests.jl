@@ -5,6 +5,9 @@ using LinearAlgebra
 using Statistics
 using StableRNGs
 
+# Guard against accidental piracy from `import`
+@test Evolutionary.contains !== Base.contains
+
 for tests in [
     "types.jl",
     "objective.jl",
