@@ -4,8 +4,8 @@ Implementation of Evolution Strategy: (μ/ρ(+/,)λ)-ES
 The constructor takes following keyword arguments:
 
 - `initStrategy`: an initial strategy description, (default: empty)
-- `recombination`: ES recombination function for population (default: `first`), see [Crossover](@ref)
-- `srecombination`: ES recombination function for strategies (default: `first`), see [Crossover](@ref)
+- `recombination`: ES recombination function for population (default: [`average`](@ref)), see [Crossover](@ref)
+- `srecombination`: ES recombination function for strategies (default: [`average`](@ref)), see [Crossover](@ref)
 - `mutation`: [Mutation](@ref) function for population (default: [`nop`](@ref))
 - `smutation`: [Mutation](@ref) function for strategies (default: [`nop`](@ref))
 - `μ`/`mu`: the number of parents
@@ -27,8 +27,8 @@ struct ES{T1,T2,T3,T4} <: AbstractOptimizer
     metrics::ConvergenceMetrics
 
     ES(; initStrategy::AbstractStrategy = NoStrategy(),
-        recombination::T1 = first,
-        srecombination::T2 = first,
+        recombination::T1 = average,
+        srecombination::T2 = average,
         mutation::T3 = nop,
         smutation::T4 = nop,
         μ::Integer = 1,
