@@ -1,7 +1,7 @@
 # Recombinations
 # ==============
 """
-    average(population)
+    average(population; kwargs...)
 
 Returns an *one* offspring individual of a multi-parent recombination by averaging `population`.
 """
@@ -15,7 +15,7 @@ function average(population::Vector{T}; kwargs...) where {T <: AbstractVector}
 end
 
 """
-    marriage(population)
+    marriage(population; rng=Radom.default_rng())
 
 Returns an *one* offspring individual of a multi-parent recombination by random copying from `population`.
 """
@@ -38,7 +38,7 @@ end
 
 Returns the average value of the mutation parameter ``\\sigma`` of strategies `ss`.
 """
-function average(ss::Vector{<:AbstractStrategy}; kwargs...)
+function average(ss::Vector{<:AbstractStrategy})
     s = copy(first(ss))
     l = length(ss)
     s.σ = mapreduce(s->s.σ/l, +, ss)

@@ -171,7 +171,10 @@ abstract type AbstractStrategy end
 
 """Empty evolution strategy"""
 struct NoStrategy <: AbstractStrategy end
-copy(s::NoStrategy) = NoStrategy()
+copy(::NoStrategy) = NoStrategy()
+Base.getproperty(s::NoStrategy, ::Symbol) = 0.0
+Base.setproperty!(s::NoStrategy, ::Symbol, ::T) where {T<:Real} = 0.0
+
 
 """
 Isotropic evolution strategy

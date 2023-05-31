@@ -5,14 +5,14 @@
 # ======================
 
 """
-    nop(s::AbstractStrategy)
+    nop(x, s::AbstractStrategy; kwargs...)
 
-This is a dummy mutation operator that does not change the strategy.
+This is a dummy mutation operator of the recombinant `x` that does not change the strategy `s`.
 """
 nop(recombinant::AbstractVector, s::AbstractStrategy; kwargs...) = recombinant
 
 """
-    gaussian(x, s::IsotropicStrategy)
+    gaussian(x, s::IsotropicStrategy; rng=Random.default_rng())
 
 Performs Gaussian isotropic mutation of the recombinant `x` given the strategy `s`  by adding Gaussian noise as follows:
 
@@ -27,7 +27,7 @@ function gaussian(recombinant::AbstractVector, s::IsotropicStrategy;
 end
 
 """
-    gaussian(x, s::AnisotropicStrategy)
+    gaussian(x, s::AnisotropicStrategy; rng=Random.default_rng())
 
 Performs Gaussian anisotropic mutation of the recombinant `x` given the strategy `s`  by adding Gaussian noise as follows:
 
@@ -43,7 +43,7 @@ function gaussian(recombinant::AbstractVector, s::AnisotropicStrategy;
 end
 
 """
-    cauchy(x, s::IsotropicStrategy)
+    cauchy(x, s::IsotropicStrategy; rng=Random.default_rng())
 
 Performs isotropic mutation of the recombinant `x` given the strategy `s`  by adding a noise from the Cauchy distribution as follows:
 
@@ -65,7 +65,7 @@ end
 # ===========================
 
 """
-    nop(s::AbstractStrategy)
+    nop(s::AbstractStrategy; kwargs...)
 
 This is a dummy operator that does not change strategy.
 """
@@ -73,7 +73,7 @@ nop(s::AbstractStrategy; kwargs...) = s
 
 
 """
-    gaussian(s::IsotropicStrategy)
+    gaussian(s::IsotropicStrategy; rng=Random.default_rng())
 
 Performs in-place mutation of the isotropic strategy `s` modifying its mutated strategy parameter ``\\sigma`` with Gaussian noise as follows:
 
@@ -87,7 +87,7 @@ end
 
 
 """
-    gaussian(s::AnisotropicStrategy)
+    gaussian(s::AnisotropicStrategy; rng=Random.default_rng())
 
 Performs in-place mutation of the anisotropic strategy `s` modifying its mutated strategy parameter ``\\sigma`` with Gaussian noise as follows:
 
@@ -107,14 +107,14 @@ end
 # ---------------------
 
 """
-    genop(recombinant)
+    genop(recombinant; kwargs...)
 
 This is a dummy mutation operator that does not change the `recombinant`.
 """
 genop(recombinant; kwargs...) = recombinant
 
 """
-    flip(recombinant)
+    flip(recombinant; rng=Random.default_rng())
 
 Returns an in-place mutated binary `recombinant` with a bit flips at random positions.
 """
@@ -131,7 +131,7 @@ end
 
 Returns an in-place mutated binary `recombinant` with its bits inverted.
 """
-bitinversion(recombinant::T) where {T <: AbstractVector{Bool}} = map!(!, recombinant, recombinant)
+bitinversion(recombinant::T; kwargs...) where {T <: AbstractVector{Bool}} = map!(!, recombinant, recombinant)
 
 
 # Real-valued mutations

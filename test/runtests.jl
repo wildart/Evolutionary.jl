@@ -24,7 +24,8 @@ for tests in [
     "onemax.jl",
     "moea.jl",
     "regression.jl",
-    "gp.jl"
+    "gp.jl",
+    "issues.jl"
 ]
     include(tests)
 end
