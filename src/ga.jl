@@ -11,7 +11,7 @@ Floating number specifies fraction of population.
 - `selection`: [Selection](@ref) function (default: [`tournament`](@ref))
 - `crossover`: [Crossover](@ref) function (default: [`genop`](@ref))
 - `mutation`: [Mutation](@ref) function (default: [`genop`](@ref))
-- `after_op`: a function that is executed on each individual afrer mutation operations (default: `identity`)
+- `after_op`: a function that is executed on each individual after mutation operations (default: `identity`)
 - `metrics` is a collection of convergence metrics.
 """
 struct GA{T1,T2,T3,T4} <: AbstractOptimizer
@@ -77,7 +77,7 @@ function update_state!(objfun, constraints, state, parents::AbstractVector{IT}, 
     populationSize = method.populationSize
     rng = options.rng
 
-    # create an offspring popultation
+    # create an offspring population
     offspring = similar(parents)
 
     # select offspring
