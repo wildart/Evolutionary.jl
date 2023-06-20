@@ -119,7 +119,7 @@ Evolutionary.tolerance
 
 **Note:** If the class contains the field `Δ`, which holds the current difference
 between last consecutive convergence function evaluations, then the provided
-`Evolutinary.diff` function will work correctly.
+`Evolutionary.diff` function will work correctly.
 Similarly, if the class has the field `tol`, which holds a tolerance value,
 the `Evolutionary.tolerance` method will work correctly.
 
